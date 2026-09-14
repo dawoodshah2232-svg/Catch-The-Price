@@ -29,49 +29,49 @@ export function PriceIntelligenceSection() {
   ];
 
   return (
-    <section className="py-10 sm:py-16 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-[#162633]">
-      <div className="text-center max-w-2xl mx-auto mb-10">
+    <section className="py-6 sm:py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-[#162633]">
+      <div className="text-center max-w-2xl mx-auto mb-5 sm:mb-8">
         <span className="text-xs font-bold uppercase tracking-wider text-[#00D27A]">
           Shopping Intelligence
         </span>
-        <h2 className="text-2xl sm:text-3xl font-extrabold text-[#F8FAFC] mt-1.5">
+        <h2 className="text-xl sm:text-3xl font-extrabold text-[#F8FAFC] mt-1">
           How CatchThePrice Works
         </h2>
-        <p className="text-xs sm:text-sm text-[#8E9DAE] mt-2">
+        <p className="text-xs sm:text-sm text-[#CBD5E1] mt-1.5 leading-relaxed">
           Independent price intelligence engineered to save you real money on every electronics purchase.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-6">
         {steps.map((item) => {
           const Icon = item.icon;
           return (
             <div
               key={item.title}
-              className="p-6 rounded-3xl bg-[#091217] border border-[#162633] hover:border-[#203648] transition-all flex flex-col justify-between"
+              className="p-4 sm:p-6 rounded-2xl sm:rounded-3xl bg-[#091217] border border-[#162633] hover:border-[#203648] transition-all flex flex-col justify-between"
             >
               <div>
-                <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center justify-between mb-3 sm:mb-4">
                   <div
-                    className="w-12 h-12 rounded-2xl flex items-center justify-center border"
+                    className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl flex items-center justify-center border"
                     style={{
                       backgroundColor: `${item.color}15`,
                       borderColor: `${item.color}35`,
                       color: item.color,
                     }}
                   >
-                    <Icon className="w-6 h-6 stroke-[1.75]" />
+                    <Icon className="w-5 h-5 sm:w-6 sm:h-6 stroke-[1.75]" />
                   </div>
-                  <span className="font-mono text-xs font-bold text-[#5B6B7C]">STEP {item.step}</span>
+                  <span className="font-mono text-[11px] sm:text-xs font-bold text-[#94A3B8]">STEP {item.step}</span>
                 </div>
 
-                <h3 className="text-lg font-bold text-[#F8FAFC]">{item.title}</h3>
-                <p className="text-xs sm:text-sm text-[#8E9DAE] mt-2 leading-relaxed">
+                <h3 className="text-base sm:text-lg font-bold text-[#F8FAFC]">{item.title}</h3>
+                <p className="text-xs sm:text-sm text-[#CBD5E1] mt-1.5 leading-relaxed">
                   {item.description}
                 </p>
               </div>
 
-              <div className="mt-6 pt-4 border-t border-[#162633]/70 flex items-center gap-1.5 text-[11px] font-semibold" style={{ color: item.color }}>
+              <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-[#162633]/70 flex items-center gap-1.5 text-[11px] font-semibold" style={{ color: item.color }}>
                 <ShieldCheck className="w-3.5 h-3.5" />
                 <span>Verified Data Engine</span>
               </div>

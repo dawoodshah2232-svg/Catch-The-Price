@@ -73,7 +73,7 @@ export function FilterSheet({
             <button
               type="button"
               onClick={onReset}
-              className="text-xs text-[#8E9DAE] hover:text-[#00D27A] flex items-center gap-1 px-2 py-1 rounded-lg"
+              className="text-xs text-[#CBD5E1] hover:text-[#00D27A] flex items-center gap-1 px-2 py-1 rounded-lg font-medium"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Reset</span>
@@ -81,7 +81,7 @@ export function FilterSheet({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-xl bg-[#071015] text-[#8E9DAE] hover:text-white border border-[#162633]"
+              className="p-1.5 rounded-xl bg-[#071015] text-[#CBD5E1] hover:text-white border border-[#162633]"
               aria-label="Close filters"
             >
               <X className="w-4 h-4" />
@@ -108,7 +108,7 @@ export function FilterSheet({
                     className={`px-3 py-2 rounded-xl transition-all touch-target font-semibold text-left ${
                       isSelected
                         ? 'bg-[#00D27A] text-[#071015] shadow-sm'
-                        : 'bg-[#071015] border border-[#162633] text-[#8E9DAE] hover:border-[#203648]'
+                        : 'bg-[#071015] border border-[#162633] text-[#CBD5E1] hover:border-[#203648]'
                     }`}
                   >
                     {opt.label}
@@ -130,7 +130,7 @@ export function FilterSheet({
                 className={`px-3 py-2 rounded-xl transition-all touch-target font-medium ${
                   !filters.category
                     ? 'bg-[#00D27A] text-[#071015] font-bold shadow-sm'
-                    : 'bg-[#071015] border border-[#162633] text-[#8E9DAE] hover:border-[#203648]'
+                    : 'bg-[#071015] border border-[#162633] text-[#CBD5E1] hover:border-[#203648]'
                 }`}
               >
                 All Categories
@@ -145,7 +145,7 @@ export function FilterSheet({
                     className={`px-3 py-2 rounded-xl transition-all touch-target font-medium ${
                       isSelected
                         ? 'bg-[#00D27A] text-[#071015] font-bold shadow-sm'
-                        : 'bg-[#071015] border border-[#162633] text-[#8E9DAE] hover:border-[#203648]'
+                        : 'bg-[#071015] border border-[#162633] text-[#CBD5E1] hover:border-[#203648]'
                     }`}
                   >
                     {cat.name}
@@ -167,7 +167,7 @@ export function FilterSheet({
                 className={`px-3 py-2 rounded-xl transition-all touch-target font-medium ${
                   !filters.brand
                     ? 'bg-[#00D27A] text-[#071015] font-bold shadow-sm'
-                    : 'bg-[#071015] border border-[#162633] text-[#8E9DAE] hover:border-[#203648]'
+                    : 'bg-[#071015] border border-[#162633] text-[#CBD5E1] hover:border-[#203648]'
                 }`}
               >
                 All Brands
@@ -182,7 +182,7 @@ export function FilterSheet({
                     className={`px-3 py-2 rounded-xl transition-all touch-target font-medium ${
                       isSelected
                         ? 'bg-[#00D27A] text-[#071015] font-bold shadow-sm'
-                        : 'bg-[#071015] border border-[#162633] text-[#8E9DAE] hover:border-[#203648]'
+                        : 'bg-[#071015] border border-[#162633] text-[#CBD5E1] hover:border-[#203648]'
                     }`}
                   >
                     {b}
@@ -213,7 +213,7 @@ export function FilterSheet({
                     className={`py-2 px-1 text-center rounded-xl transition-all touch-target font-semibold ${
                       isSelected
                         ? 'bg-[#00D27A] text-[#071015] font-bold'
-                        : 'bg-[#071015] border border-[#162633] text-[#8E9DAE]'
+                        : 'bg-[#071015] border border-[#162633] text-[#CBD5E1]'
                     }`}
                   >
                     {tier.label}
@@ -230,23 +230,23 @@ export function FilterSheet({
             </label>
             <div className="grid grid-cols-2 gap-3">
               <div>
-                <span className="text-[10px] text-[#5B6B7C] block mb-1">Min Price</span>
+                <span className="text-[10px] text-[#94A3B8] block mb-1 font-semibold">Min Price</span>
                 <input
                   type="number"
                   placeholder="0"
                   value={filters.minPrice}
                   onChange={(e) => onFiltersChange({ ...filters, minPrice: e.target.value })}
-                  className="w-full bg-[#071015] border border-[#162633] rounded-xl px-3.5 py-2.5 text-[#F8FAFC] placeholder:text-[#5B6B7C] focus:outline-none focus:border-[#00D27A]"
+                  className="w-full bg-[#071015] border border-[#162633] rounded-xl px-3.5 py-2.5 text-[#F8FAFC] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#00D27A]"
                 />
               </div>
               <div>
-                <span className="text-[10px] text-[#5B6B7C] block mb-1">Max Price</span>
+                <span className="text-[10px] text-[#94A3B8] block mb-1 font-semibold">Max Price</span>
                 <input
                   type="number"
                   placeholder="50,000"
                   value={filters.maxPrice}
                   onChange={(e) => onFiltersChange({ ...filters, maxPrice: e.target.value })}
-                  className="w-full bg-[#071015] border border-[#162633] rounded-xl px-3.5 py-2.5 text-[#F8FAFC] placeholder:text-[#5B6B7C] focus:outline-none focus:border-[#00D27A]"
+                  className="w-full bg-[#071015] border border-[#162633] rounded-xl px-3.5 py-2.5 text-[#F8FAFC] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#00D27A]"
                 />
               </div>
             </div>
@@ -273,7 +273,7 @@ export function FilterSheet({
                     className={`py-2 px-1 text-center rounded-xl transition-all touch-target font-semibold ${
                       isSelected
                         ? 'bg-[#00D27A] text-[#071015] font-bold'
-                        : 'bg-[#071015] border border-[#162633] text-[#8E9DAE]'
+                        : 'bg-[#071015] border border-[#162633] text-[#CBD5E1]'
                     }`}
                   >
                     {disc.label}
@@ -296,7 +296,7 @@ export function FilterSheet({
                   className={`px-3 py-2 rounded-xl transition-all touch-target font-medium ${
                     !filters.merchant
                       ? 'bg-[#00D27A] text-[#071015] font-bold shadow-sm'
-                      : 'bg-[#071015] border border-[#162633] text-[#8E9DAE] hover:border-[#203648]'
+                      : 'bg-[#071015] border border-[#162633] text-[#CBD5E1] hover:border-[#203648]'
                   }`}
                 >
                   All Stores
@@ -313,7 +313,7 @@ export function FilterSheet({
                       className={`px-3 py-2 rounded-xl transition-all touch-target font-medium ${
                         isSelected
                           ? 'bg-[#00D27A] text-[#071015] font-bold shadow-sm'
-                          : 'bg-[#071015] border border-[#162633] text-[#8E9DAE] hover:border-[#203648]'
+                          : 'bg-[#071015] border border-[#162633] text-[#CBD5E1] hover:border-[#203648]'
                       }`}
                     >
                       {m.name}
@@ -338,15 +338,15 @@ export function FilterSheet({
           </div>
         </div>
 
-        {/* Footer Apply CTA */}
+        {/* Footer Apply CTA - High Conversion */}
         <div className="p-4 border-t border-[#162633] bg-[#091217] flex items-center gap-3">
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-3.5 rounded-2xl bg-[#00D27A] hover:bg-[#00E6A2] text-[#071015] font-extrabold text-sm transition-all shadow-lg flex items-center justify-center gap-2 touch-target"
+            className="flex-1 py-3.5 rounded-2xl btn-conversion-primary text-sm font-extrabold flex items-center justify-center gap-2 touch-target"
           >
             <span>Apply Filters ({totalResults} Results)</span>
-            <Check className="w-4 h-4" />
+            <Check className="w-4 h-4 stroke-[3]" />
           </button>
         </div>
       </div>

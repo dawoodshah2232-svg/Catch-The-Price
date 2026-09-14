@@ -83,7 +83,7 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
         <button
           type="button"
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-xl bg-[#071015] text-[#8E9DAE] hover:text-white border border-[#162633] touch-target flex items-center justify-center"
+          className="absolute top-4 right-4 p-2 rounded-xl bg-[#071015] text-[#CBD5E1] hover:text-white border border-[#162633] touch-target flex items-center justify-center"
           aria-label="Close"
         >
           <X className="w-4 h-4" />
@@ -95,7 +95,7 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
               <Check className="w-8 h-8" />
             </div>
             <h3 className="text-xl font-bold text-[#F8FAFC]">Price Tracker Activated!</h3>
-            <p className="text-xs text-[#8E9DAE] max-w-xs mx-auto">
+            <p className="text-xs text-[#CBD5E1] max-w-xs mx-auto">
               We&apos;re monitoring all {product.offersCount} stores 24/7. You will be alerted the minute the price hits your target.
             </p>
           </div>
@@ -110,7 +110,7 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
                 <h3 className="font-bold text-base sm:text-lg text-[#F8FAFC] leading-tight">
                   Track Price
                 </h3>
-                <p className="text-xs text-[#8E9DAE] mt-0.5">
+                <p className="text-xs text-[#CBD5E1] mt-0.5">
                   Catch the drop before items sell out
                 </p>
               </div>
@@ -129,7 +129,7 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
                   <span className="text-sm font-extrabold text-[#00D27A]">
                     {formatLocalPrice(product.currentBestPrice)}
                   </span>
-                  <span className="text-[10px] text-[#5B6B7C]">Current Lowest</span>
+                  <span className="text-[10px] text-[#94A3B8] font-semibold">Current Lowest</span>
                 </div>
               </div>
             </div>
@@ -147,7 +147,7 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
                     className={`flex items-center justify-between p-3.5 rounded-2xl border cursor-pointer transition-all ${
                       alertType === 'any_drop'
                         ? 'bg-[#00D27A]/10 border-[#00D27A] text-[#F8FAFC]'
-                        : 'bg-[#071015] border-[#162633] text-[#8E9DAE] hover:border-[#203648]'
+                        : 'bg-[#071015] border-[#162633] text-[#CBD5E1] hover:border-[#203648]'
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -163,12 +163,12 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
                     <span className="text-[10px] text-[#00D27A] font-bold">Fastest</span>
                   </label>
 
-                  {/* Option 2: Notify below: AED ______ */}
+                  {/* Option 2: Notify below target price */}
                   <label
                     className={`flex flex-col p-3.5 rounded-2xl border cursor-pointer transition-all ${
                       alertType === 'below_amount'
                         ? 'bg-[#00D27A]/10 border-[#00D27A] text-[#F8FAFC]'
-                        : 'bg-[#071015] border-[#162633] text-[#8E9DAE] hover:border-[#203648]'
+                        : 'bg-[#071015] border-[#162633] text-[#CBD5E1] hover:border-[#203648]'
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -186,7 +186,7 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
 
                     {alertType === 'below_amount' && (
                       <div className="mt-3 flex items-center gap-2 pl-7">
-                        <span className="text-xs font-bold text-[#8E9DAE]">
+                        <span className="text-xs font-bold text-[#CBD5E1]">
                           {countryInfo.currency}
                         </span>
                         <input
@@ -206,7 +206,7 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
                     className={`flex items-center justify-between p-3.5 rounded-2xl border cursor-pointer transition-all ${
                       alertType === 'major_deal'
                         ? 'bg-[#00D27A]/10 border-[#00D27A] text-[#F8FAFC]'
-                        : 'bg-[#071015] border-[#162633] text-[#8E9DAE] hover:border-[#203648]'
+                        : 'bg-[#071015] border-[#162633] text-[#CBD5E1] hover:border-[#203648]'
                     }`}
                   >
                     <div className="flex items-center gap-3">
@@ -234,20 +234,20 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your.email@example.com"
-                  className="w-full bg-[#071015] border border-[#162633] rounded-2xl px-3.5 py-3 text-xs text-[#F8FAFC] placeholder:text-[#5B6B7C] focus:outline-none focus:border-[#00D27A]"
+                  className="w-full bg-[#071015] border border-[#162633] rounded-2xl px-3.5 py-3 text-xs text-[#F8FAFC] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#00D27A]"
                 />
-                <p className="text-[10px] text-[#5B6B7C] mt-1.5 flex items-center gap-1">
+                <p className="text-[10px] text-[#94A3B8] mt-1.5 flex items-center gap-1">
                   <ShieldCheck className="w-3 h-3 text-[#00D27A]" />
                   Push notification support ready. No spam ever.
                 </p>
               </div>
 
-              {/* Submit CTA */}
+              {/* Submit CTA - High Conversion */}
               <div className="pt-2">
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-3.5 rounded-2xl bg-[#00D27A] hover:bg-[#00E6A2] disabled:opacity-50 text-[#071015] font-extrabold text-sm transition-all shadow-xl shadow-[#00D27A]/20 flex items-center justify-center gap-2 touch-target"
+                  className="w-full py-3.5 rounded-2xl btn-conversion-primary disabled:opacity-50 text-sm font-extrabold flex items-center justify-center gap-2 touch-target"
                 >
                   <span>{isSubmitting ? 'Activating Tracker...' : 'Track Price Now'}</span>
                   <ArrowRight className="w-4 h-4" />

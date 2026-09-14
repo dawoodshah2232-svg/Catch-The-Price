@@ -53,7 +53,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           className={`absolute top-2.5 right-2.5 p-2 rounded-xl backdrop-blur-md transition-all touch-target flex items-center justify-center ${
             saved
               ? 'bg-[#00D27A] text-[#071015] shadow-md'
-              : 'bg-[#091217]/80 text-[#8E9DAE] hover:text-white hover:bg-[#0f1c24] border border-[#162633]'
+              : 'bg-[#091217]/80 text-[#CBD5E1] hover:text-white hover:bg-[#0f1c24] border border-[#162633]'
           }`}
           aria-label={saved ? 'Remove from saved' : 'Save product'}
         >
@@ -61,7 +61,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
         </button>
 
         {/* Store Count Badge */}
-        <div className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#091217]/90 backdrop-blur-sm border border-[#162633] text-[10px] text-[#8E9DAE]">
+        <div className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#091217]/90 backdrop-blur-sm border border-[#162633] text-[10px] text-[#CBD5E1]">
           <Store className="w-3 h-3 text-[#00D27A]" />
           <span>{product.offersCount} stores</span>
         </div>
@@ -88,31 +88,31 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
         <div className="mt-3 pt-3 border-t border-[#162633]">
           <div className="flex items-baseline justify-between gap-1 mb-2">
             <div>
-              <span className="text-[10px] text-[#5B6B7C] block uppercase tracking-wider font-semibold">
+              <span className="text-[10px] text-[#94A3B8] block uppercase tracking-wider font-semibold">
                 Best Price
               </span>
               <div className="text-base sm:text-lg font-extrabold text-[#00D27A] leading-none mt-0.5">
                 {formatLocalPrice(product.currentBestPrice)}
               </div>
               {product.originalPrice > product.currentBestPrice && (
-                <div className="text-[11px] text-[#5B6B7C] line-through mt-0.5">
+                <div className="text-[11px] text-[#94A3B8] line-through mt-0.5 font-medium">
                   {formatLocalPrice(product.originalPrice)}
                 </div>
               )}
             </div>
 
             {/* Deal Score Badge */}
-            <div className="text-right">
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-[#00D27A]/10 text-[#00D27A] border border-[#00D27A]/25">
-                Deal Score: {product.dealScore}
+            <div className="text-right shrink-0">
+              <span className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-[#00D27A]/15 text-[#00D27A] border border-[#00D27A]/30 whitespace-nowrap">
+                <span className="hidden sm:inline">Deal </span>Score: {product.dealScore}
               </span>
             </div>
           </div>
 
-          {/* View Prices CTA Button */}
+          {/* View Prices CTA Button - High-Conversion */}
           <a
             href={`/${country}/product/${product.slug}`}
-            className="w-full mt-2 py-2 px-3 rounded-xl bg-[#0f1c24] hover:bg-[#00D27A] text-[#F8FAFC] hover:text-[#071015] font-bold text-xs text-center transition-all border border-[#162633] hover:border-[#00D27A] block touch-target flex items-center justify-center"
+            className="w-full mt-2.5 py-2.5 px-3 rounded-xl btn-conversion-primary text-xs text-center touch-target flex items-center justify-center font-extrabold tracking-wide"
           >
             View Prices
           </a>

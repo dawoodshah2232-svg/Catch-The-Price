@@ -15,7 +15,7 @@ export function MerchantOffersList({ offers, productTitle }: MerchantOffersListP
 
   if (!offers || offers.length === 0) {
     return (
-      <div className="p-6 rounded-2xl bg-[#091217] border border-[#162633] text-center text-[#8E9DAE]">
+      <div className="p-6 rounded-2xl bg-[#091217] border border-[#162633] text-center text-[#CBD5E1]">
         No active merchant offers found for this region.
       </div>
     );
@@ -30,16 +30,16 @@ export function MerchantOffersList({ offers, productTitle }: MerchantOffersListP
         <div>
           <h3 className="font-bold text-base sm:text-lg text-[#F8FAFC] flex items-center gap-2">
             <span>Compare Store Offers ({offers.length})</span>
-            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#00D27A]/10 text-[#00D27A] border border-[#00D27A]/25">
+            <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-[#00D27A]/15 text-[#00D27A] border border-[#00D27A]/30">
               Verified Retailers
             </span>
           </h3>
-          <p className="text-xs text-[#8E9DAE] mt-0.5">
+          <p className="text-xs text-[#CBD5E1] mt-0.5">
             Always buying directly from authorized stores with manufacturer warranty
           </p>
         </div>
 
-        <div className="text-[11px] text-[#8E9DAE] flex items-center gap-1.5 self-start sm:self-auto">
+        <div className="text-[11px] text-[#94A3B8] flex items-center gap-1.5 self-start sm:self-auto">
           <Clock className="w-3.5 h-3.5 text-[#00D27A]" />
           <span>Updated 8 min ago</span>
         </div>
@@ -78,21 +78,21 @@ export function MerchantOffersList({ offers, productTitle }: MerchantOffersListP
                   <div className="flex items-center gap-2">
                     <h4 className="font-bold text-sm text-[#F8FAFC]">{offer.merchantName}</h4>
                     {isBest && (
-                      <span className="px-1.5 py-0.2 rounded text-[10px] font-extrabold bg-[#00D27A] text-[#071015]">
+                      <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-[#00D27A] text-[#071015]">
                         Best Price
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-[#8E9DAE] mt-0.5">
+                  <div className="flex items-center gap-2 text-xs text-[#CBD5E1] mt-0.5">
                     <span className="text-amber-400 font-semibold">★ {offer.merchantRating}</span>
                     <span>•</span>
-                    <span className="text-[#5B6B7C]">Updated 8 min ago</span>
+                    <span className="text-[#94A3B8]">Updated 8 min ago</span>
                   </div>
                 </div>
               </div>
 
               {/* Shipping and Stock */}
-              <div className="flex sm:flex-col items-center sm:items-start justify-between sm:justify-center text-xs text-[#8E9DAE] gap-1">
+              <div className="flex sm:flex-col items-center sm:items-start justify-between sm:justify-center text-xs text-[#CBD5E1] gap-1">
                 <div className="flex items-center gap-1.5 text-[#F8FAFC]">
                   <Truck className="w-3.5 h-3.5 text-[#00D27A]" />
                   <span>{offer.shippingInfo}</span>
@@ -110,21 +110,21 @@ export function MerchantOffersList({ offers, productTitle }: MerchantOffersListP
                     {formatLocalPrice(offer.price)}
                   </div>
                   {offer.originalPrice && offer.originalPrice > offer.price && (
-                    <div className="text-[11px] text-[#5B6B7C] line-through mt-0.5 font-medium">
+                    <div className="text-[11px] text-[#94A3B8] line-through mt-0.5 font-medium">
                       {formatLocalPrice(offer.originalPrice)}
                     </div>
                   )}
                 </div>
 
-                {/* Explicit Outbound Buy Button */}
+                {/* Explicit Outbound Buy Button - High-Conversion CTA */}
                 <a
                   href={outboundHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all touch-target shadow-sm shrink-0 ${
+                  className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs transition-all touch-target shrink-0 ${
                     isBest
-                      ? 'bg-[#00D27A] hover:bg-[#00E6A2] text-[#071015] shadow-[#00D27A]/20'
-                      : 'bg-[#0f1c24] hover:bg-[#152733] text-[#F8FAFC] border border-[#162633] hover:border-[#203648]'
+                      ? 'btn-conversion-primary font-extrabold shadow-md'
+                      : 'bg-[#0f1c24] hover:bg-[#00D27A] text-[#F8FAFC] hover:text-[#071015] border border-[#203648] hover:border-[#00D27A] font-bold'
                   }`}
                 >
                   <span>Buy on {primaryStoreWord}</span>
@@ -137,7 +137,7 @@ export function MerchantOffersList({ offers, productTitle }: MerchantOffersListP
       </div>
 
       {/* Honest Retailer Notice */}
-      <div className="mt-4 pt-4 border-t border-[#162633] flex items-start gap-3 text-[#8E9DAE] text-xs bg-[#071015] p-4 rounded-2xl">
+      <div className="mt-4 pt-4 border-t border-[#162633] flex items-start gap-3 text-[#CBD5E1] text-xs bg-[#071015] p-4 rounded-2xl">
         <ShieldCheck className="w-5 h-5 text-[#00D27A] shrink-0 mt-0.5" />
         <p className="leading-relaxed">
           <strong className="text-[#F8FAFC]">CatchThePrice does not sell products or collect payments.</strong> When clicking &quot;Buy on [Store]&quot;, you are redirected to complete your purchase safely on the retailer&apos;s official website.

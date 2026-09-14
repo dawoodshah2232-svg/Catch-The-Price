@@ -210,7 +210,7 @@ function SearchContent({ countryParam }: { countryParam: string }) {
       {/* Main Grid with Desktop Sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mt-6">
         {/* Desktop Filter Sidebar */}
-        <aside className="hidden lg:block space-y-6 text-xs pr-4 border-r border-ctp">
+        <aside className="hidden lg:block space-y-6 text-xs pr-4 border-r border-ctp sticky top-24 self-start max-h-[calc(100vh-7rem)] overflow-y-auto">
           <div className="flex items-center justify-between pb-3 border-b border-ctp">
             <span className="font-bold text-slate-200 uppercase tracking-wider text-[11px] flex items-center gap-1.5">
               <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-400" />
@@ -353,12 +353,23 @@ function SearchContent({ countryParam }: { countryParam: string }) {
           ) : (
             <div className="space-y-8">
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
-                {sortedProducts.map((product) => (
+                {sortedProducts.slice(0, 4).map((product) => (
+                  <ProductCard key={product.id} product={product} />
+                ))}
+
+                {/* In-feed Non-intrusive AdSense Slot between product rows */}
+                {sortedProducts.length > 4 && (
+                  <div className="col-span-2 md:col-span-3 py-2">
+                    <AdSlot slotId="search-infeed-middle" format="banner" />
+                  </div>
+                )}
+
+                {sortedProducts.slice(4).map((product) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>
 
-              {/* In-feed Non-intrusive AdSense Slot */}
+              {/* Bottom In-feed AdSense Slot */}
               <AdSlot slotId="search-bottom-feed" format="banner" />
             </div>
           )}

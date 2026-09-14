@@ -54,7 +54,7 @@ export function CategoryGrid() {
               href={`/${country}/deals/${category.slug}`}
               className="group p-4 sm:p-5 rounded-2xl bg-[#091217] border border-[#162633] hover:border-[#00D27A]/50 hover:bg-[#0f1c24] transition-all flex flex-col items-center text-center touch-target"
             >
-              <div className="w-12 h-12 rounded-xl bg-[#071015] border border-[#162633] group-hover:border-[#00D27A]/40 flex items-center justify-center text-[#8E9DAE] group-hover:text-[#00D27A] transition-colors mb-3">
+              <div className="w-12 h-12 rounded-xl bg-[#071015] border border-[#162633] group-hover:border-[#00D27A]/40 flex items-center justify-center text-[#CBD5E1] group-hover:text-[#00D27A] transition-colors mb-3">
                 <IconComponent className="w-5 h-5 stroke-[1.75]" />
               </div>
 
@@ -62,7 +62,7 @@ export function CategoryGrid() {
                 {category.name}
               </h3>
 
-              <span className="text-[10px] font-medium text-[#5B6B7C] mt-1">
+              <span className="text-[10px] font-semibold text-[#94A3B8] mt-1">
                 {category.productCount} models
               </span>
             </a>

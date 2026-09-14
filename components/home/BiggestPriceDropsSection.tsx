@@ -23,7 +23,7 @@ export function BiggestPriceDropsSection({ products }: BiggestPriceDropsSectionP
           <h2 className="text-xl sm:text-2xl font-bold text-[#F8FAFC] mt-1">
             Biggest Price Drops
           </h2>
-          <p className="text-xs text-[#8E9DAE] mt-0.5">
+          <p className="text-xs text-[#CBD5E1] mt-0.5">
             Verified price declines against 90-day moving averages
           </p>
         </div>
@@ -58,7 +58,7 @@ export function BiggestPriceDropsSection({ products }: BiggestPriceDropsSectionP
                   <button
                     type="button"
                     onClick={() => toggleSaveProduct(product.id)}
-                    className="text-[#8E9DAE] hover:text-white p-1"
+                    className="text-[#CBD5E1] hover:text-white p-1"
                     aria-label="Save"
                   >
                     <Bookmark className={`w-4 h-4 ${saved ? 'fill-[#00D27A] text-[#00D27A]' : ''}`} />
@@ -79,7 +79,7 @@ export function BiggestPriceDropsSection({ products }: BiggestPriceDropsSectionP
                     <h3 className="font-bold text-xs sm:text-sm text-[#F8FAFC] group-hover:text-[#00E6A2] transition-colors line-clamp-2 leading-snug">
                       {product.title}
                     </h3>
-                    <div className="text-[10px] text-[#8E9DAE] mt-1 flex items-center gap-1">
+                    <div className="text-[10px] text-[#CBD5E1] mt-1 flex items-center gap-1">
                       <Store className="w-3 h-3 text-[#00D27A]" />
                       <span>{product.bestMerchantName}</span>
                     </div>
@@ -91,11 +91,11 @@ export function BiggestPriceDropsSection({ products }: BiggestPriceDropsSectionP
               <div className="mt-4 pt-3 border-t border-[#162633]">
                 <div className="flex items-baseline justify-between">
                   <div>
-                    <span className="text-[10px] text-[#5B6B7C] block font-semibold uppercase tracking-wider">
+                    <span className="text-[10px] text-[#94A3B8] block font-semibold uppercase tracking-wider">
                       Was: <span className="line-through">{formatLocalPrice(product.originalPrice)}</span>
                     </span>
                     <div className="flex items-baseline gap-1.5 mt-0.5">
-                      <span className="text-[11px] text-[#8E9DAE] font-medium">Now:</span>
+                      <span className="text-[11px] text-[#CBD5E1] font-medium">Now:</span>
                       <span className="text-base sm:text-lg font-extrabold text-[#00D27A]">
                         {formatLocalPrice(product.currentBestPrice)}
                       </span>
@@ -108,8 +108,8 @@ export function BiggestPriceDropsSection({ products }: BiggestPriceDropsSectionP
                 </div>
 
                 {/* Small Historical Indicator */}
-                <div className="mt-2.5 pt-2 border-t border-[#162633]/60 flex items-center justify-between text-[10px] text-[#8E9DAE]">
-                  <span className="flex items-center gap-1 text-[#00C996] font-medium">
+                <div className="mt-2.5 pt-2 border-t border-[#162633]/60 flex items-center justify-between text-[10px] text-[#CBD5E1]">
+                  <span className="flex items-center gap-1 text-[#00C996] font-semibold">
                     <History className="w-3 h-3" />
                     <span>Lowest in 90 days</span>
                   </span>

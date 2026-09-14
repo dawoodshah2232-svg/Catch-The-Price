@@ -42,7 +42,7 @@ export function StateView({
   const configs = {
     no_results: {
       icon: SearchX,
-      color: '#8E9DAE',
+      color: '#94A3B8',
       defaultTitle: 'No Matching Products Found',
       defaultDesc: 'Try adjusting your search terms, removing filters, or browsing by category.',
       defaultAction: 'Browse All Categories',
@@ -63,7 +63,7 @@ export function StateView({
     },
     store_unavailable: {
       icon: Store,
-      color: '#8E9DAE',
+      color: '#94A3B8',
       defaultTitle: 'Retailer Temporarily Offline',
       defaultDesc: 'The merchant feed is currently under maintenance. Other store prices remain active.',
       defaultAction: 'View Other Stores',
@@ -118,7 +118,7 @@ export function StateView({
         <h3 className="text-base sm:text-lg font-bold text-[#F8FAFC]">
           {title || c.defaultTitle}
         </h3>
-        <p className="text-xs sm:text-sm text-[#8E9DAE] leading-relaxed max-w-sm mx-auto">
+        <p className="text-xs sm:text-sm text-[#CBD5E1] leading-relaxed max-w-sm mx-auto">
           {description || c.defaultDesc}
         </p>
       </div>

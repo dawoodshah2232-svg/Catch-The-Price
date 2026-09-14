@@ -43,8 +43,37 @@ export default async function DealsCategoryPage({ params }: DealsCategoryPagePro
   // Sort by Deal Score descending
   const sorted = [...products].sort((a, b) => b.dealScore - a.dealScore);
 
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: `https://catchtheprice.com/${country}`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Deals',
+        item: `https://catchtheprice.com/${country}/deals/all`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: category?.name || 'All Deals',
+        item: `https://catchtheprice.com/${country}/deals/${catSlug}`,
+      },
+    ],
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       {/* Breadcrumbs */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-400">
         <a href={`/${country}`} className="hover:text-white transition-colors">

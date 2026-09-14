@@ -45,7 +45,7 @@ export function Header() {
           </div>
 
           {/* Navigation Links */}
-          <nav className="flex items-center gap-1 text-xs font-semibold text-[#8E9DAE]">
+          <nav className="flex items-center gap-1 text-xs font-semibold text-[#CBD5E1]">
             {desktopNav.map((item) => {
               const isActive = pathname?.startsWith(item.href);
               return (
@@ -68,7 +68,7 @@ export function Header() {
 
             <a
               href={`/${country}/account?tab=saved`}
-              className="p-2.5 rounded-xl bg-[#091217] hover:bg-[#0f1c24] border border-[#162633] hover:border-[#203648] text-[#8E9DAE] hover:text-white transition-colors relative touch-target flex items-center justify-center"
+              className="p-2.5 rounded-xl bg-[#091217] hover:bg-[#0f1c24] border border-[#162633] hover:border-[#203648] text-[#CBD5E1] hover:text-white transition-colors relative touch-target flex items-center justify-center"
               aria-label="Saved Products"
               title="Saved Products"
             >
@@ -82,7 +82,7 @@ export function Header() {
 
             <a
               href={`/${country}/account?tab=alerts`}
-              className="p-2.5 rounded-xl bg-[#091217] hover:bg-[#0f1c24] border border-[#162633] hover:border-[#203648] text-[#8E9DAE] hover:text-white transition-colors relative touch-target flex items-center justify-center"
+              className="p-2.5 rounded-xl bg-[#091217] hover:bg-[#0f1c24] border border-[#162633] hover:border-[#203648] text-[#CBD5E1] hover:text-white transition-colors relative touch-target flex items-center justify-center"
               aria-label="Price Alerts"
               title="Price Alerts"
             >
@@ -124,7 +124,7 @@ export function Header() {
               <CountrySwitcher compact={true} />
               <a
                 href={`/${country}/account`}
-                className="p-2 rounded-xl bg-[#091217] border border-[#162633] text-[#8E9DAE] hover:text-white touch-target flex items-center justify-center"
+                className="p-2 rounded-xl bg-[#091217] border border-[#162633] text-[#CBD5E1] hover:text-white touch-target flex items-center justify-center"
                 aria-label="Account"
               >
                 <User className="w-4 h-4 text-[#00D27A]" />

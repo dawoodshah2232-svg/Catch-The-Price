@@ -59,17 +59,17 @@ export function MobileBottomNav() {
               key={item.id}
               href={item.href}
               className={`flex flex-col items-center justify-center flex-1 py-1.5 min-h-[50px] touch-target rounded-xl transition-all relative ${
-                item.isActive ? 'text-[#00D27A] font-bold' : 'text-[#8E9DAE] hover:text-[#F8FAFC]'
+                item.isActive ? 'text-[#00D27A] font-bold' : 'text-[#CBD5E1] hover:text-[#F8FAFC]'
               }`}
             >
               <div className="relative flex items-center justify-center">
                 <Icon
                   className={`w-5 h-5 transition-transform duration-150 ${
-                    item.isActive ? 'scale-110 text-[#00D27A]' : 'text-[#8E9DAE]'
+                    item.isActive ? 'scale-110 text-[#00D27A]' : 'text-[#CBD5E1]'
                   }`}
                 />
                 {item.badge !== null && (
-                  <span className="absolute -top-1 -right-2.5 px-1.5 py-0.2 rounded-full text-[9px] font-extrabold bg-[#00D27A] text-[#071015] ring-2 ring-[#071015]">
+                  <span className="absolute -top-1 -right-2.5 px-1.5 py-0.5 rounded-full text-[9px] font-extrabold bg-[#00D27A] text-[#071015] ring-2 ring-[#071015]">
                     {item.badge}
                   </span>
                 )}

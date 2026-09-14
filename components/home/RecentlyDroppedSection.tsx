@@ -67,12 +67,12 @@ export function RecentlyDroppedSection() {
           <h2 className="text-xl sm:text-2xl font-bold text-[#F8FAFC] mt-1">
             Recently Dropped Prices
           </h2>
-          <p className="text-xs text-[#8E9DAE] mt-0.5">
+          <p className="text-xs text-[#CBD5E1] mt-0.5">
             Real-time price declines captured across monitored merchant feeds
           </p>
         </div>
 
-        <span className="text-[11px] text-[#8E9DAE] hidden sm:flex items-center gap-1">
+        <span className="text-[11px] text-[#94A3B8] hidden sm:flex items-center gap-1">
           <Clock className="w-3 h-3 text-[#00D27A]" />
           <span>Updated continuously</span>
         </span>
@@ -91,7 +91,7 @@ export function RecentlyDroppedSection() {
               className="p-4 rounded-2xl bg-[#091217] border border-[#162633] hover:border-[#00D27A]/40 transition-all flex flex-col justify-between group"
             >
               <div>
-                <div className="flex items-center justify-between text-[10px] text-[#8E9DAE] mb-1.5">
+                <div className="flex items-center justify-between text-[10px] text-[#CBD5E1] mb-1.5">
                   <span className="flex items-center gap-1 font-semibold text-[#F8FAFC]">
                     <Store className="w-3 h-3 text-[#00D27A]" />
                     {drop.store}
@@ -109,7 +109,7 @@ export function RecentlyDroppedSection() {
                   <span className="text-base font-extrabold text-[#00D27A]">
                     {formatLocalPrice(drop.newPrice)}
                   </span>
-                  <span className="text-[10px] text-[#5B6B7C] line-through">
+                  <span className="text-[10px] text-[#94A3B8] line-through font-medium">
                     {formatLocalPrice(drop.oldPrice)}
                   </span>
                 </div>

@@ -47,8 +47,37 @@ export default async function PriceDropsCategoryPage({ params }: PriceDropsPageP
     return dropB - dropA;
   });
 
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: `https://catchtheprice.com/${country}`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Price Drops',
+        item: `https://catchtheprice.com/${country}/price-drops/all`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: category?.name || 'All Drops',
+        item: `https://catchtheprice.com/${country}/price-drops/${catSlug}`,
+      },
+    ],
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      />
       {/* Breadcrumbs */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-400">
         <a href={`/${country}`} className="hover:text-white transition-colors">

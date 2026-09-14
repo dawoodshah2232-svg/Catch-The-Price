@@ -22,7 +22,7 @@ export function TrendingSection({ products }: TrendingSectionProps) {
             <span>High User Volume</span>
           </div>
           <h2 className="text-xl sm:text-2xl font-bold text-[#F8FAFC] mt-1">Trending Now</h2>
-          <p className="text-xs text-[#8E9DAE] mt-0.5">
+          <p className="text-xs text-[#CBD5E1] mt-0.5">
             Products shoppers are actively price-tracking today
           </p>
         </div>

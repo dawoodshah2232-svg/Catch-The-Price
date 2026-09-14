@@ -30,7 +30,7 @@ export function CountrySection() {
             Track Local Prices in Your Currency
           </h2>
         </div>
-        <p className="text-xs text-[#8E9DAE]">
+        <p className="text-xs text-[#CBD5E1]">
           Switch your region to instantly view local store offers and warranties
         </p>
       </div>
@@ -55,13 +55,13 @@ export function CountrySection() {
                 {isSelected ? (
                   <Check className="w-4 h-4 text-[#00D27A]" />
                 ) : (
-                  <span className="px-1.5 py-0.2 rounded text-[9px] font-bold bg-[#00D27A]/15 text-[#00D27A]">
+                  <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#00D27A]/15 text-[#00D27A]">
                     {m.status}
                   </span>
                 )}
               </div>
               <div className="font-bold text-xs text-[#F8FAFC]">{m.name}</div>
-              <div className="text-[10px] text-[#8E9DAE] mt-0.5">{m.currency}</div>
+              <div className="text-[10px] text-[#CBD5E1] mt-0.5">{m.currency}</div>
             </button>
           );
         })}
@@ -74,13 +74,13 @@ export function CountrySection() {
           >
             <div className="flex items-center justify-between mb-1.5">
               <span className="text-2xl">{m.flag}</span>
-              <span className="text-[9px] font-medium text-[#5B6B7C] flex items-center gap-0.5">
+              <span className="text-[9px] font-semibold text-[#94A3B8] flex items-center gap-0.5">
                 <Clock className="w-2.5 h-2.5" />
                 {m.status}
               </span>
             </div>
-            <div className="font-semibold text-xs text-[#8E9DAE]">{m.name}</div>
-            <div className="text-[10px] text-[#5B6B7C] mt-0.5">{m.currency}</div>
+            <div className="font-semibold text-xs text-[#CBD5E1]">{m.name}</div>
+            <div className="text-[10px] text-[#94A3B8] mt-0.5">{m.currency}</div>
           </div>
         ))}
       </div>

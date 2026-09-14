@@ -57,11 +57,11 @@ export function PriceHistoryChart({ history, stats, productTitle }: PriceHistory
         <div>
           <h3 className="font-bold text-base sm:text-lg text-[#F8FAFC] flex items-center gap-2">
             <span>Price History</span>
-            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#00D27A]/10 text-[#00D27A] border border-[#00D27A]/25">
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#00D27A]/15 text-[#00D27A] border border-[#00D27A]/30">
               Interactive
             </span>
           </h3>
-          <p className="text-xs text-[#8E9DAE] mt-0.5">
+          <p className="text-xs text-[#CBD5E1] mt-0.5">
             Verified historical price changes across official retailers
           </p>
         </div>
@@ -75,7 +75,7 @@ export function PriceHistoryChart({ history, stats, productTitle }: PriceHistory
               className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                 period === p
                   ? 'bg-[#00D27A] text-[#071015] shadow-sm'
-                  : 'text-[#8E9DAE] hover:text-[#F8FAFC]'
+                  : 'text-[#CBD5E1] hover:text-[#F8FAFC]'
               }`}
             >
               {p}
@@ -87,45 +87,45 @@ export function PriceHistoryChart({ history, stats, productTitle }: PriceHistory
       {/* Metrics Row: Current, Lowest, Highest, Average */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         <div className="p-3.5 rounded-2xl bg-[#071015] border border-[#162633]">
-          <span className="text-[10px] uppercase tracking-wider font-bold text-[#5B6B7C] block">
+          <span className="text-[10px] uppercase tracking-wider font-bold text-[#94A3B8] block">
             Current
           </span>
           <span className="text-base sm:text-lg font-extrabold text-[#00D27A]">
             {formatLocalPrice(stats.currentPrice)}
           </span>
-          <span className="text-[10px] text-[#00C996] flex items-center gap-0.5 mt-0.5">
+          <span className="text-[10px] text-[#00C996] flex items-center gap-0.5 mt-0.5 font-semibold">
             <ArrowDownRight className="w-3 h-3" /> Best Available
           </span>
         </div>
 
         <div className="p-3.5 rounded-2xl bg-[#071015] border border-[#162633]">
-          <span className="text-[10px] uppercase tracking-wider font-bold text-[#5B6B7C] block">
+          <span className="text-[10px] uppercase tracking-wider font-bold text-[#94A3B8] block">
             Lowest
           </span>
           <span className="text-base sm:text-lg font-extrabold text-[#F8FAFC]">
             {formatLocalPrice(stats.lowestPrice)}
           </span>
-          <span className="text-[10px] text-[#8E9DAE] block mt-0.5">All-time record</span>
+          <span className="text-[10px] text-[#CBD5E1] block mt-0.5">All-time record</span>
         </div>
 
         <div className="p-3.5 rounded-2xl bg-[#071015] border border-[#162633]">
-          <span className="text-[10px] uppercase tracking-wider font-bold text-[#5B6B7C] block">
+          <span className="text-[10px] uppercase tracking-wider font-bold text-[#94A3B8] block">
             Highest
           </span>
-          <span className="text-base sm:text-lg font-extrabold text-[#8E9DAE]">
+          <span className="text-base sm:text-lg font-extrabold text-[#CBD5E1]">
             {formatLocalPrice(stats.highestPrice)}
           </span>
-          <span className="text-[10px] text-[#5B6B7C] block mt-0.5">Launch peak</span>
+          <span className="text-[10px] text-[#94A3B8] block mt-0.5 font-medium">Launch peak</span>
         </div>
 
         <div className="p-3.5 rounded-2xl bg-[#071015] border border-[#162633]">
-          <span className="text-[10px] uppercase tracking-wider font-bold text-[#5B6B7C] block">
+          <span className="text-[10px] uppercase tracking-wider font-bold text-[#94A3B8] block">
             90-Day Average
           </span>
           <span className="text-base sm:text-lg font-extrabold text-[#F8FAFC]">
             {formatLocalPrice(stats.average90Days)}
           </span>
-          <span className="text-[10px] text-[#8E9DAE] block mt-0.5">Base trend line</span>
+          <span className="text-[10px] text-[#CBD5E1] block mt-0.5">Base trend line</span>
         </div>
       </div>
 
@@ -177,7 +177,7 @@ export function PriceHistoryChart({ history, stats, productTitle }: PriceHistory
         </svg>
 
         {/* Tooltip Bar */}
-        <div className="mt-2 flex items-center justify-between text-[11px] text-[#5B6B7C] px-1">
+        <div className="mt-2 flex items-center justify-between text-[11px] text-[#94A3B8] px-1">
           <span>{filteredPoints[0]?.date}</span>
           {hoveredPoint ? (
             <span className="font-bold text-[#00D27A] bg-[#00D27A]/10 px-3 py-1 rounded-lg border border-[#00D27A]/30">
