@@ -19,16 +19,16 @@ export function calculateDealScore(
   const vsLowest = ((currentPrice - lowestPrice) / lowestPrice) * 100;
 
   // 1. Drop component (max 40 pts)
-  let dropScore = Math.min(40, Math.max(0, dropPercent * 1.6));
+  const dropScore = Math.min(40, Math.max(0, dropPercent * 1.6));
 
   // 2. Vs 90-day avg component (max 30 pts)
-  let avgScore = Math.min(30, Math.max(0, (vsAverage + 10) * 1.5));
+  const avgScore = Math.min(30, Math.max(0, (vsAverage + 10) * 1.5));
 
   // 3. Proximity to all-time low (max 20 pts)
-  let lowScore = Math.max(0, 20 - vsLowest * 2);
+  const lowScore = Math.max(0, 20 - vsLowest * 2);
 
   // 4. Merchant rating component (max 10 pts)
-  let merchantScore = (merchantRating / 5.0) * 10;
+  const merchantScore = (merchantRating / 5.0) * 10;
 
   const rawScore = Math.round(dropScore + avgScore + lowScore + merchantScore);
   const score = Math.min(99, Math.max(15, rawScore));
