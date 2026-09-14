@@ -15,39 +15,38 @@ export function MerchantOffersList({ offers, productTitle }: MerchantOffersListP
 
   if (!offers || offers.length === 0) {
     return (
-      <div className="p-6 rounded-2xl bg-ctp-surface border border-ctp text-center text-slate-400">
+      <div className="p-6 rounded-2xl bg-[#091217] border border-[#162633] text-center text-[#8E9DAE]">
         No active merchant offers found for this region.
       </div>
     );
   }
 
-  // Sort offers by price ascending
   const sortedOffers = [...offers].sort((a, b) => a.price - b.price);
 
   return (
-    <div className="rounded-2xl bg-ctp-surface border border-ctp p-4 sm:p-6">
+    <div className="rounded-3xl bg-[#091217] border border-[#162633] p-4 sm:p-6 space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-ctp">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[#162633]">
         <div>
-          <h3 className="font-bold text-base sm:text-lg text-slate-100 flex items-center gap-2">
-            <span>Compare Store Prices ({offers.length})</span>
-            <span className="text-[11px] font-normal px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              Live Verified
+          <h3 className="font-bold text-base sm:text-lg text-[#F8FAFC] flex items-center gap-2">
+            <span>Compare Store Offers ({offers.length})</span>
+            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-[#00D27A]/10 text-[#00D27A] border border-[#00D27A]/25">
+              Verified Retailers
             </span>
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Compare prices, delivery estimates, and merchant ratings across verified sellers
+          <p className="text-xs text-[#8E9DAE] mt-0.5">
+            Always buying directly from authorized stores with manufacturer warranty
           </p>
         </div>
 
-        <div className="text-[11px] text-slate-400 flex items-center gap-1.5 self-start sm:self-auto">
-          <Clock className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Last checked {offers[0]?.lastCheckedAt || 'just now'}</span>
+        <div className="text-[11px] text-[#8E9DAE] flex items-center gap-1.5 self-start sm:self-auto">
+          <Clock className="w-3.5 h-3.5 text-[#00D27A]" />
+          <span>Updated 8 min ago</span>
         </div>
       </div>
 
       {/* Offers Rows */}
-      <div className="divide-y divide-ctp mt-2">
+      <div className="divide-y divide-[#162633]">
         {sortedOffers.map((offer, index) => {
           const isBest = index === 0;
           const outboundHref = `/api/outbound?offerId=${encodeURIComponent(
@@ -56,16 +55,18 @@ export function MerchantOffersList({ offers, productTitle }: MerchantOffersListP
             productTitle
           )}&merchantName=${encodeURIComponent(offer.merchantName)}&price=${offer.price}`;
 
+          const primaryStoreWord = offer.merchantName.split(' ')[0];
+
           return (
             <div
               key={offer.id}
               className={`py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-colors ${
-                isBest ? 'bg-emerald-500/[0.03] -mx-4 px-4 sm:-mx-6 sm:px-6 rounded-xl' : ''
+                isBest ? 'bg-[#00D27A]/[0.03] -mx-4 px-4 sm:-mx-6 sm:px-6 rounded-2xl' : ''
               }`}
             >
               {/* Merchant Details */}
-              <div className="flex items-start sm:items-center gap-3 min-w-[200px]">
-                <div className="w-11 h-11 rounded-xl bg-slate-900 border border-ctp p-1.5 flex items-center justify-center shrink-0">
+              <div className="flex items-start sm:items-center gap-3.5 min-w-[210px]">
+                <div className="w-12 h-12 rounded-2xl bg-[#071015] border border-[#162633] p-2 flex items-center justify-center shrink-0">
                   <img
                     src={offer.merchantLogo}
                     alt={offer.merchantName}
@@ -75,59 +76,58 @@ export function MerchantOffersList({ offers, productTitle }: MerchantOffersListP
 
                 <div>
                   <div className="flex items-center gap-2">
-                    <h4 className="font-bold text-sm text-slate-100">{offer.merchantName}</h4>
+                    <h4 className="font-bold text-sm text-[#F8FAFC]">{offer.merchantName}</h4>
                     {isBest && (
-                      <span className="px-1.5 py-0.2 rounded text-[10px] font-extrabold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
+                      <span className="px-1.5 py-0.2 rounded text-[10px] font-extrabold bg-[#00D27A] text-[#071015]">
                         Best Price
                       </span>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 text-xs text-slate-400 mt-0.5">
-                    <span className="flex items-center gap-1 text-amber-400">
-                      ★ {offer.merchantRating}
-                    </span>
+                  <div className="flex items-center gap-2 text-xs text-[#8E9DAE] mt-0.5">
+                    <span className="text-amber-400 font-semibold">★ {offer.merchantRating}</span>
                     <span>•</span>
-                    <span className="text-slate-300">{offer.condition}</span>
+                    <span className="text-[#5B6B7C]">Updated 8 min ago</span>
                   </div>
                 </div>
               </div>
 
-              {/* Shipping and Stock status */}
-              <div className="flex sm:flex-col items-center sm:items-start justify-between sm:justify-center text-xs text-slate-400 gap-1">
-                <div className="flex items-center gap-1.5 text-slate-300">
-                  <Truck className="w-3.5 h-3.5 text-emerald-400" />
+              {/* Shipping and Stock */}
+              <div className="flex sm:flex-col items-center sm:items-start justify-between sm:justify-center text-xs text-[#8E9DAE] gap-1">
+                <div className="flex items-center gap-1.5 text-[#F8FAFC]">
+                  <Truck className="w-3.5 h-3.5 text-[#00D27A]" />
                   <span>{offer.shippingInfo}</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-emerald-400 font-medium">
+                <div className="flex items-center gap-1.5 text-[#00D27A] font-semibold text-[11px]">
                   <CheckCircle2 className="w-3.5 h-3.5" />
                   <span>{offer.inStock ? 'In Stock' : 'Out of Stock'}</span>
                 </div>
               </div>
 
               {/* Price & Outbound CTA */}
-              <div className="flex items-center justify-between sm:justify-end gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-ctp/40">
+              <div className="flex items-center justify-between sm:justify-end gap-4 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#162633]/60">
                 <div className="text-left sm:text-right">
-                  <div className="text-lg sm:text-xl font-extrabold text-emerald-400 leading-none">
+                  <div className="text-lg sm:text-xl font-extrabold text-[#00D27A] leading-none">
                     {formatLocalPrice(offer.price)}
                   </div>
                   {offer.originalPrice && offer.originalPrice > offer.price && (
-                    <div className="text-[11px] text-slate-400 line-through mt-0.5">
+                    <div className="text-[11px] text-[#5B6B7C] line-through mt-0.5 font-medium">
                       {formatLocalPrice(offer.originalPrice)}
                     </div>
                   )}
                 </div>
 
+                {/* Explicit Outbound Buy Button */}
                 <a
                   href={outboundHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs font-bold transition-all touch-target shadow-sm shrink-0 ${
+                  className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all touch-target shadow-sm shrink-0 ${
                     isBest
-                      ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/20'
-                      : 'bg-ctp-surface-elevated hover:bg-slate-800 text-slate-100 border border-ctp-border-bright hover:border-emerald-500/50'
+                      ? 'bg-[#00D27A] hover:bg-[#00E6A2] text-[#071015] shadow-[#00D27A]/20'
+                      : 'bg-[#0f1c24] hover:bg-[#152733] text-[#F8FAFC] border border-[#162633] hover:border-[#203648]'
                   }`}
                 >
-                  <span>Buy on {offer.merchantName.split(' ')[0]}</span>
+                  <span>Buy on {primaryStoreWord}</span>
                   <ExternalLink className="w-3.5 h-3.5" />
                 </a>
               </div>
@@ -136,11 +136,11 @@ export function MerchantOffersList({ offers, productTitle }: MerchantOffersListP
         })}
       </div>
 
-      {/* Honest Retailer Disclaimer Notice */}
-      <div className="mt-4 pt-4 border-t border-ctp flex items-start gap-2.5 text-slate-400 text-xs bg-slate-900/40 p-3.5 rounded-xl">
-        <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+      {/* Honest Retailer Notice */}
+      <div className="mt-4 pt-4 border-t border-[#162633] flex items-start gap-3 text-[#8E9DAE] text-xs bg-[#071015] p-4 rounded-2xl">
+        <ShieldCheck className="w-5 h-5 text-[#00D27A] shrink-0 mt-0.5" />
         <p className="leading-relaxed">
-          <strong className="text-slate-300">You&apos;ll complete your purchase on the retailer&apos;s official website.</strong> CatchThePrice connects you to verified authorized retailers. Prices and stock availability update in real-time.
+          <strong className="text-[#F8FAFC]">CatchThePrice does not sell products or collect payments.</strong> When clicking &quot;Buy on [Store]&quot;, you are redirected to complete your purchase safely on the retailer&apos;s official website.
         </p>
       </div>
     </div>

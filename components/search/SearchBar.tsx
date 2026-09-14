@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useCountry } from '@/context/CountryContext';
 import { getAllProducts } from '@/lib/data/products';
 import { Product } from '@/lib/types';
-import { Search, X, TrendingUp, Sparkles, ArrowRight } from 'lucide-react';
+import { Search, X, ArrowRight, Sparkles } from 'lucide-react';
 
 interface SearchBarProps {
   isHero?: boolean;
@@ -77,14 +77,14 @@ export function SearchBar({
     <div className={`relative w-full ${className}`} ref={containerRef}>
       <form onSubmit={handleSubmit} className="relative w-full">
         <div
-          className={`flex items-center w-full transition-all duration-200 rounded-xl border ${
+          className={`flex items-center w-full transition-all duration-200 rounded-2xl border ${
             isHero
-              ? 'bg-ctp-surface-elevated/90 border-ctp-border-bright hover:border-emerald-500/50 focus-within:border-emerald-500 focus-within:ring-2 focus-within:ring-emerald-500/30 shadow-xl'
-              : 'bg-ctp-surface border-ctp hover:border-ctp-border-bright focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500/30'
+              ? 'bg-[#091217] border-[#203648] hover:border-[#00D27A]/60 focus-within:border-[#00D27A] focus-within:ring-2 focus-within:ring-[#00D27A]/25 shadow-2xl'
+              : 'bg-[#091217] border-[#162633] hover:border-[#203648] focus-within:border-[#00D27A] focus-within:ring-1 focus-within:ring-[#00D27A]/25'
           }`}
         >
-          <div className="pl-3.5 pr-2 flex items-center pointer-events-none text-slate-400">
-            <Search className={isHero ? 'w-5 h-5 text-emerald-400' : 'w-4 h-4'} />
+          <div className="pl-4 pr-2 flex items-center pointer-events-none text-[#8E9DAE]">
+            <Search className={isHero ? 'w-5 h-5 text-[#00D27A]' : 'w-4 h-4'} />
           </div>
 
           <input
@@ -94,12 +94,12 @@ export function SearchBar({
             onFocus={() => query.trim().length >= 2 && setIsOpen(true)}
             placeholder={
               isHero
-                ? 'Search phones, laptops, PS5, TVs, smartwatches...'
-                : 'Search products or brands...'
+                ? 'Search any product, brand or model…'
+                : 'Search any product, brand or model…'
             }
             autoFocus={autoFocus}
-            className={`w-full bg-transparent text-slate-100 placeholder:text-slate-400 focus:outline-none ${
-              isHero ? 'py-3.5 text-sm sm:text-base' : 'py-2 text-xs sm:text-sm'
+            className={`w-full bg-transparent text-[#F8FAFC] placeholder:text-[#5B6B7C] focus:outline-none ${
+              isHero ? 'py-4 text-sm sm:text-base font-medium' : 'py-2.5 text-xs sm:text-sm'
             }`}
           />
 
@@ -110,7 +110,7 @@ export function SearchBar({
                 setQuery('');
                 setIsOpen(false);
               }}
-              className="p-1.5 mr-1.5 text-slate-400 hover:text-slate-200 focus:outline-none"
+              className="p-1.5 mr-1 text-[#8E9DAE] hover:text-white focus:outline-none touch-target flex items-center justify-center"
               aria-label="Clear search"
             >
               <X className="w-4 h-4" />
@@ -119,10 +119,10 @@ export function SearchBar({
 
           <button
             type="submit"
-            className={`flex items-center justify-center font-medium transition-all ${
+            className={`flex items-center justify-center font-bold transition-all ${
               isHero
-                ? 'mr-2 px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-sm shadow-md'
-                : 'mr-1 px-3 py-1.5 rounded-lg text-emerald-400 hover:text-emerald-300 text-xs'
+                ? 'mr-2 px-5 py-2.5 rounded-xl bg-[#00D27A] hover:bg-[#00E6A2] text-[#071015] text-sm shadow-md touch-target'
+                : 'mr-1 px-3 py-1.5 rounded-lg text-[#00D27A] hover:text-[#00E6A2] text-xs'
             }`}
           >
             {isHero ? 'Catch Price' : <ArrowRight className="w-4 h-4" />}
@@ -130,46 +130,45 @@ export function SearchBar({
         </div>
       </form>
 
-      {/* Autocomplete Dropdown */}
+      {/* Autocomplete Dropdown with image, product name, category, and best price */}
       {isOpen && suggestions.length > 0 && (
-        <div className="absolute left-0 right-0 top-full mt-2 rounded-xl bg-ctp-surface-elevated border border-ctp-border-bright shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
-          <div className="px-3 py-2 bg-ctp-surface border-b border-ctp flex items-center justify-between text-xs text-slate-400">
-            <span className="flex items-center gap-1.5 font-medium text-emerald-400">
-              <Sparkles className="w-3.5 h-3.5" /> Matching Products
+        <div className="absolute left-0 right-0 top-full mt-2 rounded-2xl bg-[#0f1c24] border border-[#203648] shadow-2xl overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-150">
+          <div className="px-4 py-2 bg-[#091217] border-b border-[#162633] flex items-center justify-between text-xs text-[#8E9DAE]">
+            <span className="flex items-center gap-1.5 font-bold text-[#00D27A]">
+              <Sparkles className="w-3.5 h-3.5" /> Product Suggestions
             </span>
-            <span>Press Enter to search all</span>
+            <span className="text-[11px]">Press Enter to search all</span>
           </div>
 
-          <div className="divide-y divide-ctp">
+          <div className="divide-y divide-[#162633]">
             {suggestions.map((product) => (
               <button
                 key={product.id}
                 onClick={() => handleSelectProduct(product.slug)}
-                className="w-full flex items-center gap-3 p-3 text-left hover:bg-slate-800/60 transition-colors group"
+                className="w-full flex items-center gap-3 p-3.5 text-left hover:bg-[#152733] transition-colors group"
               >
                 <img
                   src={product.imageUrl}
                   alt={product.title}
-                  className="w-10 h-10 object-cover rounded-lg bg-slate-900 border border-ctp shrink-0"
+                  className="w-11 h-11 object-contain rounded-xl bg-[#071015] p-1 border border-[#162633] shrink-0"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="text-xs sm:text-sm font-medium text-slate-100 truncate group-hover:text-emerald-400 transition-colors">
+                  <p className="text-xs sm:text-sm font-semibold text-[#F8FAFC] truncate group-hover:text-[#00D27A] transition-colors">
                     {product.title}
                   </p>
-                  <p className="text-[11px] text-slate-400 flex items-center gap-2 mt-0.5">
-                    <span>{product.brand}</span>
+                  <div className="text-[11px] text-[#8E9DAE] flex items-center gap-2 mt-0.5">
+                    <span className="font-medium text-[#5B6B7C] uppercase tracking-wider">{product.brand}</span>
                     <span>•</span>
-                    <span className="text-emerald-400 font-semibold">
+                    <span className="text-[#8E9DAE]">{product.categoryName}</span>
+                    <span>•</span>
+                    <span className="text-[#00D27A] font-bold">
                       {formatLocalPrice(product.currentBestPrice)}
                     </span>
-                    <span className="text-slate-400 line-through">
-                      {formatLocalPrice(product.originalPrice)}
-                    </span>
-                  </p>
+                  </div>
                 </div>
                 <div className="shrink-0 text-right">
-                  <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                    {product.dealScore} Score
+                  <span className="inline-block px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-[#00D27A]/10 text-[#00D27A] border border-[#00D27A]/25">
+                    Score {product.dealScore}
                   </span>
                 </div>
               </button>
@@ -178,9 +177,9 @@ export function SearchBar({
 
           <button
             onClick={handleSubmit}
-            className="w-full py-2.5 px-3 bg-ctp-surface hover:bg-slate-800/80 text-center text-xs font-medium text-emerald-400 flex items-center justify-center gap-1.5 border-t border-ctp"
+            className="w-full py-2.5 px-4 bg-[#091217] hover:bg-[#152733] text-center text-xs font-bold text-[#00D27A] flex items-center justify-center gap-1.5 border-t border-[#162633]"
           >
-            <span>View all results for &quot;{query}&quot;</span>
+            <span>See all results for &ldquo;{query}&rdquo;</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         </div>

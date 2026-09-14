@@ -2,18 +2,19 @@
 
 @layer base {
   :root {
-    --ctp-base: #060911;
-    --ctp-surface: #0b111e;
-    --ctp-surface-elevated: #111a2d;
-    --ctp-surface-hover: #16223b;
-    --ctp-border: #1a273f;
-    --ctp-border-bright: #253859;
-    --ctp-emerald: #10b981;
-    --ctp-teal: #14b8a6;
-    --ctp-cyan: #06b6d4;
-    --ctp-text: #f8fafc;
-    --ctp-muted: #94a3b8;
-    --ctp-subtle: #64748b;
+    --font-sans: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --ctp-bg: #071015;
+    --ctp-surface: #091217;
+    --ctp-surface-elevated: #0f1c24;
+    --ctp-surface-hover: #152733;
+    --ctp-border: #162633;
+    --ctp-border-bright: #203648;
+    --ctp-accent-1: #00D27A;
+    --ctp-accent-2: #00C996;
+    --ctp-accent-3: #00E6A2;
+    --ctp-text: #F8FAFC;
+    --ctp-muted: #8E9DAE;
+    --ctp-subtle: #5B6B7C;
   }
 
   * {
@@ -22,124 +23,115 @@
   }
 
   body {
-    background-color: var(--ctp-base);
+    background-color: var(--ctp-bg);
     color: var(--ctp-text);
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--font-sans);
     overflow-x: hidden;
     min-height: 100vh;
   }
 }
 
-/* Custom Utilities for CatchThePrice */
+/* CatchThePrice Design System Utilities */
 .bg-ctp-base {
-  background-color: #060911;
+  background-color: #071015;
 }
 
 .bg-ctp-surface {
-  background-color: #0b111e;
+  background-color: #091217;
 }
 
 .bg-ctp-surface-elevated {
-  background-color: #111a2d;
+  background-color: #0f1c24;
 }
 
 .bg-ctp-surface-hover {
-  background-color: #16223b;
+  background-color: #152733;
 }
 
 .border-ctp {
-  border-color: #1a273f;
+  border-color: #162633;
 }
 
 .border-ctp-bright {
-  border-color: #253859;
+  border-color: #203648;
 }
 
-.border-ctp-emerald {
-  border-color: rgba(16, 185, 129, 0.35);
+.border-ctp-accent {
+  border-color: rgba(0, 210, 122, 0.35);
 }
 
 .text-ctp-emerald {
-  color: #10b981;
+  color: #00D27A;
 }
 
 .text-ctp-teal {
-  color: #14b8a6;
+  color: #00C996;
 }
 
-.text-ctp-cyan {
-  color: #06b6d4;
+.text-ctp-bright {
+  color: #00E6A2;
 }
 
 .text-ctp-muted {
-  color: #94a3b8;
+  color: #8E9DAE;
 }
 
 .text-ctp-subtle {
-  color: #64748b;
+  color: #5B6B7C;
 }
 
 /* Gradients */
-.gradient-emerald-teal {
-  background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+.gradient-ctp-accent {
+  background: linear-gradient(135deg, #00D27A 0%, #00C996 50%, #00E6A2 100%);
 }
 
 .text-gradient-ctp {
-  background: linear-gradient(135deg, #34d399 0%, #22d3ee 100%);
+  background: linear-gradient(135deg, #00D27A 0%, #00E6A2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.glow-emerald-subtle {
-  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.18);
+/* Subtle, restrained glow */
+.glow-accent-subtle {
+  box-shadow: 0 0 20px -3px rgba(0, 210, 122, 0.18);
 }
 
-.glow-emerald-border {
-  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.25), 0 0 20px -3px rgba(16, 185, 129, 0.2);
-}
-
-/* Touch Target Minimum (44px+) */
+/* Mobile-First Touch Targets (44px x 44px minimum) */
 .touch-target {
   min-height: 44px;
   min-width: 44px;
 }
 
-/* Safe area padding for mobile sticky navigation */
+/* Mobile bottom nav safe clearance */
 .pb-mobile-nav {
-  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(4.75rem + env(safe-area-inset-bottom, 8px));
 }
 
-/* Shimmer Skeleton Animation */
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-.skeleton-shimmer {
-  background: linear-gradient(90deg, #111a2d 25%, #18253e 50%, #111a2d 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.8s infinite;
-}
-
-/* Custom sleek scrollbar */
+/* Sleek scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #060911;
+  background: #071015;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1a273f;
+  background: #162633;
   border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #253859;
+  background: #203648;
+}
+
+/* Horizontal swipe snap for mobile */
+.snap-x-mandatory {
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.snap-start-card {
+  scroll-snap-align: start;
 }

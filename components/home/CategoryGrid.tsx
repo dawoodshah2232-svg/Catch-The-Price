@@ -26,20 +26,20 @@ export function CategoryGrid() {
   const { country } = useCountry();
 
   return (
-    <section id="categories" className="py-10 sm:py-14 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div className="flex items-end justify-between mb-6">
+    <section id="categories" className="py-8 sm:py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-[#162633]">
+      <div className="flex items-end justify-between mb-5">
         <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
-            Explore Electronics
+          <span className="text-xs font-bold uppercase tracking-wider text-[#00D27A]">
+            Core Catalogs
           </span>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-100 mt-1">Browse Categories</h2>
+          <h2 className="text-xl sm:text-2xl font-bold text-[#F8FAFC] mt-1">Browse Categories</h2>
         </div>
 
         <a
           href={`/${country}/deals/all`}
-          className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
+          className="text-xs font-bold text-[#00D27A] hover:text-[#00E6A2] flex items-center gap-1 transition-colors"
         >
-          <span>View All Deals</span>
+          <span>All Categories</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </a>
       </div>
@@ -52,18 +52,18 @@ export function CategoryGrid() {
             <a
               key={category.id}
               href={`/${country}/deals/${category.slug}`}
-              className="group p-4 rounded-2xl bg-ctp-surface border border-ctp hover:border-emerald-500/50 hover:bg-ctp-surface-elevated transition-all flex flex-col items-center text-center touch-target"
+              className="group p-4 sm:p-5 rounded-2xl bg-[#091217] border border-[#162633] hover:border-[#00D27A]/50 hover:bg-[#0f1c24] transition-all flex flex-col items-center text-center touch-target"
             >
-              <div className="w-12 h-12 rounded-xl bg-slate-900/90 border border-ctp group-hover:border-emerald-500/40 flex items-center justify-center text-slate-300 group-hover:text-emerald-400 transition-colors mb-3">
-                <IconComponent className="w-6 h-6" />
+              <div className="w-12 h-12 rounded-xl bg-[#071015] border border-[#162633] group-hover:border-[#00D27A]/40 flex items-center justify-center text-[#8E9DAE] group-hover:text-[#00D27A] transition-colors mb-3">
+                <IconComponent className="w-5 h-5 stroke-[1.75]" />
               </div>
 
-              <h3 className="font-bold text-xs sm:text-sm text-slate-100 group-hover:text-emerald-300 transition-colors">
+              <h3 className="font-bold text-xs sm:text-sm text-[#F8FAFC] group-hover:text-[#00E6A2] transition-colors">
                 {category.name}
               </h3>
 
-              <span className="text-[11px] text-slate-400 mt-1">
-                {category.productCount} tracked
+              <span className="text-[10px] font-medium text-[#5B6B7C] mt-1">
+                {category.productCount} models
               </span>
             </a>
           );

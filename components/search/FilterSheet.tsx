@@ -4,7 +4,7 @@ import React from 'react';
 import { CATEGORIES } from '@/lib/data/categories';
 import { MERCHANTS } from '@/lib/data/merchants';
 import { useCountry } from '@/context/CountryContext';
-import { X, SlidersHorizontal, Check, RotateCcw } from 'lucide-react';
+import { X, SlidersHorizontal, Check, RotateCcw, ArrowUpDown } from 'lucide-react';
 
 export interface FilterState {
   category: string;
@@ -13,7 +13,9 @@ export interface FilterState {
   minPrice: string;
   maxPrice: string;
   minDiscount: string;
+  minDealScore: string;
   inStockOnly: boolean;
+  sortBy?: 'deal_score' | 'price_asc' | 'price_desc' | 'biggest_drop' | 'popular' | 'newest';
 }
 
 interface FilterSheetProps {
@@ -40,30 +42,38 @@ export function FilterSheet({
   const brands = ['Apple', 'Samsung', 'Sony', 'Google', 'LG', 'Dell', 'Valve'];
   const countryMerchants = MERCHANTS.filter((m) => m.country === country);
 
+  const sortOptions = [
+    { label: 'Best Deal', value: 'deal_score' },
+    { label: 'Lowest Price', value: 'price_asc' },
+    { label: 'Biggest Drop', value: 'biggest_drop' },
+    { label: 'Most Popular', value: 'popular' },
+    { label: 'Newest', value: 'newest' },
+  ];
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-slate-950/80 backdrop-blur-sm animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-[#071015]/80 backdrop-blur-sm animate-in fade-in duration-150">
       <div
-        className="w-full max-w-lg max-h-[85vh] rounded-t-3xl sm:rounded-3xl bg-ctp-surface-elevated border border-ctp-border-bright flex flex-col shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-200"
+        className="w-full max-w-lg max-h-[85vh] rounded-t-3xl sm:rounded-3xl bg-[#091217] border border-[#162633] flex flex-col shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-200"
         role="dialog"
         aria-modal="true"
       >
         {/* Drag handle for mobile */}
         <div className="sm:hidden pt-3 flex justify-center">
-          <div className="w-12 h-1.5 rounded-full bg-slate-700" />
+          <div className="w-12 h-1.5 rounded-full bg-[#162633]" />
         </div>
 
         {/* Header */}
-        <div className="px-5 py-4 border-b border-ctp flex items-center justify-between">
+        <div className="px-5 py-4 border-b border-[#162633] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <SlidersHorizontal className="w-4 h-4 text-emerald-400" />
-            <h3 className="font-bold text-base text-slate-100">Filter Products</h3>
+            <SlidersHorizontal className="w-4 h-4 text-[#00D27A]" />
+            <h3 className="font-bold text-base text-[#F8FAFC]">Filter &amp; Sort</h3>
           </div>
 
           <div className="flex items-center gap-2">
             <button
               type="button"
               onClick={onReset}
-              className="text-xs text-slate-400 hover:text-emerald-400 flex items-center gap-1 px-2 py-1 rounded-lg"
+              className="text-xs text-[#8E9DAE] hover:text-[#00D27A] flex items-center gap-1 px-2 py-1 rounded-lg"
             >
               <RotateCcw className="w-3 h-3" />
               <span>Reset</span>
@@ -71,7 +81,7 @@ export function FilterSheet({
             <button
               type="button"
               onClick={onClose}
-              className="p-1.5 rounded-lg bg-slate-900 text-slate-400 hover:text-white border border-ctp"
+              className="p-1.5 rounded-xl bg-[#071015] text-[#8E9DAE] hover:text-white border border-[#162633]"
               aria-label="Close filters"
             >
               <X className="w-4 h-4" />
@@ -81,9 +91,36 @@ export function FilterSheet({
 
         {/* Scrollable Filters Body */}
         <div className="p-5 overflow-y-auto space-y-6 text-xs flex-1">
+          {/* Sort By Facet */}
+          <div>
+            <label className="block font-bold text-[#F8FAFC] uppercase tracking-wider text-[11px] mb-2.5 flex items-center gap-1.5">
+              <ArrowUpDown className="w-3.5 h-3.5 text-[#00D27A]" />
+              <span>Sort By</span>
+            </label>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {sortOptions.map((opt) => {
+                const isSelected = (filters.sortBy || 'deal_score') === opt.value;
+                return (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => onFiltersChange({ ...filters, sortBy: opt.value as any })}
+                    className={`px-3 py-2 rounded-xl transition-all touch-target font-semibold text-left ${
+                      isSelected
+                        ? 'bg-[#00D27A] text-[#071015] shadow-sm'
+                        : 'bg-[#071015] border border-[#162633] text-[#8E9DAE] hover:border-[#203648]'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
           {/* 1. Category */}
           <div>
-            <label className="block font-bold text-slate-200 uppercase tracking-wider text-[11px] mb-2.5">
+            <label className="block font-bold text-[#F8FAFC] uppercase tracking-wider text-[11px] mb-2.5">
               Category
             </label>
             <div className="flex flex-wrap gap-2">
@@ -92,8 +129,8 @@ export function FilterSheet({
                 onClick={() => onFiltersChange({ ...filters, category: '' })}
                 className={`px-3 py-2 rounded-xl transition-all touch-target font-medium ${
                   !filters.category
-                    ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
-                    : 'bg-ctp-surface border border-ctp text-slate-300 hover:border-ctp-border-bright'
+                    ? 'bg-[#00D27A] text-[#071015] font-bold shadow-sm'
+                    : 'bg-[#071015] border border-[#162633] text-[#8E9DAE] hover:border-[#203648]'
                 }`}
               >
                 All Categories
@@ -107,8 +144,8 @@ export function FilterSheet({
                     onClick={() => onFiltersChange({ ...filters, category: isSelected ? '' : cat.slug })}
                     className={`px-3 py-2 rounded-xl transition-all touch-target font-medium ${
                       isSelected
-                        ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
-                        : 'bg-ctp-surface border border-ctp text-slate-300 hover:border-ctp-border-bright'
+                        ? 'bg-[#00D27A] text-[#071015] font-bold shadow-sm'
+                        : 'bg-[#071015] border border-[#162633] text-[#8E9DAE] hover:border-[#203648]'
                     }`}
                   >
                     {cat.name}
@@ -120,7 +157,7 @@ export function FilterSheet({
 
           {/* 2. Brand */}
           <div>
-            <label className="block font-bold text-slate-200 uppercase tracking-wider text-[11px] mb-2.5">
+            <label className="block font-bold text-[#F8FAFC] uppercase tracking-wider text-[11px] mb-2.5">
               Brand
             </label>
             <div className="flex flex-wrap gap-2">
@@ -129,8 +166,8 @@ export function FilterSheet({
                 onClick={() => onFiltersChange({ ...filters, brand: '' })}
                 className={`px-3 py-2 rounded-xl transition-all touch-target font-medium ${
                   !filters.brand
-                    ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
-                    : 'bg-ctp-surface border border-ctp text-slate-300 hover:border-ctp-border-bright'
+                    ? 'bg-[#00D27A] text-[#071015] font-bold shadow-sm'
+                    : 'bg-[#071015] border border-[#162633] text-[#8E9DAE] hover:border-[#203648]'
                 }`}
               >
                 All Brands
@@ -144,8 +181,8 @@ export function FilterSheet({
                     onClick={() => onFiltersChange({ ...filters, brand: isSelected ? '' : b })}
                     className={`px-3 py-2 rounded-xl transition-all touch-target font-medium ${
                       isSelected
-                        ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
-                        : 'bg-ctp-surface border border-ctp text-slate-300 hover:border-ctp-border-bright'
+                        ? 'bg-[#00D27A] text-[#071015] font-bold shadow-sm'
+                        : 'bg-[#071015] border border-[#162633] text-[#8E9DAE] hover:border-[#203648]'
                     }`}
                   >
                     {b}
@@ -155,11 +192,102 @@ export function FilterSheet({
             </div>
           </div>
 
-          {/* 3. Retailer / Merchant */}
+          {/* 3. Deal Score Filter */}
+          <div>
+            <label className="block font-bold text-[#F8FAFC] uppercase tracking-wider text-[11px] mb-2.5">
+              Minimum Deal Score
+            </label>
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { label: 'All', value: '' },
+                { label: 'Score 75+', value: '75' },
+                { label: 'Score 85+', value: '85' },
+                { label: 'Score 90+', value: '90' },
+              ].map((tier) => {
+                const isSelected = filters.minDealScore === tier.value;
+                return (
+                  <button
+                    key={tier.label}
+                    type="button"
+                    onClick={() => onFiltersChange({ ...filters, minDealScore: tier.value })}
+                    className={`py-2 px-1 text-center rounded-xl transition-all touch-target font-semibold ${
+                      isSelected
+                        ? 'bg-[#00D27A] text-[#071015] font-bold'
+                        : 'bg-[#071015] border border-[#162633] text-[#8E9DAE]'
+                    }`}
+                  >
+                    {tier.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 4. Price Range */}
+          <div>
+            <label className="block font-bold text-[#F8FAFC] uppercase tracking-wider text-[11px] mb-2.5">
+              Price Range ({countryInfo.currency})
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <span className="text-[10px] text-[#5B6B7C] block mb-1">Min Price</span>
+                <input
+                  type="number"
+                  placeholder="0"
+                  value={filters.minPrice}
+                  onChange={(e) => onFiltersChange({ ...filters, minPrice: e.target.value })}
+                  className="w-full bg-[#071015] border border-[#162633] rounded-xl px-3.5 py-2.5 text-[#F8FAFC] placeholder:text-[#5B6B7C] focus:outline-none focus:border-[#00D27A]"
+                />
+              </div>
+              <div>
+                <span className="text-[10px] text-[#5B6B7C] block mb-1">Max Price</span>
+                <input
+                  type="number"
+                  placeholder="50,000"
+                  value={filters.maxPrice}
+                  onChange={(e) => onFiltersChange({ ...filters, maxPrice: e.target.value })}
+                  className="w-full bg-[#071015] border border-[#162633] rounded-xl px-3.5 py-2.5 text-[#F8FAFC] placeholder:text-[#5B6B7C] focus:outline-none focus:border-[#00D27A]"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* 5. Discount Filter */}
+          <div>
+            <label className="block font-bold text-[#F8FAFC] uppercase tracking-wider text-[11px] mb-2.5">
+              Minimum Discount %
+            </label>
+            <div className="grid grid-cols-4 gap-2">
+              {[
+                { label: 'Any', value: '' },
+                { label: '10%+', value: '10' },
+                { label: '15%+', value: '15' },
+                { label: '25%+', value: '25' },
+              ].map((disc) => {
+                const isSelected = filters.minDiscount === disc.value;
+                return (
+                  <button
+                    key={disc.label}
+                    type="button"
+                    onClick={() => onFiltersChange({ ...filters, minDiscount: disc.value })}
+                    className={`py-2 px-1 text-center rounded-xl transition-all touch-target font-semibold ${
+                      isSelected
+                        ? 'bg-[#00D27A] text-[#071015] font-bold'
+                        : 'bg-[#071015] border border-[#162633] text-[#8E9DAE]'
+                    }`}
+                  >
+                    {disc.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* 6. Merchant / Store */}
           {countryMerchants.length > 0 && (
             <div>
-              <label className="block font-bold text-slate-200 uppercase tracking-wider text-[11px] mb-2.5">
-                Merchant / Store
+              <label className="block font-bold text-[#F8FAFC] uppercase tracking-wider text-[11px] mb-2.5">
+                Store / Retailer
               </label>
               <div className="flex flex-wrap gap-2">
                 <button
@@ -167,8 +295,8 @@ export function FilterSheet({
                   onClick={() => onFiltersChange({ ...filters, merchant: '' })}
                   className={`px-3 py-2 rounded-xl transition-all touch-target font-medium ${
                     !filters.merchant
-                      ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
-                      : 'bg-ctp-surface border border-ctp text-slate-300 hover:border-ctp-border-bright'
+                      ? 'bg-[#00D27A] text-[#071015] font-bold shadow-sm'
+                      : 'bg-[#071015] border border-[#162633] text-[#8E9DAE] hover:border-[#203648]'
                   }`}
                 >
                   All Stores
@@ -184,8 +312,8 @@ export function FilterSheet({
                       }
                       className={`px-3 py-2 rounded-xl transition-all touch-target font-medium ${
                         isSelected
-                          ? 'bg-emerald-500 text-slate-950 font-bold shadow-sm'
-                          : 'bg-ctp-surface border border-ctp text-slate-300 hover:border-ctp-border-bright'
+                          ? 'bg-[#00D27A] text-[#071015] font-bold shadow-sm'
+                          : 'bg-[#071015] border border-[#162633] text-[#8E9DAE] hover:border-[#203648]'
                       }`}
                     >
                       {m.name}
@@ -196,88 +324,28 @@ export function FilterSheet({
             </div>
           )}
 
-          {/* 4. Price Range */}
-          <div>
-            <label className="block font-bold text-slate-200 uppercase tracking-wider text-[11px] mb-2.5">
-              Price Range ({countryInfo.currency})
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <span className="text-[10px] text-slate-400 block mb-1">Min Price</span>
-                <input
-                  type="number"
-                  placeholder="0"
-                  value={filters.minPrice}
-                  onChange={(e) => onFiltersChange({ ...filters, minPrice: e.target.value })}
-                  className="w-full bg-ctp-surface border border-ctp rounded-xl px-3 py-2 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-              <div>
-                <span className="text-[10px] text-slate-400 block mb-1">Max Price</span>
-                <input
-                  type="number"
-                  placeholder="50,000"
-                  value={filters.maxPrice}
-                  onChange={(e) => onFiltersChange({ ...filters, maxPrice: e.target.value })}
-                  className="w-full bg-ctp-surface border border-ctp rounded-xl px-3 py-2 text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* 5. Discount Minimum */}
-          <div>
-            <label className="block font-bold text-slate-200 uppercase tracking-wider text-[11px] mb-2.5">
-              Minimum Price Drop
-            </label>
-            <div className="grid grid-cols-4 gap-2">
-              {[
-                { label: 'Any', value: '' },
-                { label: '10%+', value: '10' },
-                { label: '15%+', value: '15' },
-                { label: '25%+', value: '25' },
-              ].map((disc) => {
-                const isSelected = filters.minDiscount === disc.value;
-                return (
-                  <button
-                    key={disc.label}
-                    type="button"
-                    onClick={() => onFiltersChange({ ...filters, minDiscount: disc.value })}
-                    className={`py-2 px-1 text-center rounded-xl transition-all touch-target font-medium ${
-                      isSelected
-                        ? 'bg-emerald-500 text-slate-950 font-bold'
-                        : 'bg-ctp-surface border border-ctp text-slate-300'
-                    }`}
-                  >
-                    {disc.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 6. Availability */}
+          {/* 7. Availability */}
           <div className="pt-2">
-            <label className="flex items-center gap-3 p-3 rounded-xl bg-ctp-surface border border-ctp cursor-pointer">
+            <label className="flex items-center gap-3 p-3 rounded-2xl bg-[#071015] border border-[#162633] cursor-pointer">
               <input
                 type="checkbox"
                 checked={filters.inStockOnly}
                 onChange={(e) => onFiltersChange({ ...filters, inStockOnly: e.target.checked })}
-                className="w-4 h-4 accent-emerald-500 rounded"
+                className="w-4 h-4 accent-[#00D27A] rounded"
               />
-              <span className="font-medium text-slate-200">Show In-Stock Products Only</span>
+              <span className="font-semibold text-[#F8FAFC]">Show In-Stock Products Only</span>
             </label>
           </div>
         </div>
 
         {/* Footer Apply CTA */}
-        <div className="p-4 border-t border-ctp bg-ctp-surface flex items-center gap-3">
+        <div className="p-4 border-t border-[#162633] bg-[#091217] flex items-center gap-3">
           <button
             type="button"
             onClick={onClose}
-            className="flex-1 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm transition-all shadow-lg flex items-center justify-center gap-2 touch-target"
+            className="flex-1 py-3.5 rounded-2xl bg-[#00D27A] hover:bg-[#00E6A2] text-[#071015] font-extrabold text-sm transition-all shadow-lg flex items-center justify-center gap-2 touch-target"
           >
-            <span>Show {totalResults} Results</span>
+            <span>Apply Filters ({totalResults} Results)</span>
             <Check className="w-4 h-4" />
           </button>
         </div>

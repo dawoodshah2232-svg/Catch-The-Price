@@ -41,6 +41,7 @@ function SearchContent({ countryParam }: { countryParam: string }) {
     minPrice: '',
     maxPrice: '',
     minDiscount: '',
+    minDealScore: '',
     inStockOnly: false,
   });
 
@@ -91,6 +92,11 @@ function SearchContent({ countryParam }: { countryParam: string }) {
         if (dropPercent < parseFloat(filters.minDiscount)) return false;
       }
 
+      // Deal Score filter
+      if (filters.minDealScore && product.dealScore < parseInt(filters.minDealScore, 10)) {
+        return false;
+      }
+
       // In stock only
       if (filters.inStockOnly) {
         const hasStock = product.offers.some((o) => o.inStock);
@@ -131,6 +137,7 @@ function SearchContent({ countryParam }: { countryParam: string }) {
       minPrice: '',
       maxPrice: '',
       minDiscount: '',
+      minDealScore: '',
       inStockOnly: false,
     });
     setSearchQuery('');

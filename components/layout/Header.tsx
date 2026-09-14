@@ -1,7 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/navigation';
+import React from 'react';
 import { usePathname } from 'next/navigation';
 import { useCountry } from '@/context/CountryContext';
 import { BrandLogo } from '@/components/common/BrandLogo';
@@ -9,114 +8,135 @@ import { CountrySwitcher } from './CountrySwitcher';
 import { SearchBar } from '@/components/search/SearchBar';
 import {
   Flame,
-  LayoutGrid,
   TrendingDown,
+  LayoutGrid,
   Bell,
   Bookmark,
   User,
-  Search,
-  X,
 } from 'lucide-react';
 
 export function Header() {
   const { country, savedProductIds, alerts } = useCountry();
   const pathname = usePathname();
-  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
-  const navLinks = [
+  const desktopNav = [
     { label: 'Deals', href: `/${country}/deals/all`, icon: Flame },
-    { label: 'Categories', href: `/${country}#categories`, icon: LayoutGrid },
     { label: 'Price Drops', href: `/${country}/price-drops/all`, icon: TrendingDown },
-    {
-      label: 'Alerts',
-      href: `/${country}/account?tab=alerts`,
-      icon: Bell,
-      badge: alerts.length > 0 ? alerts.length : null,
-    },
-    {
-      label: 'Saved',
-      href: `/${country}/account?tab=saved`,
-      icon: Bookmark,
-      badge: savedProductIds.length > 0 ? savedProductIds.length : null,
-    },
+    { label: 'Categories', href: `/${country}#categories`, icon: LayoutGrid },
+    { label: 'Track Prices', href: `/${country}/account?tab=alerts`, icon: Bell },
   ];
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-ctp-surface/95 backdrop-blur-md border-b border-ctp transition-all">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-14 sm:h-16 gap-3">
-          {/* Logo */}
+    <header className="sticky top-0 z-40 w-full bg-[#071015]/95 backdrop-blur-md border-b border-[#162633] transition-all">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* =========================================================================
+            DESKTOP HEADER LAYOUT
+            Left: Logo | Center: Search | Nav: Deals, Drops, Categories, Track | Right: Country, Saved, Alerts, Account
+            ========================================================================= */}
+        <div className="hidden lg:flex items-center justify-between h-16 gap-6">
+          {/* Left: Logo */}
           <div className="shrink-0 flex items-center">
-            <BrandLogo size="md" />
+            <BrandLogo size="md" variant="full" />
           </div>
 
-          {/* Desktop Search Bar */}
-          <div className="hidden md:flex flex-1 max-w-md lg:max-w-lg mx-4">
+          {/* Center: Search */}
+          <div className="flex-1 max-w-md xl:max-w-lg">
             <SearchBar isHero={false} />
           </div>
 
-          {/* Desktop Navigation */}
-          <nav className="hidden xl:flex items-center gap-1.5 text-xs font-medium text-slate-300">
-            {navLinks.map((item) => {
-              const Icon = item.icon;
+          {/* Navigation Links */}
+          <nav className="flex items-center gap-1 text-xs font-semibold text-[#8E9DAE]">
+            {desktopNav.map((item) => {
               const isActive = pathname?.startsWith(item.href);
               return (
                 <a
                   key={item.label}
                   href={item.href}
-                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg transition-colors hover:bg-slate-800/60 hover:text-white ${
-                    isActive ? 'text-emerald-400 font-semibold bg-emerald-500/10' : ''
+                  className={`px-3 py-2 rounded-xl transition-colors hover:text-white hover:bg-[#0f1c24] ${
+                    isActive ? 'text-[#00D27A] font-bold bg-[#00D27A]/10' : ''
                   }`}
                 >
-                  <Icon className="w-3.5 h-3.5" />
-                  <span>{item.label}</span>
-                  {item.badge !== null && (
-                    <span className="ml-0.5 px-1.5 py-0.2 rounded-full text-[10px] font-bold bg-emerald-500 text-slate-950">
-                      {item.badge}
-                    </span>
-                  )}
+                  {item.label}
                 </a>
               );
             })}
           </nav>
 
-          {/* Right Action Cluster (Country + Account) */}
+          {/* Right: Country, Saved, Alerts, Account */}
           <div className="flex items-center gap-2">
-            {/* Mobile Search Button */}
-            <button
-              type="button"
-              onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-              className="md:hidden p-2 rounded-lg bg-ctp-surface border border-ctp text-slate-300 hover:text-white touch-target flex items-center justify-center"
-              aria-label="Open search"
-            >
-              {mobileSearchOpen ? <X className="w-5 h-5" /> : <Search className="w-5 h-5" />}
-            </button>
-
-            {/* Country & Currency Switcher */}
             <CountrySwitcher />
 
-            {/* Account Link */}
+            <a
+              href={`/${country}/account?tab=saved`}
+              className="p-2.5 rounded-xl bg-[#091217] hover:bg-[#0f1c24] border border-[#162633] hover:border-[#203648] text-[#8E9DAE] hover:text-white transition-colors relative touch-target flex items-center justify-center"
+              aria-label="Saved Products"
+              title="Saved Products"
+            >
+              <Bookmark className="w-4 h-4" />
+              {savedProductIds.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#00D27A] text-[#071015] font-extrabold text-[10px] flex items-center justify-center">
+                  {savedProductIds.length}
+                </span>
+              )}
+            </a>
+
+            <a
+              href={`/${country}/account?tab=alerts`}
+              className="p-2.5 rounded-xl bg-[#091217] hover:bg-[#0f1c24] border border-[#162633] hover:border-[#203648] text-[#8E9DAE] hover:text-white transition-colors relative touch-target flex items-center justify-center"
+              aria-label="Price Alerts"
+              title="Price Alerts"
+            >
+              <Bell className="w-4 h-4" />
+              {alerts.length > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#00D27A] text-[#071015] font-extrabold text-[10px] flex items-center justify-center">
+                  {alerts.length}
+                </span>
+              )}
+            </a>
+
             <a
               href={`/${country}/account`}
-              className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-ctp-surface hover:bg-slate-800/70 border border-ctp hover:border-ctp-border-bright text-xs font-medium text-slate-200 transition-colors touch-target"
-              aria-label="User Account"
+              className="flex items-center gap-2 px-3 py-2 rounded-xl bg-[#091217] hover:bg-[#0f1c24] border border-[#162633] hover:border-[#203648] text-xs font-semibold text-[#F8FAFC] transition-colors touch-target"
             >
-              <User className="w-4 h-4 text-emerald-400" />
-              <span className="hidden sm:inline">Account</span>
+              <User className="w-4 h-4 text-[#00D27A]" />
+              <span>Account</span>
             </a>
           </div>
         </div>
 
-        {/* Mobile Search Expandable Tray */}
-        {mobileSearchOpen && (
-          <div className="md:hidden py-3 border-t border-ctp animate-in slide-in-from-top duration-200">
-            <SearchBar
-              isHero={false}
-              autoFocus={true}
-              onSearchSubmitted={() => setMobileSearchOpen(false)}
-            />
+        {/* =========================================================================
+            MOBILE HEADER LAYOUT (CRITICAL REQUIREMENT)
+            Top: logo symbol / compact logo | country selector | profile/account
+            Below: large product search.
+            ========================================================================= */}
+        <div className="lg:hidden py-2.5 space-y-2.5">
+          {/* Top row */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <BrandLogo variant="symbol" size="md" />
+              <div className="font-extrabold text-sm tracking-tight text-white flex items-center">
+                <span>Catch</span>
+                <span className="text-[#00D27A]">ThePrice</span>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <CountrySwitcher compact={true} />
+              <a
+                href={`/${country}/account`}
+                className="p-2 rounded-xl bg-[#091217] border border-[#162633] text-[#8E9DAE] hover:text-white touch-target flex items-center justify-center"
+                aria-label="Account"
+              >
+                <User className="w-4 h-4 text-[#00D27A]" />
+              </a>
+            </div>
           </div>
-        )}
+
+          {/* Below top row: Large Product Search */}
+          <div className="w-full">
+            <SearchBar isHero={false} />
+          </div>
+        </div>
       </div>
     </header>
   );

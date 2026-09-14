@@ -1,163 +1,81 @@
 'use client';
 
 import React from 'react';
-import { calculateDealScore, DealScoreBreakdown } from '@/lib/engine/deal-score';
-import { Sparkles, Info } from 'lucide-react';
 
 interface DealScoreBadgeProps {
-  score?: number;
-  currentPrice?: number;
-  originalPrice?: number;
-  lowestPrice?: number;
-  average90Days?: number;
+  score: number;
   size?: 'sm' | 'md' | 'lg';
-  showDetails?: boolean;
+  showLabel?: boolean;
 }
 
 export function DealScoreBadge({
-  score: explicitScore,
-  currentPrice = 1000,
-  originalPrice = 1200,
-  lowestPrice = 980,
-  average90Days = 1150,
+  score,
   size = 'md',
-  showDetails = false,
+  showLabel = true,
 }: DealScoreBadgeProps) {
-  let breakdown: DealScoreBreakdown;
+  // Restrained, premium tiers
+  let label = 'Fair';
+  let badgeClass = 'bg-[#141E28] text-[#8E9DAE] border-[#203648]';
+  let dotColor = '#8E9DAE';
 
-  if (explicitScore !== undefined) {
-    if (explicitScore >= 90) {
-      breakdown = {
-        score: explicitScore,
-        grade: 'exceptional',
-        label: 'Exceptional Deal',
-        color: '#10B981',
-        badgeBg: 'rgba(16, 185, 129, 0.15)',
-        rationale: 'Lowest recorded price in 90 days across verified retailers.',
-      };
-    } else if (explicitScore >= 75) {
-      breakdown = {
-        score: explicitScore,
-        grade: 'great',
-        label: 'Great Price',
-        color: '#06B6D4',
-        badgeBg: 'rgba(6, 182, 212, 0.15)',
-        rationale: 'Solid discount, comfortably below 90-day average.',
-      };
-    } else if (explicitScore >= 60) {
-      breakdown = {
-        score: explicitScore,
-        grade: 'good',
-        label: 'Good Value',
-        color: '#3B82F6',
-        badgeBg: 'rgba(59, 130, 246, 0.15)',
-        rationale: 'Standard competitive market price from authorized sellers.',
-      };
-    } else if (explicitScore >= 45) {
-      breakdown = {
-        score: explicitScore,
-        grade: 'average',
-        label: 'Average Price',
-        color: '#F59E0B',
-        badgeBg: 'rgba(245, 158, 11, 0.15)',
-        rationale: 'Pricing is typical. No major seasonal promotion active.',
-      };
-    } else {
-      breakdown = {
-        score: explicitScore,
-        grade: 'poor',
-        label: 'Wait for Drop',
-        color: '#EF4444',
-        badgeBg: 'rgba(239, 68, 68, 0.15)',
-        rationale: 'Near recent peak price. We recommend setting a price alert.',
-      };
-    }
+  if (score >= 90) {
+    label = 'Excellent Deal';
+    badgeClass = 'bg-[#00D27A]/10 text-[#00D27A] border-[#00D27A]/30';
+    dotColor = '#00D27A';
+  } else if (score >= 75) {
+    label = 'Good Price';
+    badgeClass = 'bg-[#00C996]/10 text-[#00C996] border-[#00C996]/30';
+    dotColor = '#00C996';
+  } else if (score >= 55) {
+    label = 'Fair';
+    badgeClass = 'bg-[#0f1c24] text-[#8E9DAE] border-[#162633]';
+    dotColor = '#8E9DAE';
   } else {
-    breakdown = calculateDealScore(currentPrice, originalPrice, lowestPrice, average90Days);
+    label = 'Wait';
+    badgeClass = 'bg-amber-500/10 text-amber-400 border-amber-500/25';
+    dotColor = '#F59E0B';
   }
-
-  const { score, label, color, badgeBg, rationale } = breakdown;
 
   if (size === 'sm') {
     return (
-      <div
-        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border"
-        style={{
-          backgroundColor: badgeBg,
-          color: color,
-          borderColor: `${color}40`,
-        }}
-        title={`Deal Score ${score}/100: ${rationale}`}
-      >
-        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
+      <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-extrabold border ${badgeClass}`}>
+        <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: dotColor }} />
         <span>{score}</span>
-        <span className="font-normal opacity-80 hidden xs:inline">• {label}</span>
-      </div>
+        {showLabel && <span className="font-medium text-[#8E9DAE]">• {label}</span>}
+      </span>
     );
   }
 
   if (size === 'lg') {
     return (
-      <div
-        className="rounded-2xl p-4 border relative overflow-hidden backdrop-blur-sm"
-        style={{
-          backgroundColor: '#0c1424',
-          borderColor: `${color}40`,
-        }}
-      >
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div
-              className="w-14 h-14 rounded-2xl flex flex-col items-center justify-center font-extrabold shadow-lg shrink-0 border"
-              style={{
-                backgroundColor: badgeBg,
-                color: color,
-                borderColor: `${color}60`,
-              }}
-            >
-              <span className="text-2xl leading-none">{score}</span>
-              <span className="text-[9px] uppercase tracking-wider opacity-75">Score</span>
-            </div>
-            <div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-xs uppercase tracking-wider font-semibold text-slate-400">
-                  CatchThePrice Rating
-                </span>
-                <Sparkles className="w-3.5 h-3.5" style={{ color }} />
-              </div>
-              <h4 className="text-base sm:text-lg font-bold text-slate-100">{label}</h4>
-            </div>
-          </div>
-
-          <div className="hidden sm:block text-right">
-            <span className="text-xs text-slate-400">Algorithm verified</span>
-            <div className="text-[11px] text-emerald-400 font-medium">90-Day Historic Match</div>
-          </div>
+      <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-[#091217] border border-[#162633]">
+        <div
+          className={`w-12 h-12 rounded-xl flex flex-col items-center justify-center font-extrabold text-lg border ${badgeClass}`}
+        >
+          <span>{score}</span>
+          <span className="text-[8px] uppercase tracking-wider -mt-1 opacity-75">Score</span>
         </div>
-
-        {showDetails && (
-          <p className="mt-3 text-xs text-slate-300 leading-relaxed border-t border-ctp pt-2.5">
-            {rationale}
+        <div>
+          <div className="text-[10px] font-bold uppercase tracking-wider text-[#5B6B7C]">
+            CatchThePrice Intelligence
+          </div>
+          <div className="text-sm sm:text-base font-bold text-[#F8FAFC]">
+            {score} — {label}
+          </div>
+          <p className="text-[11px] text-[#8E9DAE] mt-0.5">
+            Calculated from 90-day price trends across verified stores
           </p>
-        )}
+        </div>
       </div>
     );
   }
 
   // Medium (default)
   return (
-    <div
-      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold border"
-      style={{
-        backgroundColor: badgeBg,
-        color: color,
-        borderColor: `${color}40`,
-      }}
-      title={`Deal Score ${score}/100: ${rationale}`}
-    >
-      <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: color }} />
-      <span className="font-extrabold">{score}</span>
-      <span className="font-medium text-slate-200">| {label}</span>
-    </div>
+    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl text-xs font-bold border ${badgeClass}`}>
+      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: dotColor }} />
+      <span>{score}</span>
+      {showLabel && <span className="font-semibold text-[#8E9DAE]">| {label}</span>}
+    </span>
   );
 }

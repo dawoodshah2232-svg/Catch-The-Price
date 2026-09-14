@@ -4,11 +4,15 @@ import { CountryCode } from '@/lib/types';
 import { COUNTRIES, DEFAULT_COUNTRY } from '@/lib/data/countries';
 import { getTopDeals, getBiggestDrops, getTrendingProducts } from '@/lib/data/products';
 import { Hero } from '@/components/home/Hero';
-import { PriceDropFeed } from '@/components/home/PriceDropFeed';
+import { BestDealsSection } from '@/components/home/BestDealsSection';
+import { BiggestPriceDropsSection } from '@/components/home/BiggestPriceDropsSection';
 import { CategoryGrid } from '@/components/home/CategoryGrid';
-import { ProductCard } from '@/components/search/ProductCard';
+import { TrendingSection } from '@/components/home/TrendingSection';
+import { PriceIntelligenceSection } from '@/components/home/PriceIntelligenceSection';
+import { CountrySection } from '@/components/home/CountrySection';
+import { RecentlyDroppedSection } from '@/components/home/RecentlyDroppedSection';
+import { PriceAlertCTASection } from '@/components/home/PriceAlertCTASection';
 import { AdSlot } from '@/components/common/AdSlot';
-import { Flame, TrendingDown, Sparkles, ArrowRight, ShieldCheck } from 'lucide-react';
 
 interface HomePageProps {
   params: Promise<{
@@ -22,8 +26,8 @@ export async function generateMetadata({ params }: HomePageProps): Promise<Metad
   const info = COUNTRIES[country];
 
   return {
-    title: `CatchThePrice ${info.name} — Track It. Catch the Drop. Pay Less.`,
-    description: `Compare prices across verified electronics retailers in ${info.name}. Track real-time price drops on phones, laptops, PS5, TVs, and smartwatches.`,
+    title: `CatchThePrice ${info.name} — TRACK IT. CATCH THE DROP. PAY LESS.`,
+    description: `Smarter Shopping for a Brighter Tomorrow. Compare prices across trusted stores in ${info.name}, track price drops and buy when the price is right.`,
     alternates: {
       canonical: `https://catchtheprice.com/${country}`,
       languages: {
@@ -40,139 +44,44 @@ export async function generateMetadata({ params }: HomePageProps): Promise<Metad
 export default async function HomePage({ params }: HomePageProps) {
   const { country: rawCountry } = await params;
   const country = (rawCountry?.toLowerCase() in COUNTRIES ? rawCountry.toLowerCase() : DEFAULT_COUNTRY) as CountryCode;
-  const countryInfo = COUNTRIES[country];
 
   const topDeals = getTopDeals(country, 4);
   const biggestDrops = getBiggestDrops(country, 4);
   const trending = getTrendingProducts(country, 4);
 
   return (
-    <div className="min-h-screen">
-      {/* 1. Hero with search and quick jump pills */}
+    <div className="min-h-screen bg-[#071015]">
+      {/* Homepage Hero */}
       <Hero />
 
-      {/* 2. Live Price Drop Ticker */}
-      <PriceDropFeed />
+      {/* 1. Today's Best Deals (Swipe on mobile, Grid on desktop) */}
+      <BestDealsSection products={topDeals} />
 
-      {/* 3. Section: Today's Top Deals */}
-      <section id="top-deals" className="py-8 sm:py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between mb-6">
-          <div>
-            <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-emerald-400">
-              <Flame className="w-4 h-4" />
-              <span>Highest Deal Scores</span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-100 mt-1">
-              Today&apos;s Top Deals in {countryInfo.name}
-            </h2>
-          </div>
-
-          <a
-            href={`/${country}/deals/all`}
-            className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
-          >
-            <span>Explore All</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </a>
-        </div>
-
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-          {topDeals.map((product) => (
-            <ProductCard key={product.id} product={product} priority={true} />
-          ))}
-        </div>
-      </section>
-
-      {/* Ad Placement 1 */}
-      <div className="max-w-4xl mx-auto px-4">
-        <AdSlot slotId="home-after-top-deals" format="banner" />
+      {/* Reserved Ad Slot between primary sections */}
+      <div className="max-w-5xl mx-auto px-4">
+        <AdSlot slotId="home-after-deals" format="banner" />
       </div>
 
-      {/* 4. Section: Biggest Price Drops */}
-      <section id="price-drops" className="py-8 sm:py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-ctp">
-        <div className="flex items-end justify-between mb-6">
-          <div>
-            <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-cyan-400">
-              <TrendingDown className="w-4 h-4" />
-              <span>Deepest Discounts</span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-100 mt-1">
-              Biggest Price Drops
-            </h2>
-          </div>
+      {/* 2. Biggest Price Drops */}
+      <BiggestPriceDropsSection products={biggestDrops} />
 
-          <a
-            href={`/${country}/price-drops/all`}
-            className="text-xs font-semibold text-cyan-400 hover:text-cyan-300 flex items-center gap-1"
-          >
-            <span>View All Drops</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </a>
-        </div>
+      {/* 3. Browse Categories */}
+      <CategoryGrid />
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-          {biggestDrops.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      </section>
+      {/* 4. Trending Now */}
+      <TrendingSection products={trending} />
 
-      {/* 5. Browse Categories */}
-      <div className="border-t border-ctp">
-        <CategoryGrid />
-      </div>
+      {/* 5. Price Intelligence (Compare -> Track -> Catch) */}
+      <PriceIntelligenceSection />
 
-      {/* 6. Section: Trending Products */}
-      <section className="py-8 sm:py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-ctp">
-        <div className="flex items-end justify-between mb-6">
-          <div>
-            <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-amber-400">
-              <Sparkles className="w-4 h-4" />
-              <span>Most Tracked Right Now</span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-100 mt-1">Trending Electronics</h2>
-          </div>
+      {/* 6. Country Section */}
+      <CountrySection />
 
-          <a
-            href={`/${country}/search?sort=trending`}
-            className="text-xs font-semibold text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
-          >
-            <span>See All Trending</span>
-            <ArrowRight className="w-3.5 h-3.5" />
-          </a>
-        </div>
+      {/* 7. Recently Dropped Prices */}
+      <RecentlyDroppedSection />
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
-          {trending.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      </section>
-
-      {/* 7. Value & Safety Banner */}
-      <section className="py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-ctp">
-        <div className="rounded-3xl bg-gradient-to-r from-emerald-950/30 via-ctp-surface to-cyan-950/30 border border-ctp p-6 sm:p-10 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="max-w-xl">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
-              Never Miss A Drop Again
-            </span>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-slate-100 mt-1">
-              Track It. Catch the Drop. Pay Less.
-            </h3>
-            <p className="mt-2 text-xs sm:text-sm text-slate-300 leading-relaxed">
-              Add any phone, laptop, console, or TV to your watchlist. Our crawler scans verified stores continuously and pings you the moment price plummets.
-            </p>
-          </div>
-
-          <a
-            href={`/${country}/account?tab=alerts`}
-            className="px-6 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm shadow-xl shadow-emerald-500/20 transition-all touch-target shrink-0 flex items-center gap-2"
-          >
-            <span>Open Price Watchlist</span>
-            <ArrowRight className="w-4 h-4" />
-          </a>
-        </div>
-      </section>
+      {/* 8. Price Alert CTA */}
+      <PriceAlertCTASection />
     </div>
   );
 }

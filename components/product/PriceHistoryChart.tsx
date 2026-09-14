@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { PricePoint, PriceStats } from '@/lib/types';
 import { useCountry } from '@/context/CountryContext';
-import { TrendingDown, Calendar, ShieldCheck, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+import { ArrowDownRight, History } from 'lucide-react';
 
 interface PriceHistoryChartProps {
   history: PricePoint[];
@@ -13,35 +13,32 @@ interface PriceHistoryChartProps {
 
 export function PriceHistoryChart({ history, stats, productTitle }: PriceHistoryChartProps) {
   const { formatLocalPrice } = useCountry();
-  const [range, setRange] = useState<'30d' | '90d' | 'all'>('90d');
+  const [period, setPeriod] = useState<'7D' | '30D' | '90D' | '6M' | '1Y'>('90D');
   const [hoveredPoint, setHoveredPoint] = useState<PricePoint | null>(null);
 
-  // Filter points based on selected range
   const filteredPoints = React.useMemo(() => {
     if (!history || history.length === 0) return [];
-    if (range === '30d') return history.slice(-5);
+    if (period === '7D') return history.slice(-3);
+    if (period === '30D') return history.slice(-6);
     return history;
-  }, [history, range]);
+  }, [history, period]);
 
-  if (filteredPoints.length === 0) {
-    return null;
-  }
+  if (filteredPoints.length === 0) return null;
 
   const prices = filteredPoints.map((p) => p.price);
   const minPrice = Math.min(...prices);
   const maxPrice = Math.max(...prices);
-  const paddingY = (maxPrice - minPrice) * 0.15 || 50;
+  const paddingY = (maxPrice - minPrice) * 0.2 || 50;
   const domainMin = Math.max(0, minPrice - paddingY);
   const domainMax = maxPrice + paddingY;
 
-  // SVG dimensions
-  const width = 600;
+  const width = 640;
   const height = 240;
   const padX = 45;
   const padY = 25;
 
   const points = filteredPoints.map((p, index) => {
-    const x = padX + (index / (filteredPoints.length - 1)) * (width - padX * 2);
+    const x = padX + (index / (filteredPoints.length - 1 || 1)) * (width - padX * 2);
     const y =
       height - padY - ((p.price - domainMin) / (domainMax - domainMin || 1)) * (height - padY * 2);
     return { x, y, point: p };
@@ -54,130 +51,113 @@ export function PriceHistoryChart({ history, stats, productTitle }: PriceHistory
   const areaD = `${pathD} L ${points[points.length - 1].x} ${height - padY} L ${points[0].x} ${height - padY} Z`;
 
   return (
-    <div className="rounded-2xl bg-ctp-surface border border-ctp p-4 sm:p-6">
-      {/* Header & Range Selector */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-ctp">
+    <div className="rounded-3xl bg-[#091217] border border-[#162633] p-4 sm:p-6 space-y-5">
+      {/* Header with Periods (7D, 30D, 90D, 6M, 1Y) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#162633]">
         <div>
-          <h3 className="font-bold text-base sm:text-lg text-slate-100 flex items-center gap-2">
-            <span>Price History & Trends</span>
-            <span className="text-[11px] font-normal px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-              Verified Data
+          <h3 className="font-bold text-base sm:text-lg text-[#F8FAFC] flex items-center gap-2">
+            <span>Price History</span>
+            <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-[#00D27A]/10 text-[#00D27A] border border-[#00D27A]/25">
+              Interactive
             </span>
           </h3>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Compare against 90-day averages and lowest recorded drops
+          <p className="text-xs text-[#8E9DAE] mt-0.5">
+            Verified historical price changes across official retailers
           </p>
         </div>
 
-        {/* Range Buttons */}
-        <div className="flex items-center gap-1 p-1 rounded-xl bg-slate-900 border border-ctp self-start sm:self-auto">
-          {(['30d', '90d', 'all'] as const).map((r) => (
+        {/* Period Selector Tabs */}
+        <div className="flex items-center gap-1 p-1 rounded-xl bg-[#071015] border border-[#162633] self-start sm:self-auto">
+          {(['7D', '30D', '90D', '6M', '1Y'] as const).map((p) => (
             <button
-              key={r}
-              onClick={() => setRange(r)}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
-                range === r
-                  ? 'bg-emerald-500 text-slate-950 shadow-sm'
-                  : 'text-slate-400 hover:text-slate-200'
+              key={p}
+              onClick={() => setPeriod(p)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                period === p
+                  ? 'bg-[#00D27A] text-[#071015] shadow-sm'
+                  : 'text-[#8E9DAE] hover:text-[#F8FAFC]'
               }`}
             >
-              {r === '30d' ? '30 Days' : r === '90d' ? '90 Days' : 'All Time'}
+              {p}
             </button>
           ))}
         </div>
       </div>
 
-      {/* Metrics Row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 my-4">
-        <div className="p-3 rounded-xl bg-ctp-surface-elevated border border-ctp">
-          <span className="text-[11px] text-slate-400 block">Current Best Price</span>
-          <span className="text-base sm:text-lg font-extrabold text-emerald-400">
+      {/* Metrics Row: Current, Lowest, Highest, Average */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="p-3.5 rounded-2xl bg-[#071015] border border-[#162633]">
+          <span className="text-[10px] uppercase tracking-wider font-bold text-[#5B6B7C] block">
+            Current
+          </span>
+          <span className="text-base sm:text-lg font-extrabold text-[#00D27A]">
             {formatLocalPrice(stats.currentPrice)}
           </span>
-          <span className="text-[10px] text-emerald-400/80 flex items-center gap-0.5 mt-0.5">
-            <ArrowDownRight className="w-3 h-3" /> Best Deal
+          <span className="text-[10px] text-[#00C996] flex items-center gap-0.5 mt-0.5">
+            <ArrowDownRight className="w-3 h-3" /> Best Available
           </span>
         </div>
 
-        <div className="p-3 rounded-xl bg-ctp-surface-elevated border border-ctp">
-          <span className="text-[11px] text-slate-400 block">Lowest Recorded</span>
-          <span className="text-base sm:text-lg font-extrabold text-slate-100">
+        <div className="p-3.5 rounded-2xl bg-[#071015] border border-[#162633]">
+          <span className="text-[10px] uppercase tracking-wider font-bold text-[#5B6B7C] block">
+            Lowest
+          </span>
+          <span className="text-base sm:text-lg font-extrabold text-[#F8FAFC]">
             {formatLocalPrice(stats.lowestPrice)}
           </span>
-          <span className="text-[10px] text-slate-400 block mt-0.5">
-            {stats.allTimeLowestDate || 'Recent'}
-          </span>
+          <span className="text-[10px] text-[#8E9DAE] block mt-0.5">All-time record</span>
         </div>
 
-        <div className="p-3 rounded-xl bg-ctp-surface-elevated border border-ctp">
-          <span className="text-[11px] text-slate-400 block">30-Day Average</span>
-          <span className="text-base sm:text-lg font-extrabold text-slate-200">
-            {formatLocalPrice(stats.average30Days)}
+        <div className="p-3.5 rounded-2xl bg-[#071015] border border-[#162633]">
+          <span className="text-[10px] uppercase tracking-wider font-bold text-[#5B6B7C] block">
+            Highest
           </span>
-          <span className="text-[10px] text-slate-400 block mt-0.5">Stable benchmark</span>
+          <span className="text-base sm:text-lg font-extrabold text-[#8E9DAE]">
+            {formatLocalPrice(stats.highestPrice)}
+          </span>
+          <span className="text-[10px] text-[#5B6B7C] block mt-0.5">Launch peak</span>
         </div>
 
-        <div className="p-3 rounded-xl bg-ctp-surface-elevated border border-ctp">
-          <span className="text-[11px] text-slate-400 block">90-Day Average</span>
-          <span className="text-base sm:text-lg font-extrabold text-slate-200">
+        <div className="p-3.5 rounded-2xl bg-[#071015] border border-[#162633]">
+          <span className="text-[10px] uppercase tracking-wider font-bold text-[#5B6B7C] block">
+            90-Day Average
+          </span>
+          <span className="text-base sm:text-lg font-extrabold text-[#F8FAFC]">
             {formatLocalPrice(stats.average90Days)}
           </span>
-          <span className="text-[10px] text-slate-400 block mt-0.5">Long-term base</span>
+          <span className="text-[10px] text-[#8E9DAE] block mt-0.5">Base trend line</span>
         </div>
       </div>
 
-      {/* Interactive SVG Chart */}
-      <div className="relative w-full overflow-hidden pt-2">
-        <svg
-          viewBox={`0 0 ${width} ${height}`}
-          className="w-full h-48 sm:h-56 overflow-visible"
-        >
+      {/* SVG Chart */}
+      <div className="relative w-full pt-2">
+        <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-48 sm:h-56 overflow-visible">
           <defs>
-            <linearGradient id="emeraldGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#10B981" stopOpacity="0.35" />
-              <stop offset="100%" stopColor="#10B981" stopOpacity="0.0" />
+            <linearGradient id="ctpChartGrad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#00D27A" stopOpacity="0.3" />
+              <stop offset="100%" stopColor="#00D27A" stopOpacity="0.0" />
             </linearGradient>
           </defs>
 
           {/* Grid lines */}
-          <line
-            x1={padX}
-            y1={padY}
-            x2={width - padX}
-            y2={padY}
-            stroke="#1a273f"
-            strokeDasharray="4 4"
-          />
-          <line
-            x1={padX}
-            y1={height / 2}
-            x2={width - padX}
-            y2={height / 2}
-            stroke="#1a273f"
-            strokeDasharray="4 4"
-          />
-          <line
-            x1={padX}
-            y1={height - padY}
-            x2={width - padX}
-            y2={height - padY}
-            stroke="#1a273f"
-          />
+          <line x1={padX} y1={padY} x2={width - padX} y2={padY} stroke="#162633" strokeDasharray="4 4" />
+          <line x1={padX} y1={height / 2} x2={width - padX} y2={height / 2} stroke="#162633" strokeDasharray="4 4" />
+          <line x1={padX} y1={height - padY} x2={width - padX} y2={height - padY} stroke="#162633" />
 
-          {/* Gradient area */}
-          <path d={areaD} fill="url(#emeraldGradient)" />
+          {/* Gradient Area Fill */}
+          <path d={areaD} fill="url(#ctpChartGrad)" />
 
-          {/* Price line */}
+          {/* Price Stroke */}
           <path
             d={pathD}
             fill="none"
-            stroke="#10B981"
+            stroke="#00D27A"
             strokeWidth="3"
             strokeLinecap="round"
             strokeLinejoin="round"
           />
 
-          {/* Interactive Data Points */}
+          {/* Points */}
           {points.map(({ x, y, point }, idx) => {
             const isHovered = hoveredPoint?.date === point.date;
             const isLast = idx === points.length - 1;
@@ -186,26 +166,25 @@ export function PriceHistoryChart({ history, stats, productTitle }: PriceHistory
                 <circle
                   cx={x}
                   cy={y}
-                  r={isHovered ? 6 : isLast ? 5 : 4}
-                  fill={isLast ? '#34d399' : '#10B981'}
-                  stroke="#060911"
+                  r={isHovered ? 6 : isLast ? 5 : 3.5}
+                  fill={isLast ? '#00E6A2' : '#00D27A'}
+                  stroke="#071015"
                   strokeWidth="2"
-                  className="transition-all duration-150"
                 />
               </g>
             );
           })}
         </svg>
 
-        {/* Hovered Price Tooltip Display */}
-        <div className="mt-2 flex items-center justify-between text-xs text-slate-400 px-2">
+        {/* Tooltip Bar */}
+        <div className="mt-2 flex items-center justify-between text-[11px] text-[#5B6B7C] px-1">
           <span>{filteredPoints[0]?.date}</span>
           {hoveredPoint ? (
-            <span className="font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-md border border-emerald-500/30">
-              {hoveredPoint.date}: {formatLocalPrice(hoveredPoint.price)} ({hoveredPoint.merchantName || 'Amazon'})
+            <span className="font-bold text-[#00D27A] bg-[#00D27A]/10 px-3 py-1 rounded-lg border border-[#00D27A]/30">
+              {hoveredPoint.date}: {formatLocalPrice(hoveredPoint.price)}
             </span>
           ) : (
-            <span className="text-[11px] text-slate-400">Hover or tap points to inspect price date</span>
+            <span>Tap any point on the curve to view date</span>
           )}
           <span>{filteredPoints[filteredPoints.length - 1]?.date}</span>
         </div>
