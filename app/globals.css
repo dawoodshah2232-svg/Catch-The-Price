@@ -1,26 +1,145 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --ctp-base: #060911;
+    --ctp-surface: #0b111e;
+    --ctp-surface-elevated: #111a2d;
+    --ctp-surface-hover: #16223b;
+    --ctp-border: #1a273f;
+    --ctp-border-bright: #253859;
+    --ctp-emerald: #10b981;
+    --ctp-teal: #14b8a6;
+    --ctp-cyan: #06b6d4;
+    --ctp-text: #f8fafc;
+    --ctp-muted: #94a3b8;
+    --ctp-subtle: #64748b;
+  }
+
+  * {
+    border-color: var(--ctp-border);
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--ctp-base);
+    color: var(--ctp-text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    overflow-x: hidden;
+    min-height: 100vh;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Custom Utilities for CatchThePrice */
+.bg-ctp-base {
+  background-color: #060911;
+}
+
+.bg-ctp-surface {
+  background-color: #0b111e;
+}
+
+.bg-ctp-surface-elevated {
+  background-color: #111a2d;
+}
+
+.bg-ctp-surface-hover {
+  background-color: #16223b;
+}
+
+.border-ctp {
+  border-color: #1a273f;
+}
+
+.border-ctp-bright {
+  border-color: #253859;
+}
+
+.border-ctp-emerald {
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.text-ctp-emerald {
+  color: #10b981;
+}
+
+.text-ctp-teal {
+  color: #14b8a6;
+}
+
+.text-ctp-cyan {
+  color: #06b6d4;
+}
+
+.text-ctp-muted {
+  color: #94a3b8;
+}
+
+.text-ctp-subtle {
+  color: #64748b;
+}
+
+/* Gradients */
+.gradient-emerald-teal {
+  background: linear-gradient(135deg, #10b981 0%, #06b6d4 100%);
+}
+
+.text-gradient-ctp {
+  background: linear-gradient(135deg, #34d399 0%, #22d3ee 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.glow-emerald-subtle {
+  box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.18);
+}
+
+.glow-emerald-border {
+  box-shadow: 0 0 0 1px rgba(16, 185, 129, 0.25), 0 0 20px -3px rgba(16, 185, 129, 0.2);
+}
+
+/* Touch Target Minimum (44px+) */
+.touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* Safe area padding for mobile sticky navigation */
+.pb-mobile-nav {
+  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* Shimmer Skeleton Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #111a2d 25%, #18253e 50%, #111a2d 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.8s infinite;
+}
+
+/* Custom sleek scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #060911;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1a273f;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #253859;
 }
