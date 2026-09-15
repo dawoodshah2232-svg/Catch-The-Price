@@ -98,21 +98,14 @@ export function Header() {
           </div>
         </div>
 
+        {/* Mobile: intentionally simple and app-like. Logo left, market + account right. */}
         <div className="lg:hidden py-2.5 space-y-2.5">
-          <div className="flex items-center justify-between gap-3">
-            <div className="min-w-0 shrink">
-              <BrandLogo variant="full" size="sm" />
+          <div className="flex items-center justify-between gap-2 min-w-0">
+            <div className="min-w-0 flex-1 overflow-hidden">
+              <BrandLogo variant="full" size="sm" className="max-w-full" />
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
-              <a
-                href={`/${country}/blog`}
-                className="p-2 rounded-xl bg-[#091217] border border-[#162633] text-[#CBD5E1] hover:text-white touch-target flex items-center justify-center"
-                aria-label="Blog"
-                title="Blog"
-              >
-                <BookOpen className="w-4 h-4 text-[#00D27A]" />
-              </a>
               <CountrySwitcher compact={true} />
               <a
                 href={`/${country}/account`}
@@ -124,7 +117,7 @@ export function Header() {
             </div>
           </div>
 
-          <div className="w-full">
+          <div className="w-full min-w-0">
             <SearchBar isHero={false} />
           </div>
         </div>
