@@ -4,6 +4,7 @@ import { CountryCode } from '@/lib/types';
 import { COUNTRIES, DEFAULT_COUNTRY } from '@/lib/data/countries';
 import { getHomepageCatalog } from '@/lib/data/catalog.server';
 import { Hero } from '@/components/home/Hero';
+import { CommerceHubSection } from '@/components/home/CommerceHubSection';
 import { BestDealsSection } from '@/components/home/BestDealsSection';
 import { SmartComparisonBlock } from '@/components/home/SmartComparisonBlock';
 import { BiggestPriceDropsSection } from '@/components/home/BiggestPriceDropsSection';
@@ -57,21 +58,22 @@ export default async function HomePage({ params }: HomePageProps) {
       )}
 
       <Hero />
+      <CommerceHubSection />
       <BestDealsSection products={topDeals} />
-      <SmartComparisonBlock products={products} />
-      <BiggestPriceDropsSection products={biggestDrops} />
+      <CategoryGrid />
 
-      <div className="max-w-5xl mx-auto px-4">
+      <div className="max-w-5xl mx-auto px-4 py-1">
         <AdSlot slotId="home-after-deals" format="banner" />
       </div>
 
-      <CategoryGrid />
+      <SmartComparisonBlock products={products} />
+      <BiggestPriceDropsSection products={biggestDrops} />
       <BuyingInsightBlock />
       <TrendingSection products={trending} />
+      <RecentlyDroppedSection products={products} />
       <PriceIntelligenceSection />
       <TrustPillarsBlock />
       <CountrySection />
-      <RecentlyDroppedSection products={products} />
       <PriceAlertCTASection />
     </div>
   );
