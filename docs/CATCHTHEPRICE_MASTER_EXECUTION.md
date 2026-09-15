@@ -8,36 +8,36 @@ Status values: `DONE`, `PARTIAL`, `MISSING`, `BLOCKED`, `DEFERRED`.
 
 | # | Task | Status | Current note |
 |---|---|---|---|
-| 01 | Remove fabricated public states | PARTIAL | Seeded demo alert removed; alert API fails honestly. Homepage and product routes now use `catalog.server.ts`: Vercel sample catalog is explicitly labelled + noindex, while the real production host reads live Supabase and shows honest unavailable states. Search/deals/price-drop routes still need migration away from direct fixture imports. |
-| 02 | Protect all admin operations | PARTIAL | Production admin is closed by default with `ADMIN_UI_ENABLED`; real Supabase-authenticated admin role checks still required. |
-| 03 | Create source rights register | PARTIAL | Deny-by-default registry added at `lib/config/sourceRights.ts`; approvals/evidence still need to be recorded and persisted. |
-| 04 | Replace arbitrary URL redirects | PARTIAL | `targetUrl` is no longer trusted. `/api/outbound` resolves a UUID offer from Supabase, validates market, active state, HTTPS and merchant host. Product page links now send only offer ID + market. Affiliate policy and persisted click analytics still need the final tables/approval model. |
-| 05 | Apply and verify access model | PARTIAL | Live Supabase inspected: all current public tables have RLS enabled. Public read policies are scoped; owner tables use auth ownership. `ingestion_sources`, `ingestion_runs`, `product_matches` have RLS with no client policies, so they are closed to anon/auth clients. Repo `supabase/schema.sql` is stale and must be reconciled with production before any migration. |
-| 06 | Prepare canonical production environment | PARTIAL | Vercel works; catchtheprice.com cutover/rollback plan still required. |
-| 07 | Canonical product/variant/offer identity | PARTIAL | New server catalog adapter reads real live products/offers/merchants/categories/history without inventing scores or history. Database still needs the full variant/evidence model and real rows. |
-| 08 | Prove one permitted source end-to-end | BLOCKED | Requires verified source permission/feed/API access. |
-| 09 | Conflict-first matching + review | PARTIAL | Prototype exists; must be rebuilt around identifiers/variant constraints and real source data. |
-| 10 | Two overlapping sources + curated inventory | BLOCKED | Requires source approvals. Target remains 80–120 curated variants with meaningful UAE/US coverage. |
-| 11 | Freshness + genuine history | PARTIAL | Product pages now show history only when real observations exist; otherwise they show an honest waiting state. Live Supabase has `price_history` but currently no observations. |
-| 12 | Shared shopping UI foundation | PARTIAL | Brand exists; hybrid light-surface/dark-nav design system still needs implementation. |
-| 13 | Compact persistent mobile search | PARTIAL | Implemented 48px mobile brand row that scrolls away and a separate 64px sticky search strip. Still needs device-width QA at 360/390/412/430 and keyboard testing. |
-| 14 | Replace oversized/aggressive cards | PARTIAL | Cards now use 4:3 image wells, calmer CTA, 13–14px titles, ~17–18px prices and hide unvalidated Deal Score. Final multi-width QA and light-surface redesign remain. |
-| 15 | Accurate local discovery | PARTIAL | Search exists; ranking, exact variant handling, stable filters/pagination and query QA set required. |
-| 16 | Complete product decision page | PARTIAL | PDP now uses live-catalog adapter for production, removes arbitrary outbound parameters, hides unvalidated scores and fake history, and labels sample preview data. FAQ/methodology/related guides/conditions still required. |
-| 17 | Minimum serious two-product compare | PARTIAL | Added `/[country]/compare` with a real two-product same-category comparison workspace using only available structured facts. Needs compare-add workflow from cards/PDP, evidence IDs and pair-page rules. |
-| 18 | Genuine saved persistence | PARTIAL | Device saves exist; live Supabase watchlists are authenticated-owner records. Account persistence/RLS/merge and honest scope messaging required. |
-| 19 | Verified alert delivery | PARTIAL | False success removed. Public alert endpoint is intentionally unavailable until account-backed persistence, verification and delivery exist. |
-| 20 | Useful authored content | MISSING | Guide/comparison templates and reviewed initial editorial set required. |
-| 21 | Controlled AI draft preparation | MISSING | Opportunity queue, evidence/quality gates, cost/model tracking and human review required. |
-| 22 | Replace simulated back-office activity | PARTIAL | Overview fake metrics removed; production admin closed. Other admin pages still need persisted records and real jobs. |
-| 23 | Metric dictionary + real analytics | MISSING | Must connect consent-compatible analytics and server-resolved shopping events. Live DB does not yet have the final outbound analytics table. |
-| 24 | Final homepage content rhythm | PARTIAL | Discovery modules added; homepage now switches to honest catalog-unavailable state on real production when no eligible data exists. Final hybrid visual composition and deduplication remain. |
-| 25 | Trust/policy pages | PARTIAL | Route audit and complete About/Contact/Privacy/Terms/Affiliate/Editorial/Data Sources/Methodology/cookie content required. |
-| 26 | Eligible regional SEO + Search Console | PARTIAL | UAE/US indexing direction started; preview sample homepage/product pages are now noindex and product hreflang is limited to live markets. Sitemap/Search Console/schema still need real-data verification. |
-| 27 | Full production-shaped QA | MISSING | Must run genuine-data mobile/accessibility/security/performance tests at all target widths. |
-| 28 | Controlled production pilot/domain cutover | BLOCKED | Do after P0 gates and real source path are ready. |
-| 29 | Activate approved affiliate links | BLOCKED | No affiliate parameters until actual program approval/evidence exists. |
-| 30 | Apply for AdSense + measured slots | BLOCKED | Do only after real catalog/editorial/trust/mobile gates pass. |
+| 01 | Remove fabricated public states | DONE | Production catalog/search/deals/product routes now use live Supabase data and honest unavailable states. Demo fixture data is preview-only, labelled and excluded from the production sitemap. |
+| 02 | Protect all admin operations | DONE | Admin layout and write APIs require a real Supabase session plus `ADMIN_EMAILS` allowlist. Public admin navigation is removed. |
+| 03 | Create source rights register | DONE | Persisted `source_rights` table is now the production authority. Sources fail closed and cannot become publish-ready without dated approval evidence plus required rights. |
+| 04 | Replace arbitrary URL redirects | DONE | `/api/outbound` accepts only offer ID + market, resolves the destination server-side, validates HTTPS/merchant host/active state, and records privacy-safe outbound analytics. |
+| 05 | Apply and verify access model | PARTIAL | RLS is enabled on production tables and operational tables have no browser write path. New migrations are tracked under `supabase/migrations/`; the original monolithic `supabase/schema.sql` still needs formal reconciliation/deprecation. |
+| 06 | Prepare canonical production environment | PARTIAL | Vercel hosting works and the app is production-shaped. `catchtheprice.com` DNS/canonical cutover and rollback procedure remain. |
+| 07 | Canonical product/variant/offer identity | PARTIAL | Live catalog uses real products/offers/merchants/categories/history. Exact variant/evidence fields and final canonical publishing workflow remain. |
+| 08 | Prove one permitted source end-to-end | BLOCKED | Rights-gated JSON feed runner now works through FETCH → RIGHTS → NORMALIZE → STAGE. Completing the path requires one actually approved feed/API and source credentials. |
+| 09 | Conflict-first matching + review | PARTIAL | Real ingestion staging exists and admin queue shows staged items + recorded match evidence. Identifier-first exact-variant matcher and auditable approve/reject write action remain. |
+| 10 | Two overlapping sources + curated inventory | BLOCKED | Requires real source approvals. Target remains 80–120 curated variants with meaningful UAE/US coverage. |
+| 11 | Freshness + genuine history | PARTIAL | History is shown only from recorded observations; otherwise UI stays unavailable. Automated recurring observations begin after a permitted live source is connected. |
+| 12 | Shared shopping UI foundation | DONE | Hybrid light shopping surfaces + dark branded header/footer implemented across primary shopping UI. |
+| 13 | Compact persistent mobile search | DONE | Mobile brand row scrolls away while search remains sticky. Header/search spacing and branding were reworked for mobile and desktop. |
+| 14 | Replace oversized/aggressive cards | DONE | Compact 4:3 product cards, calmer CTAs, explicit View Prices + Compare action, and no unvalidated Deal Score. |
+| 15 | Accurate local discovery | PARTIAL | Search reads live catalog and records real searches. Exact-variant ranking, pagination and zero-result instrumentation still need launch QA. |
+| 16 | Complete product decision page | PARTIAL | Live offers, source confidence, honest price history, structured specs, alternatives and compare are present. Final FAQ/methodology/buying-guide composition still needs finishing. |
+| 17 | Minimum serious two-product compare | DONE | `/[country]/compare` now supports direct product-card entry, same-category selection, structured facts, prices and light shopping UI. Missing facts remain unknown. |
+| 18 | Genuine saved persistence | PARTIAL | Device saves exist and live owner-scoped watchlist table exists. Authenticated sync/merge remains. |
+| 19 | Verified alert delivery | PARTIAL | False success removed. Public alert flow remains intentionally unavailable until account-backed persistence and delivery are connected. |
+| 20 | Useful authored content | PARTIAL | Blog framework and initial content exist; launch set still needs reviewed, source-backed editorial depth and final quality audit. |
+| 21 | Controlled AI draft preparation | MISSING | Opportunity queue, evidence/quality gates, cost/model tracking and human review remain. |
+| 22 | Replace simulated back-office activity | DONE | Admin overview, products, merchants, ingestion, matching and analytics now read real persisted state instead of simulated numbers. |
+| 23 | Metric dictionary + real analytics | PARTIAL | Privacy-safe `analytics_events` + `outbound_clicks` now record page views, searches, product views and retailer hand-offs. Admin shows real totals/top pages/searches/products/referrers. Consent integration and metric dictionary remain. |
+| 24 | Final homepage content rhythm | PARTIAL | Discovery modules and hybrid UI direction are in place. Final deduplication/engagement pass and genuine-data QA remain. |
+| 25 | Trust/policy pages | DONE | About, Contact, How Pricing Works, Data Sources, Editorial Policy, Affiliate Disclosure, Privacy and Terms are now real routes and linked in the footer. |
+| 26 | Eligible regional SEO + Search Console | PARTIAL | UAE/US-only direction, noindex preview states and live-catalog product sitemap are implemented. Search Console, final schema validation and genuine-content index QA remain. |
+| 27 | Full production-shaped QA | MISSING | Must run genuine-data mobile/accessibility/security/performance tests at target widths before public cutover. |
+| 28 | Controlled production pilot/domain cutover | BLOCKED | Do after one real source path and core P0 QA are ready. |
+| 29 | Activate approved affiliate links | BLOCKED | Affiliate identifiers remain disabled until actual program approval/evidence exists. |
+| 30 | Apply for AdSense + measured slots | BLOCKED | Apply only after real catalog/editorial/trust/mobile quality gates pass. |
 
 ## P1 — immediately after stable launch
 
@@ -55,25 +55,32 @@ Status values: `DONE`, `PARTIAL`, `MISSING`, `BLOCKED`, `DEFERRED`.
 | 35 | New categories/languages with complete schemas | DEFERRED |
 | 36 | Canada/UK/Australia, sponsorships, native apps, compatibility | DEFERRED |
 
-## Immediate execution order
+## Current execution order
 
-1. Finish task 01: migrate search/deals/price-drop/account surfaces away from direct fixture reads; preview-only sample data must remain labelled + noindex.
-2. Finish task 02: implement real Supabase admin authentication + server-side role enforcement.
-3. Finish task 03: persist source-rights evidence and make all source activation deny-by-default.
-4. Finish task 04: add policy-aware affiliate activation and a real outbound event table after approvals.
-5. Finish task 05: reconcile checked-in schema/migrations with the live Supabase schema and add policy tests.
-6. Continue task 12–14: hybrid shopping design system, mobile-width QA, image/logo QA and search keyboard behavior.
-7. Continue task 17: wire Compare actions from product cards/PDP into the new comparison workspace.
+1. Complete exact-variant identifier-first matching and auditable review/approval from `ingestion_items`.
+2. Build the publish transaction that converts an approved staged match into canonical product/merchant/offer rows and records price history without fabricating facts.
+3. Connect one actually permitted UAE or US feed/API and prove it end-to-end.
+4. Finish product-page FAQ/methodology and saved/alert account persistence.
+5. Complete launch editorial set and controlled AI draft queue.
+6. Run mobile/accessibility/performance/security QA at 360/390/412/430/768/1024/1440.
+7. Connect `catchtheprice.com`, business email, Search Console and production analytics/consent configuration.
+8. Pilot with real data, then affiliate/AdSense applications only after the launch gates pass.
 
-## Verified production database facts (15 Sep 2026)
+## Verified production database state
 
-- `categories`: 6 rows.
-- `products`, `offers`, `merchants`, `price_history`, `profiles`, `watchlists`, `alert_events`, `ingestion_sources`, `ingestion_runs`, `product_matches`, `seo_pages`: currently 0 rows.
-- RLS is enabled on every listed public table.
-- Public read is limited to categories, active merchants/offers/products, price history and indexable SEO pages.
-- Profile/watchlist policies are owner-scoped to authenticated `auth.uid()`.
-- `ingestion_sources`, `ingestion_runs` and `product_matches` have RLS enabled with no client policies, so browser roles cannot access them.
-- The checked-in `supabase/schema.sql` does not match the live schema and must not be treated as an authoritative migration until reconciled.
+Production Supabase now includes the core catalog tables plus:
+
+- `source_rights` — persisted deny-by-default retailer permission/evidence registry.
+- `ingestion_items` — pre-publication feed staging queue.
+- `outbound_clicks` — privacy-safe retailer hand-off events.
+- `analytics_events` — privacy-safe page/search/product interaction events.
+- `ingestion_runs.items_staged` / `items_rejected` — real staging metrics.
+
+RLS is enabled on operational tables. CatchThePrice does not need to store full IP addresses for the analytics implemented here.
+
+## External blocker
+
+The software can now accept and stage a real approved partner JSON feed, but no retailer/feed may be activated until the corresponding commercial/data permission is actually obtained and recorded in `source_rights`.
 
 ## Launch rule
 
