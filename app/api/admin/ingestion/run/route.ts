@@ -2,10 +2,48 @@ import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminUser } from '@/lib/admin/requireAdmin';
 import { getServerSupabase } from '@/lib/supabase/server';
 import { createJsonFeedAdapter, JsonFeedConfig } from '@/lib/ingestion/jsonFeedAdapter';
-import { prepareApprovedSourceBatch, LaunchMarket } from '@/lib/ingestion/sourceAdapter';
+import { createBestBuyApiAdapter, BestBuyApiConfig } from '@/lib/ingestion/bestBuyAdapter';
+import { MerchantSourceAdapter, prepareApprovedSourceBatch, LaunchMarket } from '@/lib/ingestion/sourceAdapter';
 import { CanonicalCandidate, suggestExactMatch } from '@/lib/ingestion/exactMatcher.server';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+type SourceConfig = Partial<JsonFeedConfig & BestBuyApiConfig> & {
+  adapter?: 'json' | 'bestbuy';
+};
+
+function createAdapter(source: {
+  name: string;
+  source_type: string;
+  country_code: string | null;
+  base_url: string | null;
+  config: unknown;
+}): MerchantSourceAdapter {
+  const market = String(source.country_code || '').toLowerCase() as LaunchMarket;
+  const config = (source.config || {}) as SourceConfig;
+
+  if (!config.rightsId || !config.merchantSlug || !config.merchantName) {
+    throw new Error('Source config must include rightsId, merchantSlug and merchantName.');
+  }
+
+  if (source.source_type === 'api' && config.adapter === 'bestbuy') {
+    if (market !== 'us') throw new Error('Best Buy API adapter is only valid for the US market.');
+    return createBestBuyApiAdapter(config as BestBuyApiConfig);
+  }
+
+  if (['feed', 'affiliate_feed'].includes(source.source_type) && config.adapter === 'json') {
+    if (!config.feedUrl) throw new Error('JSON feed source config must include feedUrl.');
+    return createJsonFeedAdapter({
+      sourceRightsId: config.rightsId,
+      market,
+      adapterName: `${source.name} JSON Feed`,
+      baseUrl: source.base_url,
+      config: config as JsonFeedConfig,
+    });
+  }
+
+  throw new Error(`Unsupported source adapter: ${source.source_type}/${config.adapter || 'unset'}`);
+}
 
 export async function POST(request: NextRequest) {
   const admin = await requireAdminUser();
@@ -34,17 +72,18 @@ export async function POST(request: NextRequest) {
 
   if (sourceError || !source) return NextResponse.json({ error: 'Ingestion source not found.' }, { status: 404 });
   if (!source.is_active) return NextResponse.json({ error: 'This ingestion source is disabled.' }, { status: 409 });
-  if (!['ae', 'us'].includes(String(source.country_code).toLowerCase())) {
+
+  const market = String(source.country_code || '').toLowerCase();
+  if (!['ae', 'us'].includes(market)) {
     return NextResponse.json({ error: 'Only UAE and US launch-market sources are supported.' }, { status: 400 });
   }
-  if (source.source_type !== 'json_feed') {
-    return NextResponse.json({ error: 'This runner currently supports json_feed sources only.' }, { status: 400 });
-  }
 
-  const config = (source.config || {}) as Partial<JsonFeedConfig>;
-  if (!config.feedUrl || !config.rightsId || !config.merchantSlug || !config.merchantName) {
+  let adapter: MerchantSourceAdapter;
+  try {
+    adapter = createAdapter(source);
+  } catch (error) {
     return NextResponse.json(
-      { error: 'Source config must include feedUrl, rightsId, merchantSlug and merchantName.' },
+      { error: error instanceof Error ? error.message : 'Source adapter configuration is invalid.' },
       { status: 400 }
     );
   }
@@ -70,26 +109,21 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const adapter = createJsonFeedAdapter({
-      sourceRightsId: config.rightsId,
-      market: String(source.country_code).toLowerCase() as LaunchMarket,
-      adapterName: `${source.name} JSON Feed`,
-      baseUrl: source.base_url,
-      config: config as JsonFeedConfig,
-    });
-
     const batch = await prepareApprovedSourceBatch(adapter);
 
     const { data: candidateRows, error: candidateError } = await supabase
       .from('products')
       .select('id,brand,name,model,gtin,sku,specs')
       .in('status', ['active', 'draft'])
-      .limit(2000);
+      .limit(3000);
 
     if (candidateError) throw candidateError;
     const candidates = (candidateRows || []) as CanonicalCandidate[];
 
     let suggestedMatches = 0;
+    const now = new Date().toISOString();
+    const sourceConfig = (source.config || {}) as SourceConfig;
+
     const stagedRows = batch.accepted.map((item) => {
       const suggestion = suggestExactMatch(item, candidates);
       if (suggestion) suggestedMatches += 1;
@@ -114,14 +148,20 @@ export async function POST(request: NextRequest) {
         raw_payload: {
           merchantSlug: item.merchantSlug,
           merchantName: item.merchantName,
-          rightsId: config.rightsId,
+          rightsId: sourceConfig.rightsId,
+          adapter: sourceConfig.adapter,
           suggestedMatchMethod: suggestion?.method || null,
         },
         product_id: suggestion?.productId || null,
         confidence: suggestion?.confidence || null,
         match_status: suggestion ? 'suggested' : 'pending',
         review_status: 'pending',
-        updated_at: new Date().toISOString(),
+        review_note: null,
+        reviewed_by: null,
+        reviewed_at: null,
+        published_offer_id: null,
+        published_at: null,
+        updated_at: now,
       };
     });
 
