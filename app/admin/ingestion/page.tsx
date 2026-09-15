@@ -19,6 +19,8 @@ type RunRow = {
   items_seen: number;
   items_created: number;
   items_updated: number;
+  items_staged: number;
+  items_rejected: number;
   error_message: string | null;
   started_at: string | null;
   finished_at: string | null;
@@ -52,7 +54,7 @@ export default async function AdminIngestionPage() {
         .order('updated_at', { ascending: false }),
       supabase
         .from('ingestion_runs')
-        .select('id,source_id,status,items_seen,items_created,items_updated,error_message,started_at,finished_at,created_at')
+        .select('id,source_id,status,items_seen,items_created,items_updated,items_staged,items_rejected,error_message,started_at,finished_at,created_at')
         .order('created_at', { ascending: false })
         .limit(50),
     ]);
@@ -68,6 +70,7 @@ export default async function AdminIngestionPage() {
   const activeSources = sources.filter((source) => source.is_active).length;
   const completedRuns = runs.filter((run) => run.status === 'completed' || run.status === 'success').length;
   const failedRuns = runs.filter((run) => run.status === 'failed' || run.status === 'error').length;
+  const totalStaged = runs.reduce((sum, run) => sum + Number(run.items_staged || 0), 0);
 
   return (
     <div className="space-y-6">
@@ -76,11 +79,11 @@ export default async function AdminIngestionPage() {
           <span className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-emerald-400">Live operations data</span>
           <h1 className="text-2xl font-extrabold text-slate-100 mt-1">Merchant data ingestion</h1>
           <p className="text-xs text-slate-400 mt-1 max-w-2xl">
-            This screen reads the real ingestion_sources and ingestion_runs tables. No sample runs or simulated success records are displayed.
+            Real source configuration, execution history and staging counts. Feed items are staged for matching before any product or offer can become public.
           </p>
         </div>
-        <div className="text-[10px] text-slate-400 rounded-xl border border-ctp bg-slate-900 px-3 py-2">
-          Manual run controls stay disabled until the first approved source adapter is connected.
+        <div className="text-[10px] text-slate-400 rounded-xl border border-ctp bg-slate-900 px-3 py-2 max-w-sm">
+          The protected runner supports approved <strong className="text-slate-200">json_feed</strong> sources. Sources without recorded rights fail closed.
         </div>
       </div>
 
@@ -94,7 +97,7 @@ export default async function AdminIngestionPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
         <div className="rounded-2xl bg-ctp-surface border border-ctp p-4">
           <div className="text-[10px] uppercase tracking-wider font-bold text-slate-500">Configured sources</div>
           <div className="text-2xl font-extrabold text-slate-100 mt-1">{sources.length}</div>
@@ -104,6 +107,11 @@ export default async function AdminIngestionPage() {
           <div className="text-[10px] uppercase tracking-wider font-bold text-slate-500">Recorded runs</div>
           <div className="text-2xl font-extrabold text-slate-100 mt-1">{runs.length}</div>
           <div className="text-[10px] text-slate-400 mt-1">Last 50 shown</div>
+        </div>
+        <div className="rounded-2xl bg-ctp-surface border border-ctp p-4">
+          <div className="text-[10px] uppercase tracking-wider font-bold text-slate-500">Staged items</div>
+          <div className="text-2xl font-extrabold text-cyan-300 mt-1">{totalStaged}</div>
+          <div className="text-[10px] text-slate-400 mt-1">Waiting for matching/review</div>
         </div>
         <div className="rounded-2xl bg-ctp-surface border border-ctp p-4">
           <div className="text-[10px] uppercase tracking-wider font-bold text-slate-500">Completed</div>
@@ -125,13 +133,13 @@ export default async function AdminIngestionPage() {
           <div>
             <h3 className="font-bold text-sm text-slate-100">Approved-source pipeline</h3>
             <p className="text-xs text-slate-400 mt-1">
-              Fetch → normalize → identify exact variant → match → persist offers → record price observation → publish only when source rights allow it.
+              Fetch → validate rights → normalize → stage → match exact product → persist eligible offer → record price observation → publish.
             </p>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 text-center text-[10px]">
-          {['FETCH', 'NORMALIZE', 'IDENTIFY', 'MATCH', 'PERSIST', 'PUBLISH'].map((step, index) => (
+        <div className="grid grid-cols-2 sm:grid-cols-7 gap-2 text-center text-[10px]">
+          {['FETCH', 'RIGHTS', 'NORMALIZE', 'STAGE', 'MATCH', 'PERSIST', 'PUBLISH'].map((step, index) => (
             <div key={step} className="p-2.5 rounded-xl bg-slate-900 border border-ctp">
               <span className="text-emerald-400 font-extrabold block">{index + 1}. {step}</span>
             </div>
@@ -197,7 +205,7 @@ export default async function AdminIngestionPage() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs text-slate-300">
               <thead className="bg-ctp-surface-elevated text-slate-500 uppercase tracking-wider text-[10px] border-b border-ctp">
-                <tr><th className="p-3.5">Run</th><th className="p-3.5">Source</th><th className="p-3.5">Seen</th><th className="p-3.5">Created</th><th className="p-3.5">Updated</th><th className="p-3.5">Started</th><th className="p-3.5 text-right">Status</th></tr>
+                <tr><th className="p-3.5">Run</th><th className="p-3.5">Source</th><th className="p-3.5">Seen</th><th className="p-3.5">Staged</th><th className="p-3.5">Rejected</th><th className="p-3.5">Published create/update</th><th className="p-3.5">Started</th><th className="p-3.5 text-right">Status</th></tr>
               </thead>
               <tbody className="divide-y divide-ctp">
                 {runs.map((run) => {
@@ -208,13 +216,15 @@ export default async function AdminIngestionPage() {
                       <td className="p-3.5 font-mono text-[10px] text-slate-400">{run.id.slice(0, 8)}</td>
                       <td className="p-3.5 font-semibold text-slate-100">{source?.name || 'Unknown source'}</td>
                       <td className="p-3.5">{run.items_seen || 0}</td>
-                      <td className="p-3.5">{run.items_created || 0}</td>
-                      <td className="p-3.5">{run.items_updated || 0}</td>
+                      <td className="p-3.5 text-cyan-300 font-semibold">{run.items_staged || 0}</td>
+                      <td className="p-3.5 text-amber-300">{run.items_rejected || 0}</td>
+                      <td className="p-3.5">{run.items_created || 0} / {run.items_updated || 0}</td>
                       <td className="p-3.5 text-slate-400">{formatTime(run.started_at || run.created_at)}</td>
                       <td className="p-3.5 text-right">
                         <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-bold border ${ok ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/10 text-rose-300 border-rose-500/30'}`}>
                           {ok && <CheckCircle2 className="w-3 h-3" />}{run.status}
                         </span>
+                        {run.error_message && <div className="text-[9px] text-rose-300 mt-1 max-w-[220px] ml-auto truncate" title={run.error_message}>{run.error_message}</div>}
                       </td>
                     </tr>
                   );
