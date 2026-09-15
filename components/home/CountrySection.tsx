@@ -3,143 +3,80 @@
 import React from 'react';
 import { useCountry } from '@/context/CountryContext';
 import { CountryCode } from '@/lib/types';
-import { Globe, Check, Store } from 'lucide-react';
+import { Globe, Check, Clock3 } from 'lucide-react';
 
 interface MarketItem {
   code: CountryCode;
   name: string;
   flag: string;
   currency: string;
-  currencyName: string;
-  topMerchants: string;
+  live: boolean;
 }
 
 const MARKETS: MarketItem[] = [
-  {
-    code: 'ae',
-    name: 'United Arab Emirates',
-    flag: '🇦🇪',
-    currency: 'AED',
-    currencyName: 'UAE Dirham',
-    topMerchants: 'Amazon, Noon, Sharaf DG',
-  },
-  {
-    code: 'us',
-    name: 'United States',
-    flag: '🇺🇸',
-    currency: 'USD',
-    currencyName: 'US Dollar',
-    topMerchants: 'Amazon, Best Buy, Walmart',
-  },
-  {
-    code: 'sa',
-    name: 'Saudi Arabia',
-    flag: '🇸🇦',
-    currency: 'SAR',
-    currencyName: 'Saudi Riyal',
-    topMerchants: 'Amazon KSA, Jarir, Extra, Noon',
-  },
-  {
-    code: 'uk',
-    name: 'United Kingdom',
-    flag: '🇬🇧',
-    currency: 'GBP',
-    currencyName: 'British Pound',
-    topMerchants: 'Amazon UK, Currys, Argos',
-  },
-  {
-    code: 'ca',
-    name: 'Canada',
-    flag: '🇨🇦',
-    currency: 'CAD',
-    currencyName: 'Canadian Dollar',
-    topMerchants: 'Amazon CA, Best Buy, Walmart',
-  },
-  {
-    code: 'au',
-    name: 'Australia',
-    flag: '🇦🇺',
-    currency: 'AUD',
-    currencyName: 'Australian Dollar',
-    topMerchants: 'Amazon AU, JB Hi-Fi, Harvey Norman',
-  },
+  { code: 'ae', name: 'United Arab Emirates', flag: '🇦🇪', currency: 'AED', live: true },
+  { code: 'us', name: 'United States', flag: '🇺🇸', currency: 'USD', live: true },
+  { code: 'sa', name: 'Saudi Arabia', flag: '🇸🇦', currency: 'SAR', live: false },
+  { code: 'uk', name: 'United Kingdom', flag: '🇬🇧', currency: 'GBP', live: false },
+  { code: 'ca', name: 'Canada', flag: '🇨🇦', currency: 'CAD', live: false },
+  { code: 'au', name: 'Australia', flag: '🇦🇺', currency: 'AUD', live: false },
 ];
 
 export function CountrySection() {
   const { country, setCountry } = useCountry();
 
   return (
-    <section className="py-10 sm:py-14 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-[#162633]">
-      {/* Section Header */}
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-8">
-        <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-[#00D27A] flex items-center gap-1.5">
-            <Globe className="w-3.5 h-3.5" /> Global Market Coverage
-          </span>
-          <h2 className="text-xl sm:text-2xl font-bold text-[#F8FAFC] mt-1.5">
-            Compare Real Local Prices Across 6 Primary Markets
-          </h2>
+    <section className="py-8 sm:py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="rounded-[30px] ui-surface border p-5 sm:p-7 lg:p-8 ui-shadow">
+        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 mb-6">
+          <div>
+            <span className="text-[10px] sm:text-xs font-extrabold uppercase tracking-[0.16em] text-[#0B8F58] flex items-center gap-1.5">
+              <Globe className="w-3.5 h-3.5" /> Global market coverage
+            </span>
+            <h2 className="text-xl sm:text-3xl font-extrabold ui-text mt-1.5">Shop in your local market</h2>
+            <p className="text-xs sm:text-sm ui-secondary mt-1.5 max-w-2xl leading-relaxed">
+              Compare prices in the correct currency and retailer market. More regions will open after their data sources are verified.
+            </p>
+          </div>
+          <div className="inline-flex items-center gap-2 px-3 py-2 rounded-xl ui-soft border text-[11px] ui-secondary self-start lg:self-auto">
+            <span className="w-2 h-2 rounded-full bg-[#0B8F58]" /> 🇦🇪 United Arab Emirates and 🇺🇸 United States are live now
+          </div>
         </div>
-        <p className="text-xs text-[#CBD5E1] max-w-md">
-          Switch your region to track verified authorized retailer feeds, localized stock, and manufacturer warranties.
-        </p>
-      </div>
 
-      {/* Unified 6-Card Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3.5 sm:gap-4">
-        {MARKETS.map((m) => {
-          const isSelected = country === m.code;
-
-          return (
-            <button
-              key={m.code}
-              type="button"
-              onClick={() => setCountry(m.code)}
-              className={`p-4 rounded-2xl text-left transition-all duration-200 border flex flex-col justify-between group touch-target ${
-                isSelected
-                  ? 'bg-[#091217] border-[#00D27A] ring-1 ring-[#00D27A]/30 shadow-[0_0_24px_rgba(0,210,122,0.12)]'
-                  : 'bg-[#091217] border-[#162633] hover:border-[#203648] hover:bg-[#0d1820]'
-              }`}
-            >
-              <div>
-                {/* Flag + State Badge */}
-                <div className="flex items-center justify-between gap-2 mb-3">
-                  <span className="text-3xl leading-none transition-transform duration-200 group-hover:scale-110">
-                    {m.flag}
-                  </span>
-
-                  {isSelected ? (
-                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-extrabold bg-[#00D27A]/15 text-[#00D27A] border border-[#00D27A]/30">
-                      <Check className="w-3 h-3 stroke-[3]" />
-                      Active
-                    </span>
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
+          {MARKETS.map((market) => {
+            const selected = country === market.code;
+            return (
+              <button
+                key={market.code}
+                type="button"
+                disabled={!market.live}
+                onClick={() => market.live && setCountry(market.code)}
+                className={`relative min-h-[150px] p-4 rounded-2xl text-left border transition-all ${
+                  selected
+                    ? 'bg-[#E7F8F0] border-[#00B56B] shadow-[0_10px_26px_rgba(11,143,88,0.10)]'
+                    : market.live
+                      ? 'ui-surface hover:border-[#9CCFBA] hover:-translate-y-0.5'
+                      : 'ui-soft opacity-70 cursor-not-allowed'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <span className="text-3xl leading-none">{market.flag}</span>
+                  {selected ? (
+                    <span className="w-8 h-8 rounded-full bg-[#0B8F58] text-white flex items-center justify-center"><Check className="w-4 h-4" /></span>
+                  ) : market.live ? (
+                    <span className="px-2 py-1 rounded-full text-[9px] font-extrabold bg-[#EAF8F1] text-[#0B8F58]">LIVE</span>
                   ) : (
-                    <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold text-[#94A3B8] group-hover:text-[#CBD5E1] bg-[#071015] border border-[#162633]">
-                      Select
-                    </span>
+                    <span className="px-2 py-1 rounded-full text-[9px] font-bold ui-surface border ui-muted flex items-center gap-1"><Clock3 className="w-3 h-3" /> Soon</span>
                   )}
                 </div>
 
-                {/* Country Name */}
-                <div className="font-bold text-sm text-[#F8FAFC] leading-snug group-hover:text-white">
-                  {m.name}
-                </div>
-
-                {/* Currency */}
-                <div className="text-xs font-semibold text-[#00D27A] mt-1 flex items-center gap-1">
-                  <span>{m.currency}</span>
-                  <span className="text-[10px] text-[#94A3B8] font-normal">({m.currencyName})</span>
-                </div>
-              </div>
-
-              {/* Retailers hint */}
-              <div className="mt-4 pt-3 border-t border-[#162633] flex items-center gap-1 text-[10px] text-[#94A3B8]">
-                <Store className="w-3 h-3 text-[#00D27A] shrink-0" />
-                <span className="truncate">{m.topMerchants}</span>
-              </div>
-            </button>
-          );
-        })}
+                <div className="mt-5 font-extrabold text-sm ui-text leading-snug">{market.flag} {market.name}</div>
+                <div className="text-xs font-semibold ui-muted mt-1">{market.currency}</div>
+              </button>
+            );
+          })}
+        </div>
       </div>
     </section>
   );
