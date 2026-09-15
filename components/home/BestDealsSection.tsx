@@ -3,7 +3,7 @@
 import React from 'react';
 import { Product } from '@/lib/types';
 import { ProductCard } from '@/components/search/ProductCard';
-import { Flame, ArrowRight } from 'lucide-react';
+import { Flame, ArrowRight, Store } from 'lucide-react';
 import { useCountry } from '@/context/CountryContext';
 
 interface BestDealsSectionProps {
@@ -39,13 +39,32 @@ export function BestDealsSection({ products }: BestDealsSectionProps) {
         </a>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5 w-full">
-        {products.map((product) => (
-          <div key={product.id} className="min-w-0 w-full">
-            <ProductCard product={product} priority={true} />
+      {products.length === 0 ? (
+        <div className="rounded-[24px] bg-white border border-[#DDE7E3] p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-[0_8px_24px_rgba(25,55,45,0.04)]">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-[#EEF8F3] border border-[#CFE6DC] text-[#08784B] flex items-center justify-center shrink-0">
+              <Store className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-extrabold text-[#102027]">Live retailer deals are being prepared</h3>
+              <p className="text-xs text-[#64767E] mt-1 leading-relaxed max-w-2xl">
+                CatchThePrice only shows production deals after an approved source supplies an exact product, current price and valid retailer destination. We do not fill this space with invented offers.
+              </p>
+            </div>
           </div>
-        ))}
-      </div>
+          <a href={`/${country}/blog`} className="min-h-[42px] px-4 rounded-xl bg-[#F0FAF5] hover:bg-[#DDF8EB] border border-[#CFE6DC] text-[#08784B] text-xs font-extrabold inline-flex items-center justify-center gap-1.5 shrink-0">
+            Read buying guides <ArrowRight className="w-3.5 h-3.5" />
+          </a>
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5 w-full">
+          {products.map((product) => (
+            <div key={product.id} className="min-w-0 w-full">
+              <ProductCard product={product} priority={true} />
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }
