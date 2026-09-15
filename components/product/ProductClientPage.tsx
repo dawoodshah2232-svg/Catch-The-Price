@@ -9,6 +9,7 @@ import { PriceHistoryChart } from '@/components/product/PriceHistoryChart';
 import { AIBuyingSummary } from '@/components/product/AIBuyingSummary';
 import { ProductSpecs } from '@/components/product/ProductSpecs';
 import { ProductDataConfidence } from '@/components/product/ProductDataConfidence';
+import { ProductDecisionFAQ } from '@/components/product/ProductDecisionFAQ';
 import { PriceAlertModal } from '@/components/product/PriceAlertModal';
 import { ProductCard } from '@/components/search/ProductCard';
 import { QuickCompareSection } from '@/components/product/QuickCompareSection';
@@ -217,6 +218,7 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
         <AdSlot slotId="product-lower-feed" format="banner" />
 
         <ProductSpecs specs={product.specs} brand={product.brand} />
+        <ProductDecisionFAQ product={product} />
 
         {relatedProducts.length > 0 && (
           <>

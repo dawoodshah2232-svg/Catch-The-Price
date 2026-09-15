@@ -3,6 +3,7 @@ import { requireAdminUser } from '@/lib/admin/requireAdmin';
 import { getServerSupabase } from '@/lib/supabase/server';
 import { createJsonFeedAdapter, JsonFeedConfig } from '@/lib/ingestion/jsonFeedAdapter';
 import { prepareApprovedSourceBatch, LaunchMarket } from '@/lib/ingestion/sourceAdapter';
+import { CanonicalCandidate, suggestExactMatch } from '@/lib/ingestion/exactMatcher.server';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -79,32 +80,50 @@ export async function POST(request: NextRequest) {
 
     const batch = await prepareApprovedSourceBatch(adapter);
 
-    const stagedRows = batch.accepted.map((item) => ({
-      source_id: source.id,
-      run_id: run.id,
-      source_product_id: item.sku,
-      raw_title: item.title,
-      normalized_title: item.title,
-      brand: item.brand,
-      category_slug: item.categorySlug,
-      price: item.price,
-      currency: item.currency,
-      product_url: item.url,
-      image_url: item.imageUrl || null,
-      gtin: item.gtin || null,
-      mpn: item.mpn || null,
-      model: item.model || null,
-      in_stock: item.inStock,
-      shipping_info: item.shippingInfo,
-      raw_payload: {
-        merchantSlug: item.merchantSlug,
-        merchantName: item.merchantName,
-        rightsId: config.rightsId,
-      },
-      match_status: 'pending',
-      review_status: 'pending',
-      updated_at: new Date().toISOString(),
-    }));
+    const { data: candidateRows, error: candidateError } = await supabase
+      .from('products')
+      .select('id,brand,name,model,gtin,sku,specs')
+      .in('status', ['active', 'draft'])
+      .limit(2000);
+
+    if (candidateError) throw candidateError;
+    const candidates = (candidateRows || []) as CanonicalCandidate[];
+
+    let suggestedMatches = 0;
+    const stagedRows = batch.accepted.map((item) => {
+      const suggestion = suggestExactMatch(item, candidates);
+      if (suggestion) suggestedMatches += 1;
+
+      return {
+        source_id: source.id,
+        run_id: run.id,
+        source_product_id: item.sku,
+        raw_title: item.title,
+        normalized_title: item.title,
+        brand: item.brand,
+        category_slug: item.categorySlug,
+        price: item.price,
+        currency: item.currency,
+        product_url: item.url,
+        image_url: item.imageUrl || null,
+        gtin: item.gtin || null,
+        mpn: item.mpn || null,
+        model: item.model || null,
+        in_stock: item.inStock,
+        shipping_info: item.shippingInfo,
+        raw_payload: {
+          merchantSlug: item.merchantSlug,
+          merchantName: item.merchantName,
+          rightsId: config.rightsId,
+          suggestedMatchMethod: suggestion?.method || null,
+        },
+        product_id: suggestion?.productId || null,
+        confidence: suggestion?.confidence || null,
+        match_status: suggestion ? 'suggested' : 'pending',
+        review_status: 'pending',
+        updated_at: new Date().toISOString(),
+      };
+    });
 
     if (stagedRows.length > 0) {
       const { error: stageError } = await supabase
@@ -132,6 +151,7 @@ export async function POST(request: NextRequest) {
       adminUserId: admin.user.id,
       fetched: batch.fetched,
       staged: batch.accepted.length,
+      suggestedMatches,
       rejected: batch.rejected.length,
     });
 
@@ -139,9 +159,10 @@ export async function POST(request: NextRequest) {
       runId: run.id,
       fetched: batch.fetched,
       staged: batch.accepted.length,
+      suggestedMatches,
       rejected: batch.rejected.length,
       rejectedItems: batch.rejected.slice(0, 25),
-      publishState: 'staged_for_matching',
+      publishState: 'staged_for_review',
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown ingestion error';
