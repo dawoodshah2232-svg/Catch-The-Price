@@ -14,6 +14,7 @@ import {
   BarChart3,
   Globe,
   ExternalLink,
+  ShieldCheck,
 } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -41,8 +42,9 @@ export default async function AdminLayout({ children }: { children: React.ReactN
   const navItems = [
     { label: 'Overview', href: '/admin', icon: LayoutDashboard },
     { label: 'Products & Offers', href: '/admin/products', icon: Package },
-    { label: 'Merchants & Feeds', href: '/admin/merchants', icon: Store },
-    { label: 'Ingestion Runs', href: '/admin/ingestion', icon: RefreshCw },
+    { label: 'Merchants', href: '/admin/merchants', icon: Store },
+    { label: 'Source Rights', href: '/admin/source-rights', icon: ShieldCheck },
+    { label: 'Data Ingestion', href: '/admin/ingestion', icon: RefreshCw },
     { label: 'Product Matching', href: '/admin/matching', icon: GitMerge },
     { label: 'Analytics & Clicks', href: '/admin/analytics', icon: BarChart3 },
     { label: 'SEO & Structured Data', href: '/admin/seo', icon: Globe },
