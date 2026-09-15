@@ -40,6 +40,8 @@ export function SmartComparisonBlock({ products }: SmartComparisonBlockProps) {
     );
   }
 
+  const compareHref = `/${country}/compare?left=${encodeURIComponent(items[0].id)}&right=${encodeURIComponent(items[1].id)}`;
+
   return (
     <section className="py-10 sm:py-14 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-[#DDE7E3]">
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-7">
@@ -86,7 +88,7 @@ export function SmartComparisonBlock({ products }: SmartComparisonBlockProps) {
               </div>
             </div>
 
-            <a href={`/${country}/compare?products=${encodeURIComponent(items.map((item) => item.slug).join(','))}`} className="mt-4 w-full py-2.5 px-4 rounded-xl bg-[#F0FAF5] hover:bg-[#DDF8EB] text-[#08784B] border border-[#CFE6DC] hover:border-[#9FD2BC] font-bold text-xs flex items-center justify-center gap-2 transition-all">
+            <a href={compareHref} className="mt-4 w-full py-2.5 px-4 rounded-xl bg-[#F0FAF5] hover:bg-[#DDF8EB] text-[#08784B] border border-[#CFE6DC] hover:border-[#9FD2BC] font-bold text-xs flex items-center justify-center gap-2 transition-all">
               <span>Compare these products</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </a>
