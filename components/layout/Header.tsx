@@ -116,7 +116,7 @@ export function Header() {
           </div>
         </div>
 
-        <div className="sticky top-0 z-40 ui-header/95 backdrop-blur-xl border-b shadow-[0_4px_18px_rgba(24,52,43,0.06)]">
+        <div className="sticky top-0 z-40 ui-header backdrop-blur-xl border-b shadow-[0_4px_18px_rgba(24,52,43,0.06)]">
           <div className="max-w-7xl mx-auto px-4 py-2">
             <SearchBar isHero={false} />
           </div>
