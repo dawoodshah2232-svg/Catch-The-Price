@@ -9,6 +9,10 @@ const plusJakartaSans = Plus_Jakarta_Sans({
   variable: '--font-sans',
 });
 
+const configuredSite = (process.env.NEXT_PUBLIC_SITE_URL || '').toLowerCase();
+const isPreviewDeployment =
+  process.env.VERCEL_ENV === 'preview' || configuredSite.includes('preview.catchtheprice.com');
+
 export const viewport: Viewport = {
   themeColor: '#F4F7F6',
   width: 'device-width',
@@ -24,6 +28,21 @@ export const metadata: Metadata = {
   },
   description:
     'Global price comparison, price tracking, deals discovery and shopping intelligence platform. Smarter Shopping for a Brighter Tomorrow.',
+  robots: isPreviewDeployment
+    ? {
+        index: false,
+        follow: false,
+        nocache: true,
+        googleBot: {
+          index: false,
+          follow: false,
+          noimageindex: true,
+        },
+      }
+    : {
+        index: true,
+        follow: true,
+      },
   icons: {
     icon: '/images/emerald_growth_tag_icon.png',
     shortcut: '/images/emerald_growth_tag_icon.png',
