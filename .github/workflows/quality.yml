@@ -44,3 +44,6 @@ jobs:
 
       - name: Production build
         run: npm run build
+
+      - name: Runtime smoke checks
+        run: npm run smoke
