@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useCountry } from '@/context/CountryContext';
 import { ProductCard } from '@/components/search/ProductCard';
 import { Product } from '@/lib/types';
+import { clearRecentlyViewed, getRecentlyViewedSlugs } from '@/lib/recentlyViewed/client';
 import { Bell, Bookmark, CheckCircle2, Clock, Info, Settings, ShieldCheck, Trash2 } from 'lucide-react';
 
 type TabId = 'saved' | 'tracked' | 'alerts' | 'recent' | 'settings';
@@ -41,6 +42,7 @@ export function AccountDashboard() {
   const [catalogLoading, setCatalogLoading] = useState(true);
   const [historyEvents, setHistoryEvents] = useState<AlertHistoryEvent[]>([]);
   const [historyLoading, setHistoryLoading] = useState(true);
+  const [recentSlugs, setRecentSlugs] = useState<string[]>([]);
 
   const {
     country,
@@ -93,15 +95,33 @@ export function AccountDashboard() {
     };
   }, [country]);
 
+  useEffect(() => {
+    const refresh = () => setRecentSlugs(getRecentlyViewedSlugs(country));
+    refresh();
+    window.addEventListener('ctp:recently-viewed-updated', refresh);
+    return () => window.removeEventListener('ctp:recently-viewed-updated', refresh);
+  }, [country]);
+
   const savedProducts = catalog.filter((product) => savedProductIds.includes(product.id));
+  const recentProducts = useMemo(() => {
+    const bySlug = new Map(catalog.map((product) => [product.slug.toLowerCase(), product]));
+    return recentSlugs
+      .map((slug) => bySlug.get(slug.toLowerCase()))
+      .filter((product): product is Product => Boolean(product));
+  }, [catalog, recentSlugs]);
 
   const tabs: { id: TabId; label: string; icon: React.ElementType; count?: number }[] = [
     { id: 'saved', label: 'Saved', icon: Bookmark, count: savedProductIds.length },
     { id: 'tracked', label: 'Tracked', icon: Bell, count: alerts.length },
     { id: 'alerts', label: 'Alert history', icon: CheckCircle2, count: historyEvents.length },
-    { id: 'recent', label: 'Recently viewed', icon: Clock },
+    { id: 'recent', label: 'Recently viewed', icon: Clock, count: recentProducts.length },
     { id: 'settings', label: 'Settings', icon: Settings },
   ];
+
+  const clearRecent = () => {
+    clearRecentlyViewed(country);
+    setRecentSlugs([]);
+  };
 
   return (
     <div className="min-h-screen bg-[#F4F7F6]">
@@ -233,11 +253,21 @@ export function AccountDashboard() {
 
         {activeTab === 'recent' && (
           <section className="space-y-4">
-            <SectionHeader title="Recently viewed" subtitle="This section will be enabled when personal view history is intentionally persisted." />
-            <EmptyCard
-              title="Recently viewed is not stored yet"
-              text="CatchThePrice records aggregate product-view analytics, but does not turn anonymous analytics into a personal browsing history."
-            />
+            <div className="flex items-end justify-between gap-3">
+              <SectionHeader title="Recently viewed" subtitle="A private device-only history used to help you continue shopping. It is not uploaded as a personal profile history." />
+              {recentProducts.length > 0 && (
+                <button type="button" onClick={clearRecent} className="min-h-[38px] px-3 rounded-xl bg-white border border-[#DDE7E3] text-[11px] font-bold text-[#60727A] hover:text-rose-600 shrink-0">Clear history</button>
+              )}
+            </div>
+            {catalogLoading ? (
+              <EmptyCard title="Loading recently viewed products…" text="Checking your device history against the current market catalog." />
+            ) : recentProducts.length > 0 ? (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5">
+                {recentProducts.map((product) => <ProductCard key={product.id} product={product} />)}
+              </div>
+            ) : (
+              <EmptyCard title="No recently viewed products" text="Products you open will appear here on this device so you can quickly return to them." />
+            )}
           </section>
         )}
 
@@ -258,7 +288,7 @@ export function AccountDashboard() {
 
         <div className="rounded-2xl border border-[#DDE7E3] bg-[#F8FBF9] p-4 flex items-start gap-2 text-[11px] text-[#73858D] leading-5">
           <Info className="w-4 h-4 text-[#0B8F58] shrink-0 mt-0.5" />
-          Signed-in shoppers can sync eligible live-product saves and price-alert preferences. Preview/demo records remain device-only and are never treated as production account data.
+          Signed-in shoppers can sync eligible live-product saves and price-alert preferences. Recently viewed history stays on the current device, and preview/demo records are never treated as production account data.
         </div>
       </div>
     </div>
