@@ -118,21 +118,21 @@ export async function POST(request: NextRequest) {
         ...reviewMeta,
         product_id: productId,
         confidence: 100,
-        match_status: 'matched',
+        match_status: 'approved',
         review_status: 'approved',
       })
       .eq('id', itemId);
 
     if (updateError) return NextResponse.json({ error: 'Could not approve this match.' }, { status: 500 });
 
-    await supabase.from('product_matches').insert({
+    await supabase.from('product_matches').upsert({
       source_name: source.name,
       source_product_id: item.source_product_id,
       product_id: productId,
       confidence: 100,
       match_method: 'manual_review',
       raw_title: item.raw_title,
-    });
+    }, { onConflict: 'source_name,source_product_id' });
 
     return NextResponse.json({ ok: true, state: 'approved', productId });
   }
@@ -187,21 +187,21 @@ export async function POST(request: NextRequest) {
         ...reviewMeta,
         product_id: product.id,
         confidence: 100,
-        match_status: 'matched',
+        match_status: 'approved',
         review_status: 'approved',
       })
       .eq('id', itemId);
 
     if (updateError) return NextResponse.json({ error: 'Product was created but item approval failed. Review manually.' }, { status: 500 });
 
-    await supabase.from('product_matches').insert({
+    await supabase.from('product_matches').upsert({
       source_name: source.name,
       source_product_id: item.source_product_id,
       product_id: product.id,
       confidence: 100,
       match_method: 'manual_create',
       raw_title: item.raw_title,
-    });
+    }, { onConflict: 'source_name,source_product_id' });
 
     return NextResponse.json({ ok: true, state: 'approved', productId: product.id, productSlug: product.slug });
   }
@@ -305,7 +305,7 @@ export async function POST(request: NextRequest) {
 
     const { data: offer, error: offerError } = await supabase
       .from('offers')
-      .upsert(offerPayload, { onConflict: 'merchant_id,source_product_id' })
+      .upsert(offerPayload, { onConflict: 'merchant_id,country_code,source_product_id' })
       .select('id')
       .single();
 
