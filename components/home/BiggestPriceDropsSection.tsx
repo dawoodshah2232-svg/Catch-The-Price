@@ -20,6 +20,7 @@ function observedDrop(product: Product) {
   if (previous <= 0 || current >= previous) return null;
 
   return {
+    product,
     previous,
     current,
     percent: Math.round(((previous - current) / previous) * 100),
@@ -28,6 +29,11 @@ function observedDrop(product: Product) {
 
 export function BiggestPriceDropsSection({ products }: BiggestPriceDropsSectionProps) {
   const { country, formatLocalPrice, toggleSaveProduct, isProductSaved } = useCountry();
+  const observedDrops = products
+    .map(observedDrop)
+    .filter((item): item is NonNullable<ReturnType<typeof observedDrop>> => Boolean(item))
+    .sort((a, b) => b.percent - a.percent)
+    .slice(0, 4);
 
   return (
     <section className="py-7 sm:py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-[#E1E9E6]">
@@ -55,25 +61,22 @@ export function BiggestPriceDropsSection({ products }: BiggestPriceDropsSectionP
         </a>
       </div>
 
-      {products.length === 0 ? (
+      {observedDrops.length === 0 ? (
         <div className="rounded-[24px] bg-white border border-[#DDE7E3] p-5 sm:p-6 flex items-start gap-3 shadow-[0_8px_24px_rgba(25,55,45,0.04)]">
           <div className="w-10 h-10 rounded-2xl bg-[#EEF8F3] border border-[#CFE6DC] text-[#08784B] flex items-center justify-center shrink-0">
             <History className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-sm font-extrabold text-[#102027]">No verified price drop yet</h3>
+            <h3 className="text-sm font-extrabold text-[#102027]">Price history is still building</h3>
             <p className="text-xs text-[#64767E] mt-1 leading-relaxed max-w-2xl">
-              This section appears after CatchThePrice stores enough genuine price observations to prove a change. Reference-price discounts are not presented here as historical drops.
+              This section appears after CatchThePrice stores at least two genuine observations that prove a lower price. Retailer reference-price discounts are never passed off as historical drops.
             </p>
           </div>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-          {products.map((product) => {
-            const drop = observedDrop(product);
-            if (!drop) return null;
+          {observedDrops.map(({ product, previous, current, percent }) => {
             const saved = isProductSaved(product.id);
-
             return (
               <article
                 key={product.id}
@@ -112,15 +115,15 @@ export function BiggestPriceDropsSection({ products }: BiggestPriceDropsSectionP
                   <div className="flex items-end justify-between gap-2 min-w-0">
                     <div className="min-w-0">
                       <span className="text-[9px] sm:text-[10px] text-[#829198] block font-semibold uppercase tracking-wider truncate">
-                        Previous: <span className="line-through">{formatLocalPrice(drop.previous)}</span>
+                        Previous: <span className="line-through">{formatLocalPrice(previous)}</span>
                       </span>
                       <div className="flex items-baseline gap-1 mt-0.5 min-w-0">
                         <span className="text-[10px] text-[#65777F] font-medium shrink-0">Latest:</span>
-                        <span className="text-sm sm:text-lg font-extrabold text-[#08784B] truncate">{formatLocalPrice(drop.current)}</span>
+                        <span className="text-sm sm:text-lg font-extrabold text-[#08784B] truncate">{formatLocalPrice(current)}</span>
                       </div>
                     </div>
 
-                    <span className="shrink-0 px-2 py-1 rounded-lg text-[10px] sm:text-xs font-extrabold bg-[#E5F8EF] text-[#08784B] border border-[#C7EEDC]">-{drop.percent}%</span>
+                    <span className="shrink-0 px-2 py-1 rounded-lg text-[10px] sm:text-xs font-extrabold bg-[#E5F8EF] text-[#08784B] border border-[#C7EEDC]">-{percent}%</span>
                   </div>
 
                   <div className="mt-2.5 pt-2 border-t border-[#EDF2F0] flex items-center justify-between gap-2 text-[9px] sm:text-[10px] text-[#65777F]">
