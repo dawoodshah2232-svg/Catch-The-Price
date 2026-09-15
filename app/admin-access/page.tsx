@@ -1,12 +1,14 @@
 'use client';
 
 import React, { FormEvent, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { LockKeyhole, Mail, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { CountryProvider } from '@/context/CountryContext';
 import { BrandLogo } from '@/components/common/BrandLogo';
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 
 export default function AdminAccessPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('info@catchtheprice.com');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -38,7 +40,8 @@ export default function AdminAccessPage() {
       return;
     }
 
-    window.location.assign('/admin');
+    router.push('/admin');
+    router.refresh();
   }
 
   return (
