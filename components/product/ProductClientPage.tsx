@@ -8,6 +8,7 @@ import { MerchantOffersList } from '@/components/product/MerchantOffersList';
 import { PriceHistoryChart } from '@/components/product/PriceHistoryChart';
 import { AIBuyingSummary } from '@/components/product/AIBuyingSummary';
 import { ProductSpecs } from '@/components/product/ProductSpecs';
+import { ProductDataConfidence } from '@/components/product/ProductDataConfidence';
 import { PriceAlertModal } from '@/components/product/PriceAlertModal';
 import { ProductCard } from '@/components/search/ProductCard';
 import { QuickCompareSection } from '@/components/product/QuickCompareSection';
@@ -197,6 +198,8 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
         <div id="offers">
           <MerchantOffersList offers={product.offers} productTitle={product.title} />
         </div>
+
+        <ProductDataConfidence product={product} isPreview={isPreview} />
 
         {product.priceHistory.length > 1 ? (
           <PriceHistoryChart history={product.priceHistory} stats={product.priceStats} productTitle={product.title} />
