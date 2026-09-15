@@ -1,128 +1,149 @@
-'use client';
-
 import React from 'react';
-import { BarChart3, ExternalLink, ShieldCheck, ArrowUpRight, MousePointerClick } from 'lucide-react';
+import { BarChart3, MousePointerClick, Smartphone, Globe2 } from 'lucide-react';
+import { getServerSupabase } from '@/lib/supabase/server';
 
-export default function AdminAnalyticsPage() {
-  const recentClicks = [
-    {
-      id: 'click-1',
-      product: 'Apple iPhone 16 Pro Max 256GB',
-      merchant: 'Amazon UAE',
-      country: 'ae',
-      price: 'AED 4,033',
-      time: '6 mins ago',
-      device: 'Mobile Safari (iOS 18)',
-    },
-    {
-      id: 'click-2',
-      product: 'Samsung Galaxy S24 Ultra 512GB',
-      merchant: 'Noon UAE',
-      country: 'ae',
-      price: 'AED 4,217',
-      time: '19 mins ago',
-      device: 'Chrome Mobile (Android)',
-    },
-    {
-      id: 'click-3',
-      product: 'Sony PlayStation 5 Pro 2TB',
-      merchant: 'Best Buy',
-      country: 'us',
-      price: '$679',
-      time: '42 mins ago',
-      device: 'Desktop Chrome (Windows)',
-    },
-    {
-      id: 'click-4',
-      product: 'Sony WH-1000XM5 Wireless Headphones',
-      merchant: 'Amazon UAE',
-      country: 'ae',
-      price: 'AED 1,204',
-      time: '1 hour ago',
-      device: 'Mobile Safari (iOS 18)',
-    },
-    {
-      id: 'click-5',
-      product: 'Apple MacBook Pro 16" M3 Max',
-      merchant: 'Amazon US',
-      country: 'us',
-      price: '$2,999',
-      time: '2 hours ago',
-      device: 'Desktop Safari (macOS)',
-    },
-  ];
+type ClickRow = {
+  id: string;
+  country_code: string;
+  price: number | string;
+  currency: string;
+  referrer_host: string | null;
+  device_type: string;
+  created_at: string;
+  merchants: { name: string } | { name: string }[] | null;
+  products: { name: string } | { name: string }[] | null;
+};
+
+function relationName(value: ClickRow['merchants'] | ClickRow['products']): string {
+  if (!value) return 'Unknown';
+  if (Array.isArray(value)) return value[0]?.name || 'Unknown';
+  return value.name || 'Unknown';
+}
+
+function formatPrice(currency: string, value: number | string) {
+  const number = Number(value);
+  if (!Number.isFinite(number)) return `${currency} ${value}`;
+  try {
+    return new Intl.NumberFormat('en', { style: 'currency', currency, maximumFractionDigits: 0 }).format(number);
+  } catch {
+    return `${currency} ${number.toLocaleString()}`;
+  }
+}
+
+function formatTime(value: string) {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }).format(date);
+}
+
+export default async function AdminAnalyticsPage() {
+  const supabase = getServerSupabase();
+  let clicks: ClickRow[] = [];
+  let totalClicks = 0;
+  let readError = false;
+
+  if (supabase) {
+    const [{ data, error }, { count, error: countError }] = await Promise.all([
+      supabase
+        .from('outbound_clicks')
+        .select('id,country_code,price,currency,referrer_host,device_type,created_at,merchants(name),products(name)')
+        .order('created_at', { ascending: false })
+        .limit(100),
+      supabase.from('outbound_clicks').select('id', { count: 'exact', head: true }),
+    ]);
+
+    clicks = (data || []) as ClickRow[];
+    totalClicks = count || 0;
+    readError = Boolean(error || countError);
+  } else {
+    readError = true;
+  }
+
+  const mobileClicks = clicks.filter((click) => click.device_type === 'mobile').length;
+  const aeClicks = clicks.filter((click) => click.country_code === 'ae').length;
+  const usClicks = clicks.filter((click) => click.country_code === 'us').length;
+  const sampleSize = clicks.length;
+  const mobileShare = sampleSize > 0 ? Math.round((mobileClicks / sampleSize) * 100) : 0;
 
   return (
     <div className="space-y-6">
       <div className="pb-6 border-b border-ctp">
-        <h1 className="text-2xl font-extrabold text-slate-100">Outbound Click Analytics</h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Detailed logs of retailer redirect events, affiliate referrals, and conversion routes
+        <span className="text-[10px] uppercase tracking-[0.18em] font-extrabold text-emerald-400">Real event data</span>
+        <h1 className="text-2xl font-extrabold text-slate-100 mt-1">Outbound click analytics</h1>
+        <p className="text-xs text-slate-400 mt-1 max-w-2xl">
+          Retailer hand-offs recorded by /api/outbound. CatchThePrice stores market, device class and referrer host only — not full IP addresses or full user-agent strings.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      {readError && (
+        <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-xs text-rose-100">
+          Analytics could not be read from Supabase. Check the server connection before relying on this screen.
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="p-4 rounded-2xl bg-ctp-surface border border-ctp">
-          <div className="text-xs text-slate-400 flex items-center justify-between mb-1">
-            <span>Total Outbound Clicks</span>
-            <MousePointerClick className="w-4 h-4 text-emerald-400" />
-          </div>
-          <div className="text-2xl font-extrabold text-slate-100">1,429</div>
-          <span className="text-[10px] text-emerald-400 font-medium mt-1 block">+18.4% vs last week</span>
+          <div className="text-xs text-slate-400 flex items-center justify-between mb-1"><span>Total retailer clicks</span><MousePointerClick className="w-4 h-4 text-emerald-400" /></div>
+          <div className="text-2xl font-extrabold text-slate-100">{totalClicks}</div>
+          <span className="text-[10px] text-slate-500 mt-1 block">All recorded time</span>
         </div>
 
         <div className="p-4 rounded-2xl bg-ctp-surface border border-ctp">
-          <div className="text-xs text-slate-400 flex items-center justify-between mb-1">
-            <span>Avg. Conversion Value</span>
-            <ArrowUpRight className="w-4 h-4 text-cyan-400" />
-          </div>
-          <div className="text-2xl font-extrabold text-slate-100">AED 2,840</div>
-          <span className="text-[10px] text-slate-400 font-medium mt-1 block">Electronics &amp; Gadgets</span>
+          <div className="text-xs text-slate-400 flex items-center justify-between mb-1"><span>Mobile share</span><Smartphone className="w-4 h-4 text-emerald-400" /></div>
+          <div className="text-2xl font-extrabold text-slate-100">{mobileShare}%</div>
+          <span className="text-[10px] text-slate-500 mt-1 block">Based on latest {sampleSize} clicks</span>
         </div>
 
         <div className="p-4 rounded-2xl bg-ctp-surface border border-ctp">
-          <div className="text-xs text-slate-400 flex items-center justify-between mb-1">
-            <span>Active Price Trackers</span>
-            <BarChart3 className="w-4 h-4 text-amber-400" />
-          </div>
-          <div className="text-2xl font-extrabold text-slate-100">384</div>
-          <span className="text-[10px] text-emerald-400 font-medium mt-1 block">Live subscriber alerts</span>
+          <div className="text-xs text-slate-400 flex items-center justify-between mb-1"><span>UAE sample</span><Globe2 className="w-4 h-4 text-emerald-400" /></div>
+          <div className="text-2xl font-extrabold text-slate-100">{aeClicks}</div>
+          <span className="text-[10px] text-slate-500 mt-1 block">Latest {sampleSize} events</span>
+        </div>
+
+        <div className="p-4 rounded-2xl bg-ctp-surface border border-ctp">
+          <div className="text-xs text-slate-400 flex items-center justify-between mb-1"><span>US sample</span><BarChart3 className="w-4 h-4 text-emerald-400" /></div>
+          <div className="text-2xl font-extrabold text-slate-100">{usClicks}</div>
+          <span className="text-[10px] text-slate-500 mt-1 block">Latest {sampleSize} events</span>
         </div>
       </div>
 
-      {/* Outbound Clicks Table */}
       <div className="rounded-2xl bg-ctp-surface border border-ctp overflow-hidden">
         <div className="p-4 border-b border-ctp flex items-center justify-between">
-          <h3 className="font-bold text-sm text-slate-200">Recent Merchant Redirects</h3>
-          <span className="text-xs text-slate-400">Captured via /api/outbound</span>
+          <div>
+            <h3 className="font-bold text-sm text-slate-200">Recent retailer hand-offs</h3>
+            <p className="text-[10px] text-slate-500 mt-1">Latest 100 events</p>
+          </div>
+          <span className="text-xs text-slate-400">{clicks.length}</span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-300">
-            <thead className="bg-ctp-surface-elevated text-slate-400 uppercase tracking-wider text-[10px] border-b border-ctp">
-              <tr>
-                <th className="p-3.5">Product</th>
-                <th className="p-3.5">Target Merchant</th>
-                <th className="p-3.5">Market</th>
-                <th className="p-3.5">Price</th>
-                <th className="p-3.5">Client User-Agent</th>
-                <th className="p-3.5 text-right">Timestamp</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-ctp">
-              {recentClicks.map((click) => (
-                <tr key={click.id} className="hover:bg-slate-800/40 transition-colors">
-                  <td className="p-3.5 font-semibold text-slate-100">{click.product}</td>
-                  <td className="p-3.5 whitespace-nowrap text-emerald-400 font-medium">{click.merchant}</td>
-                  <td className="p-3.5 whitespace-nowrap uppercase">{click.country}</td>
-                  <td className="p-3.5 whitespace-nowrap font-bold text-slate-200">{click.price}</td>
-                  <td className="p-3.5 text-slate-400 font-mono text-[11px]">{click.device}</td>
-                  <td className="p-3.5 text-right text-slate-400 whitespace-nowrap">{click.time}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+        {clicks.length === 0 ? (
+          <div className="p-10 text-center">
+            <MousePointerClick className="w-8 h-8 text-slate-600 mx-auto" />
+            <h4 className="text-sm font-bold text-slate-200 mt-3">No real outbound clicks yet</h4>
+            <p className="text-xs text-slate-400 mt-1">Clicks will appear here only after a live product offer sends a visitor to a retailer.</p>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-300">
+              <thead className="bg-ctp-surface-elevated text-slate-500 uppercase tracking-wider text-[10px] border-b border-ctp">
+                <tr><th className="p-3.5">Product</th><th className="p-3.5">Merchant</th><th className="p-3.5">Market</th><th className="p-3.5">Price</th><th className="p-3.5">Device</th><th className="p-3.5">Referrer</th><th className="p-3.5 text-right">Time</th></tr>
+              </thead>
+              <tbody className="divide-y divide-ctp">
+                {clicks.map((click) => (
+                  <tr key={click.id}>
+                    <td className="p-3.5 font-semibold text-slate-100">{relationName(click.products)}</td>
+                    <td className="p-3.5 text-emerald-400 font-medium">{relationName(click.merchants)}</td>
+                    <td className="p-3.5 uppercase">{click.country_code}</td>
+                    <td className="p-3.5 font-bold text-slate-200">{formatPrice(click.currency, click.price)}</td>
+                    <td className="p-3.5 capitalize text-slate-400">{click.device_type}</td>
+                    <td className="p-3.5 text-slate-400">{click.referrer_host || 'Direct / unknown'}</td>
+                    <td className="p-3.5 text-right text-slate-400 whitespace-nowrap">{formatTime(click.created_at)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </div>
   );
