@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     default: 'CatchThePrice — TRACK IT. CATCH THE DROP. PAY LESS.',
   },
   description:
-    'Global price comparison, price tracking, deals discovery and shopping intelligence platform. Smarter Shopping for a Brighter Tomorrow.',
+    'Price comparison, price tracking, deals discovery and shopping intelligence for shoppers in the UAE and United States. Smarter Shopping for a Brighter Tomorrow.',
   robots: isPreviewDeployment
     ? {
         index: false,
