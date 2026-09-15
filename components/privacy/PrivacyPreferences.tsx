@@ -65,7 +65,7 @@ export function PrivacyPreferences() {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-x-3 bottom-[76px] md:bottom-5 z-[70] mx-auto max-w-3xl rounded-2xl border border-[#CFE0DA] bg-white p-4 sm:p-5 shadow-[0_20px_60px_rgba(16,32,39,0.20)] text-[#102027]" role="dialog" aria-modal="false" aria-labelledby="privacy-preferences-title">
+    <div className="fixed left-3 right-3 bottom-[76px] md:left-auto md:right-5 md:bottom-5 md:w-[560px] z-[70] rounded-2xl border border-[#CFE0DA] bg-white p-4 sm:p-5 shadow-[0_20px_60px_rgba(16,32,39,0.20)] text-[#102027]" role="dialog" aria-modal="false" aria-labelledby="privacy-preferences-title">
       {choice && (
         <button type="button" onClick={() => setOpen(false)} className="absolute right-3 top-3 h-9 w-9 rounded-xl border border-[#DDE7E3] bg-[#F8FAF9] text-[#60727A] flex items-center justify-center" aria-label="Close privacy settings">
           <X className="w-4 h-4" />
@@ -78,8 +78,8 @@ export function PrivacyPreferences() {
         </div>
         <div>
           <h2 id="privacy-preferences-title" className="text-sm sm:text-base font-extrabold">Your privacy choices</h2>
-          <p className="mt-1 text-[11px] sm:text-xs leading-5 text-[#60727A] max-w-2xl">
-            Essential storage keeps features such as market, appearance and saved-item preferences working. Optional first-party analytics helps us understand searches, page usage and retailer hand-offs. Advertising cookies are not activated by this control.
+          <p className="mt-1 text-[11px] sm:text-xs leading-5 text-[#60727A]">
+            Essential storage keeps market, appearance and saved-item preferences working. Optional first-party analytics helps us understand searches, page usage and retailer hand-offs. Advertising cookies are not activated by this control.
           </p>
         </div>
       </div>
