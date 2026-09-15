@@ -1,6 +1,6 @@
 // CatchThePrice AI Assistant Engine
-// Provides AI-assisted title normalization, summaries, and Deal Score explanations
-// Gracefully operates in deterministic fallback mode when GEMINI_API_KEY is not supplied.
+// Deterministic fallback helpers must never invent retailer authorization,
+// historical lows, time windows, warranty coverage or market-wide rankings.
 
 interface SummaryResult {
   verdict: string;
@@ -15,38 +15,33 @@ export async function generateProductSummary(
   originalPrice: number,
   currency: string
 ): Promise<SummaryResult> {
-  const discount = Math.round(((originalPrice - currentPrice) / originalPrice) * 100);
+  const hasReferencePrice = originalPrice > 0 && currentPrice > 0 && originalPrice > currentPrice;
+  const discount = hasReferencePrice
+    ? Math.round(((originalPrice - currentPrice) / originalPrice) * 100)
+    : 0;
 
-  // If GEMINI_API_KEY is configured in the environment, we could call Gemini API here
-  // Otherwise we use deterministic algorithmic synthesis:
-  const isGreatDeal = discount >= 12;
+  const verdict = hasReferencePrice
+    ? `${productTitle} is currently listed at ${currency} ${currentPrice.toLocaleString()}, ${discount}% below the provided reference price. This comparison does not by itself prove a historical low; check current retailer offers and stored price observations before buying.`
+    : `${productTitle} is currently listed at ${currency} ${currentPrice.toLocaleString()}. CatchThePrice does not have enough validated reference-price evidence in this input to claim a discount or historical low.`;
 
   return {
-    verdict: isGreatDeal
-      ? `Exceptional purchase opportunity. The current price is ${discount}% below MSRP and represents a multi-week low across certified retailers.`
-      : `Stable pricing. Current price aligns with standard retail benchmarks. Setting a price alert is recommended if you can wait for the next seasonal promotion.`,
+    verdict,
     pros: [
-      'Authentic manufacturer warranty included from authorized sellers',
-      'High market liquidity and reliable trade-in value',
-      'Prompt regional shipping and return coverage',
+      'Current offers can be compared side by side when multiple approved retailer listings are available',
+      'Stored price observations can show genuine changes over time once enough history exists',
+      'Structured specifications can help confirm the exact product variant before purchase',
     ],
     cons: [
-      'Stock velocity is high during price drop windows',
-      'Bundled accessories may vary by distributor',
+      'A reference price is not the same thing as verified historical price history',
+      'Availability, delivery, warranty and returns can vary by retailer and should be checked before checkout',
     ],
-    bestTimeToBuy: isGreatDeal,
+    bestTimeToBuy: false,
   };
 }
 
 export function explainDealScore(score: number, discountPercent: number): string {
-  if (score >= 90) {
-    return `Score ${score}/100: Top 5% of all historical tech discounts. ${discountPercent}% below MSRP with verified retailer competition.`;
-  }
-  if (score >= 75) {
-    return `Score ${score}/100: High value discount. Price is comfortably below the 90-day moving average.`;
-  }
-  if (score >= 60) {
-    return `Score ${score}/100: Fair market value. Standard pricing from authorized distributors.`;
-  }
-  return `Score ${score}/100: Elevated pricing. Consider tracking this item for an upcoming drop.`;
+  const normalizedScore = Math.max(0, Math.min(100, Math.round(score)));
+  const normalizedDiscount = Math.max(0, Math.round(discountPercent));
+
+  return `Score ${normalizedScore}/100 with a ${normalizedDiscount}% reference-price difference. Treat this as a comparison aid only; it does not prove an all-time low, a 90-day ranking or retailer authorization unless those facts are separately validated from stored evidence.`;
 }
