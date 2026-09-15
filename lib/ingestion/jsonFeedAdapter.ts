@@ -41,11 +41,17 @@ function toBoolean(value: unknown): boolean {
   return Boolean(value);
 }
 
+function optionalText(value: unknown): string | undefined {
+  if (value === null || value === undefined) return undefined;
+  const text = String(value).trim();
+  return text || undefined;
+}
+
 /**
  * Generic partner JSON feed adapter.
- * Expected feed shape: an array or { items: [...] } where each item exposes
- * sku/id, title/name, price, currency, url/product_url and optional brand,
- * category, stock/in_stock and shipping/shipping_text fields.
+ * Expected feed shape: an array or { items: [...] }. Exact product identifiers
+ * are retained when the partner provides them so matching can prefer GTIN/MPN/model
+ * over fuzzy title similarity.
  */
 export function createJsonFeedAdapter({
   sourceRightsId,
@@ -76,9 +82,7 @@ export function createJsonFeedAdapter({
         signal: AbortSignal.timeout(15000),
       });
 
-      if (!response.ok) {
-        throw new Error(`Feed request failed with HTTP ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`Feed request failed with HTTP ${response.status}`);
 
       const payload = await response.json();
       const items = Array.isArray(payload) ? payload : Array.isArray(payload?.items) ? payload.items : [];
@@ -87,11 +91,15 @@ export function createJsonFeedAdapter({
       return items.slice(0, 5000).map((item: Record<string, unknown>) => ({
         rawSku: String(item.sku ?? item.id ?? item.product_id ?? '').trim(),
         rawTitle: String(item.title ?? item.name ?? '').trim(),
-        rawBrand: item.brand ? String(item.brand).trim() : undefined,
-        rawCategory: item.category ? String(item.category).trim() : undefined,
+        rawBrand: optionalText(item.brand),
+        rawCategory: optionalText(item.category ?? item.category_name),
         rawPrice: toNumber(item.price ?? item.current_price),
         rawCurrency: String(item.currency ?? '').trim().toUpperCase(),
         rawUrl: String(item.url ?? item.product_url ?? '').trim(),
+        rawImageUrl: optionalText(item.image_url ?? item.image ?? item.imageUrl ?? item.thumbnail),
+        rawGtin: optionalText(item.gtin ?? item.ean ?? item.upc ?? item.barcode),
+        rawMpn: optionalText(item.mpn ?? item.manufacturer_part_number ?? item.part_number),
+        rawModel: optionalText(item.model ?? item.model_number),
         inStock: toBoolean(item.in_stock ?? item.stock ?? item.available ?? true),
         shippingText: item.shipping_text || item.shipping ? String(item.shipping_text ?? item.shipping) : undefined,
         merchantSlug: config.merchantSlug,
