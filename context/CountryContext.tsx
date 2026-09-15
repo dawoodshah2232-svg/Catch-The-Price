@@ -1,7 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { CountryCode, CountryInfo, WatchlistAlert } from '@/lib/types';
+import { CountryCode, CountryInfo, Product, WatchlistAlert } from '@/lib/types';
 import { COUNTRIES, DEFAULT_COUNTRY, formatPrice } from '@/lib/data/countries';
 import { useRouter, usePathname } from 'next/navigation';
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
@@ -21,6 +21,22 @@ interface CountryContextType {
 
 const CountryContext = createContext<CountryContextType | undefined>(undefined);
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+type RemoteWatchlistRow = {
+  id: string;
+  product_id: string;
+  target_price: number | string | null;
+  country_code: CountryCode;
+  is_active: boolean;
+  alert_type: 'saved' | 'any_drop' | 'below_amount' | 'major_deal';
+  created_at: string;
+  products: { id?: string; name?: string; slug?: string; image_url?: string | null } | Array<{ id?: string; name?: string; slug?: string; image_url?: string | null }> | null;
+};
+
+function relationProduct(row: RemoteWatchlistRow) {
+  if (!row.products) return null;
+  return Array.isArray(row.products) ? row.products[0] || null : row.products;
+}
 
 export function CountryProvider({
   children,
@@ -63,17 +79,59 @@ export function CountryProvider({
       if (!user || (country !== 'ae' && country !== 'us')) return;
 
       try {
-        const response = await fetch(`/api/account/watchlist?country=${encodeURIComponent(country)}`, { cache: 'no-store' });
-        if (!response.ok) return;
-        const payload = await response.json();
-        const rows = Array.isArray(payload?.items) ? payload.items : [];
-        const remoteIds = rows.map((row: { product_id?: string }) => row.product_id).filter(Boolean) as string[];
+        const [watchlistResponse, catalogResponse] = await Promise.all([
+          fetch(`/api/account/watchlist?country=${encodeURIComponent(country)}`, { cache: 'no-store' }),
+          fetch(`/api/catalog?country=${encodeURIComponent(country)}`, { cache: 'no-store' }),
+        ]);
+        if (!watchlistResponse.ok) return;
+
+        const payload = await watchlistResponse.json();
+        const rows = (Array.isArray(payload?.items) ? payload.items : []) as RemoteWatchlistRow[];
+        const remoteIds = rows.map((row) => row.product_id).filter(Boolean);
+
+        const catalogPayload = catalogResponse.ok ? await catalogResponse.json() : { products: [] };
+        const catalogProducts = (Array.isArray(catalogPayload?.products) ? catalogPayload.products : []) as Product[];
+        const productMap = new Map(catalogProducts.map((product) => [product.id, product]));
 
         setSavedProductIds((localIds) => {
           const mergeableLocal = localIds.filter((id) => UUID_RE.test(id));
-          const merged = [...new Set([...remoteIds, ...mergeableLocal])];
+          const previewLocal = localIds.filter((id) => !UUID_RE.test(id));
+          const merged = [...new Set([...remoteIds, ...mergeableLocal, ...previewLocal])];
           try {
             localStorage.setItem('ctp_saved_products', JSON.stringify(merged));
+          } catch {}
+          return merged;
+        });
+
+        const remoteAlerts: WatchlistAlert[] = rows
+          .filter((row) => row.alert_type !== 'saved' && row.is_active)
+          .map((row) => {
+            const product = productMap.get(row.product_id);
+            const relation = relationProduct(row);
+            const numericTarget = Number(row.target_price);
+
+            return {
+              id: row.id,
+              productId: row.product_id,
+              productTitle: product?.title || relation?.name || 'Tracked product',
+              productImage: product?.imageUrl || relation?.image_url || '',
+              currentPrice: product?.currentBestPrice || 0,
+              targetPrice: Number.isFinite(numericTarget) && numericTarget > 0 ? numericTarget : undefined,
+              alertType: row.alert_type as WatchlistAlert['alertType'],
+              currency: product?.currency || COUNTRIES[country].currency,
+              country,
+              isActive: true,
+              createdAt: row.created_at,
+            };
+          });
+
+        setAlerts((localAlerts) => {
+          const previewOrOtherMarket = localAlerts.filter(
+            (item) => item.country !== country || !UUID_RE.test(item.productId)
+          );
+          const merged = [...remoteAlerts, ...previewOrOtherMarket];
+          try {
+            localStorage.setItem('ctp_alerts', JSON.stringify(merged));
           } catch {}
           return merged;
         });
