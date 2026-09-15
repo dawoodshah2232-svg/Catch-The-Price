@@ -1,6 +1,17 @@
+-- !!! LEGACY SNAPSHOT — DO NOT RUN AGAINST PRODUCTION !!!
+-- This file reflects an early CatchThePrice bootstrap schema and DOES NOT match
+-- the current production Supabase database. It contains obsolete columns,
+-- defaults and policy assumptions. Production evolution is tracked through
+-- supabase/migrations/ and the verified live database. Keep this file only for
+-- historical reference until a fresh canonical baseline is generated.
+--
+-- In particular: do not copy affiliate-template examples, default Deal Scores,
+-- guest-alert assumptions, raw user-agent/IP analytics fields, or old table
+-- shapes from this file into production code.
+
 -- =========================================================
 -- CatchThePrice (catchtheprice.com) Database Schema
--- Production PostgreSQL schema for Supabase
+-- LEGACY historical bootstrap snapshot
 -- =========================================================
 
 -- Enable required extensions
@@ -30,8 +41,8 @@ CREATE TABLE IF NOT EXISTS public.merchants (
     domain VARCHAR(255) NOT NULL,
     logo_url TEXT,
     rating NUMERIC(2, 1) DEFAULT 4.5,
-    country VARCHAR(10) NOT NULL, -- 'ae', 'us', 'uk', 'ca', 'au'
-    affiliate_template TEXT, -- e.g. '{url}&tag=catchtheprice-{country}-20'
+    country VARCHAR(10) NOT NULL, -- legacy example only
+    affiliate_template TEXT, -- LEGACY EXAMPLE ONLY; never invent affiliate IDs
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -53,7 +64,7 @@ CREATE TABLE IF NOT EXISTS public.products (
     specs JSONB DEFAULT '{}'::jsonb,
     current_best_price NUMERIC(12, 2) NOT NULL,
     original_price NUMERIC(12, 2) NOT NULL,
-    deal_score INT DEFAULT 70 CHECK (deal_score BETWEEN 0 AND 100),
+    deal_score INT DEFAULT 70 CHECK (deal_score BETWEEN 0 AND 100), -- obsolete default
     currency VARCHAR(10) DEFAULT 'AED',
     country VARCHAR(10) DEFAULT 'ae',
     is_trending BOOLEAN DEFAULT FALSE,
@@ -68,7 +79,7 @@ CREATE INDEX IF NOT EXISTS idx_products_slug ON public.products(slug);
 CREATE INDEX IF NOT EXISTS idx_products_deal_score ON public.products(deal_score DESC);
 CREATE INDEX IF NOT EXISTS idx_products_title_trgm ON public.products USING gin (title gin_trgm_ops);
 
--- 4. OFFERS TABLE (Merchant Specific Offers for a Product)
+-- 4. OFFERS TABLE (legacy shape)
 CREATE TABLE IF NOT EXISTS public.offers (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     product_id UUID NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
@@ -89,7 +100,7 @@ CREATE INDEX IF NOT EXISTS idx_offers_product ON public.offers(product_id);
 CREATE INDEX IF NOT EXISTS idx_offers_merchant ON public.offers(merchant_id);
 CREATE INDEX IF NOT EXISTS idx_offers_price ON public.offers(price ASC);
 
--- 5. PRICE HISTORY TABLE
+-- 5. PRICE HISTORY TABLE (legacy shape)
 CREATE TABLE IF NOT EXISTS public.price_history (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     product_id UUID NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
@@ -101,7 +112,7 @@ CREATE TABLE IF NOT EXISTS public.price_history (
 
 CREATE INDEX IF NOT EXISTS idx_price_history_product_date ON public.price_history(product_id, recorded_at DESC);
 
--- 6. PROFILES TABLE (Linked with Supabase Auth)
+-- 6. PROFILES TABLE (legacy shape)
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     email VARCHAR(255) UNIQUE NOT NULL,
@@ -112,14 +123,14 @@ CREATE TABLE IF NOT EXISTS public.profiles (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 7. WATCHLISTS TABLE (Price Tracking)
+-- 7. WATCHLISTS TABLE (legacy shape)
 CREATE TABLE IF NOT EXISTS public.watchlists (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES public.profiles(id) ON DELETE CASCADE,
-    email VARCHAR(255), -- Support guest alerts via email
+    email VARCHAR(255),
     product_id UUID NOT NULL REFERENCES public.products(id) ON DELETE CASCADE,
     target_price NUMERIC(12, 2),
-    alert_type VARCHAR(50) DEFAULT 'any_drop', -- 'any_drop', 'below_amount', 'major_deal'
+    alert_type VARCHAR(50) DEFAULT 'any_drop',
     is_active BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
@@ -128,7 +139,7 @@ CREATE TABLE IF NOT EXISTS public.watchlists (
 CREATE INDEX IF NOT EXISTS idx_watchlists_product ON public.watchlists(product_id);
 CREATE INDEX IF NOT EXISTS idx_watchlists_user ON public.watchlists(user_id);
 
--- 8. ALERT EVENTS TABLE (Triggered drops)
+-- 8. ALERT EVENTS TABLE (legacy shape)
 CREATE TABLE IF NOT EXISTS public.alert_events (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     watchlist_id UUID REFERENCES public.watchlists(id) ON DELETE CASCADE,
@@ -136,27 +147,27 @@ CREATE TABLE IF NOT EXISTS public.alert_events (
     old_price NUMERIC(12, 2) NOT NULL,
     new_price NUMERIC(12, 2) NOT NULL,
     drop_percentage NUMERIC(5, 2) NOT NULL,
-    status VARCHAR(50) DEFAULT 'sent', -- 'pending', 'sent', 'failed'
+    status VARCHAR(50) DEFAULT 'sent',
     triggered_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 9. INGESTION SOURCES TABLE
+-- 9. INGESTION SOURCES TABLE (legacy shape)
 CREATE TABLE IF NOT EXISTS public.ingestion_sources (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(150) NOT NULL,
     merchant_id UUID REFERENCES public.merchants(id) ON DELETE CASCADE,
-    adapter_type VARCHAR(50) NOT NULL, -- 'feed', 'api', 'catalog'
+    adapter_type VARCHAR(50) NOT NULL,
     config JSONB DEFAULT '{}'::jsonb,
     is_active BOOLEAN DEFAULT TRUE,
     last_run_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 10. INGESTION RUNS TABLE
+-- 10. INGESTION RUNS TABLE (legacy shape)
 CREATE TABLE IF NOT EXISTS public.ingestion_runs (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     source_id UUID REFERENCES public.ingestion_sources(id) ON DELETE CASCADE,
-    status VARCHAR(50) DEFAULT 'in_progress', -- 'in_progress', 'completed', 'failed'
+    status VARCHAR(50) DEFAULT 'in_progress',
     items_fetched INT DEFAULT 0,
     items_processed INT DEFAULT 0,
     items_matched INT DEFAULT 0,
@@ -165,13 +176,13 @@ CREATE TABLE IF NOT EXISTS public.ingestion_runs (
     completed_at TIMESTAMPTZ
 );
 
--- 11. PRODUCT MATCHES TABLE
+-- 11. PRODUCT MATCHES TABLE (legacy shape)
 CREATE TABLE IF NOT EXISTS public.product_matches (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     raw_title TEXT NOT NULL,
     matched_product_id UUID REFERENCES public.products(id) ON DELETE SET NULL,
     confidence_score NUMERIC(5, 2) NOT NULL,
-    status VARCHAR(50) DEFAULT 'auto_matched', -- 'auto_matched', 'flagged', 'manual_verified'
+    status VARCHAR(50) DEFAULT 'auto_matched',
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
@@ -186,7 +197,7 @@ CREATE TABLE IF NOT EXISTS public.seo_pages (
     last_updated TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 13. OUTBOUND CLICKS TABLE (Analytics & Affiliate Tracking)
+-- 13. OUTBOUND CLICKS TABLE (legacy analytics shape; production is privacy-reduced)
 CREATE TABLE IF NOT EXISTS public.outbound_clicks (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     offer_id UUID REFERENCES public.offers(id) ON DELETE SET NULL,
@@ -203,11 +214,10 @@ CREATE TABLE IF NOT EXISTS public.outbound_clicks (
 
 CREATE INDEX IF NOT EXISTS idx_outbound_clicks_created ON public.outbound_clicks(created_at DESC);
 
--- Enable Row Level Security (RLS)
+-- Legacy RLS/policy examples below are NOT the current production access model.
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.watchlists ENABLE ROW LEVEL SECURITY;
 
--- Read policies for public tables
 CREATE POLICY "Public read categories" ON public.categories FOR SELECT USING (true);
 CREATE POLICY "Public read merchants" ON public.merchants FOR SELECT USING (true);
 CREATE POLICY "Public read products" ON public.products FOR SELECT USING (true);
