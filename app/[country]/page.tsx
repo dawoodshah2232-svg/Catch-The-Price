@@ -30,16 +30,12 @@ export async function generateMetadata({ params }: HomePageProps): Promise<Metad
 
   return {
     title: `CatchThePrice ${info.name} — TRACK IT. CATCH THE DROP. PAY LESS.`,
-    description: `Smarter Shopping for a Brighter Tomorrow. Compare prices across trusted stores in ${info.name}, track price drops and buy when the price is right.`,
+    description: `Smarter Shopping for a Brighter Tomorrow. Compare prices across available stores in ${info.name}, track price drops and buy when the price is right.`,
     alternates: {
       canonical: `https://catchtheprice.com/${country}`,
       languages: {
         'en-AE': 'https://catchtheprice.com/ae',
         'en-US': 'https://catchtheprice.com/us',
-        'en-SA': 'https://catchtheprice.com/sa',
-        'en-GB': 'https://catchtheprice.com/uk',
-        'en-CA': 'https://catchtheprice.com/ca',
-        'en-AU': 'https://catchtheprice.com/au',
       },
     },
   };
@@ -48,7 +44,7 @@ export async function generateMetadata({ params }: HomePageProps): Promise<Metad
 export default async function HomePage({ params }: HomePageProps) {
   const { country: rawCountry } = await params;
   const country = (rawCountry?.toLowerCase() in COUNTRIES ? rawCountry.toLowerCase() : DEFAULT_COUNTRY) as CountryCode;
-  const { topDeals, biggestDrops, trending, isPreview } = await getHomepageCatalog(country);
+  const { products, topDeals, biggestDrops, trending, isPreview } = await getHomepageCatalog(country);
 
   return (
     <div className="min-h-screen ui-page">
@@ -62,7 +58,7 @@ export default async function HomePage({ params }: HomePageProps) {
 
       <Hero />
       <BestDealsSection products={topDeals} />
-      <SmartComparisonBlock />
+      <SmartComparisonBlock products={products} />
       <BiggestPriceDropsSection products={biggestDrops} />
 
       <div className="max-w-5xl mx-auto px-4">
@@ -75,7 +71,7 @@ export default async function HomePage({ params }: HomePageProps) {
       <PriceIntelligenceSection />
       <TrustPillarsBlock />
       <CountrySection />
-      <RecentlyDroppedSection />
+      <RecentlyDroppedSection products={products} />
       <PriceAlertCTASection />
     </div>
   );
