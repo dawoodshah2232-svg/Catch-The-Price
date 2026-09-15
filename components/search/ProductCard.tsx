@@ -13,14 +13,14 @@ interface ProductCardProps {
 export function ProductCard({ product, priority = false }: ProductCardProps) {
   const { country, formatLocalPrice, toggleSaveProduct, isProductSaved } = useCountry();
   const saved = isProductSaved(product.id);
-
-  const discountPercent = product.originalPrice > product.currentBestPrice && product.originalPrice > 0
+  const hasReferencePrice = product.originalPrice > product.currentBestPrice && product.originalPrice > 0;
+  const discountPercent = hasReferencePrice
     ? Math.round(((product.originalPrice - product.currentBestPrice) / product.originalPrice) * 100)
     : 0;
 
   return (
-    <article className="group relative rounded-2xl bg-[#091217] border border-[#162633] hover:border-[#203648] transition-all duration-200 flex flex-col overflow-hidden min-w-0 h-full">
-      <div className="relative w-full aspect-[4/3] bg-[#071015] overflow-hidden">
+    <article className="group relative rounded-[18px] sm:rounded-[22px] bg-white border border-[#DDE7E3] hover:border-[#BFD2CA] hover:shadow-[0_12px_34px_rgba(25,55,45,0.09)] transition-all duration-200 flex flex-col overflow-hidden min-w-0 h-full">
+      <div className="relative w-full aspect-[4/3] bg-[#F8FAF9] overflow-hidden border-b border-[#EDF2F0]">
         <a
           href={`/${country}/product/${product.slug}`}
           className="absolute inset-0 p-2.5 sm:p-4 flex items-center justify-center"
@@ -30,13 +30,13 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
             src={product.imageUrl}
             alt={product.title}
             loading={priority ? 'eager' : 'lazy'}
-            className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-[1.03]"
+            className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-[1.025]"
           />
         </a>
 
         {discountPercent > 0 && (
-          <div className="absolute top-2 left-2 flex items-center px-2 py-0.5 rounded-lg text-[10px] sm:text-[11px] font-extrabold bg-[#00D27A]/95 text-[#071015]">
-            ↓ {discountPercent}%
+          <div className="absolute top-2 left-2 px-2 py-1 rounded-lg text-[9px] sm:text-[10px] font-extrabold bg-[#E5F8EF] text-[#08784B] border border-[#C7EEDC]">
+            {discountPercent}% off
           </div>
         )}
 
@@ -47,61 +47,61 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
             event.stopPropagation();
             toggleSaveProduct(product.id);
           }}
-          className={`absolute top-2 right-2 min-w-[40px] min-h-[40px] p-2 rounded-xl backdrop-blur-md transition-all flex items-center justify-center ${
+          className={`absolute top-2 right-2 w-9 h-9 sm:w-10 sm:h-10 rounded-xl transition-all flex items-center justify-center border shadow-sm ${
             saved
-              ? 'bg-[#00D27A] text-[#071015]'
-              : 'bg-[#091217]/88 text-[#CBD5E1] border border-[#20313d]'
+              ? 'bg-[#0B8F58] text-white border-[#0B8F58]'
+              : 'bg-white/95 text-[#60727A] border-[#DDE7E3] hover:text-[#08784B]'
           }`}
           aria-label={saved ? 'Remove from saved' : 'Save product'}
         >
-          <Bookmark className={`w-4 h-4 ${saved ? 'fill-[#071015]' : ''}`} />
+          <Bookmark className={`w-4 h-4 ${saved ? 'fill-white' : ''}`} />
         </button>
 
-        <div className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#091217]/92 backdrop-blur-sm border border-[#162633] text-[9px] sm:text-[10px] text-[#CBD5E1]">
-          <Store className="w-3 h-3 text-[#00D27A]" />
-          <span>{product.offersCount} offer{product.offersCount === 1 ? '' : 's'}</span>
+        <div className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-1 rounded-lg bg-white/95 border border-[#DDE7E3] text-[9px] sm:text-[10px] text-[#60727A] shadow-sm">
+          <Store className="w-3 h-3 text-[#0B8F58]" />
+          <span>{product.offersCount} {product.offersCount === 1 ? 'store' : 'stores'}</span>
         </div>
       </div>
 
-      <div className="p-3 sm:p-4 flex-1 flex flex-col justify-between min-w-0">
+      <div className="p-2.5 sm:p-4 flex-1 flex flex-col min-w-0">
         <div className="min-w-0">
-          <div className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-[#00D27A] mb-1">
+          <div className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-[0.08em] text-[#08784B] mb-1">
             {product.brand}
           </div>
           <a
             href={`/${country}/product/${product.slug}`}
-            className="block font-bold text-[13px] sm:text-sm text-[#F8FAFC] group-hover:text-[#00E6A2] transition-colors line-clamp-2 leading-snug break-words"
+            className="block font-bold text-[12px] sm:text-sm text-[#102027] group-hover:text-[#08784B] transition-colors line-clamp-2 leading-[1.35] break-words min-h-[32px] sm:min-h-[38px]"
           >
             {product.title}
           </a>
         </div>
 
-        <div className="mt-3 pt-3 border-t border-[#162633]">
-          <div className="flex items-end justify-between gap-2 min-w-0">
+        <div className="mt-auto pt-2.5 sm:pt-3">
+          <div className="flex items-end justify-between gap-1.5 min-w-0">
             <div className="min-w-0">
-              <span className="text-[9px] sm:text-[10px] text-[#94A3B8] block uppercase tracking-wider font-semibold">
-                Lowest listed price
+              <span className="text-[8px] sm:text-[9px] text-[#73858D] block uppercase tracking-wider font-bold">
+                Best listed price
               </span>
-              <div className="text-[17px] sm:text-lg font-extrabold text-[#00D27A] leading-tight mt-0.5 break-words">
+              <div className="text-[15px] sm:text-lg font-extrabold text-[#08784B] leading-tight mt-0.5 break-words">
                 {formatLocalPrice(product.currentBestPrice)}
               </div>
-              {product.originalPrice > product.currentBestPrice && (
-                <div className="text-[10px] sm:text-[11px] text-[#94A3B8] line-through mt-0.5 font-medium">
+              {hasReferencePrice && (
+                <div className="text-[9px] sm:text-[10px] text-[#829198] line-through mt-0.5 font-medium">
                   {formatLocalPrice(product.originalPrice)}
                 </div>
               )}
             </div>
 
             {product.dealScore > 0 && (
-              <span className="shrink-0 inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-lg text-[9px] sm:text-[10px] font-extrabold bg-[#00D27A]/10 text-[#55e7aa] border border-[#00D27A]/25 whitespace-nowrap">
-                <span className="hidden sm:inline">Deal&nbsp;</span>Score: {product.dealScore}
+              <span className="shrink-0 px-1.5 py-1 rounded-lg text-[8px] sm:text-[9px] font-extrabold bg-[#F0F7F4] text-[#426257] border border-[#DDE7E3] whitespace-nowrap">
+                Score {product.dealScore}
               </span>
             )}
           </div>
 
           <a
             href={`/${country}/product/${product.slug}`}
-            className="w-full mt-3 min-h-[44px] px-3 rounded-xl text-[11px] sm:text-xs text-center flex items-center justify-center font-bold tracking-wide bg-[#0d211d] text-[#9de7c5] border border-[#245044] hover:bg-[#103029] hover:border-[#00D27A]/50 transition-colors"
+            className="w-full mt-2.5 min-h-[40px] sm:min-h-[42px] px-3 rounded-xl text-[10px] sm:text-xs text-center flex items-center justify-center font-extrabold bg-[#F0F7F4] text-[#086C45] border border-[#CFE3DB] hover:bg-[#E6F4EE] hover:border-[#AFD2C4] transition-colors"
           >
             Compare prices
           </a>
