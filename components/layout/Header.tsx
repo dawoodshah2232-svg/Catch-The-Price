@@ -29,7 +29,7 @@ export function Header() {
 
   return (
     <>
-      <header className="hidden lg:block sticky top-0 z-50 bg-[#071015] border-b border-[#162633] shadow-[0_8px_28px_rgba(0,0,0,.16)]">
+      <header className="ctp-header-dark hidden lg:block sticky top-0 z-50 border-b shadow-[0_8px_28px_rgba(0,0,0,.16)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="h-[72px] flex items-center gap-5">
             <div className="shrink-0 min-w-[190px]">
@@ -86,7 +86,7 @@ export function Header() {
         </div>
       </header>
 
-      <div className="lg:hidden bg-[#071015] border-b border-[#162633] px-4 pt-[max(env(safe-area-inset-top),8px)] pb-2.5">
+      <div className="ctp-header-dark lg:hidden border-b px-4 pt-[max(env(safe-area-inset-top),8px)] pb-2.5">
         <div className="h-[48px] flex items-center justify-between gap-2">
           <div className="min-w-0 flex-1 overflow-hidden">
             <BrandLogo variant="full" size="md" onDark className="max-w-full" />
@@ -102,7 +102,7 @@ export function Header() {
         </div>
       </div>
 
-      <div className="lg:hidden sticky top-0 z-50 bg-[#071015] border-b border-[#162633] px-3.5 py-2 shadow-[0_8px_22px_rgba(0,0,0,.18)]">
+      <div className="ctp-header-dark lg:hidden sticky top-0 z-50 border-b px-3.5 py-2 shadow-[0_8px_22px_rgba(0,0,0,.18)]">
         <SearchBar chrome />
       </div>
     </>
