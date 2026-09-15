@@ -6,6 +6,7 @@ import { getHomepageCatalog } from '@/lib/data/catalog.server';
 import { Hero } from '@/components/home/Hero';
 import { CommerceHubSection } from '@/components/home/CommerceHubSection';
 import { BestDealsSection } from '@/components/home/BestDealsSection';
+import { PopularBrandsSection } from '@/components/home/PopularBrandsSection';
 import { SmartComparisonBlock } from '@/components/home/SmartComparisonBlock';
 import { BiggestPriceDropsSection } from '@/components/home/BiggestPriceDropsSection';
 import { CategoryGrid } from '@/components/home/CategoryGrid';
@@ -61,6 +62,7 @@ export default async function HomePage({ params }: HomePageProps) {
       <CategoryGrid />
       <CommerceHubSection />
       <BestDealsSection products={topDeals} />
+      <PopularBrandsSection products={products} />
 
       <div className="max-w-5xl mx-auto px-4 py-1">
         <AdSlot slotId="home-after-deals" format="banner" />
