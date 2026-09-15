@@ -16,9 +16,7 @@ import { DiscoveryHubSection } from '@/components/home/DiscoveryHubSection';
 import { AdSlot } from '@/components/common/AdSlot';
 
 interface HomePageProps {
-  params: Promise<{
-    country: string;
-  }>;
+  params: Promise<{ country: string }>;
 }
 
 export async function generateMetadata({ params }: HomePageProps): Promise<Metadata> {
@@ -48,9 +46,9 @@ export default async function HomePage({ params }: HomePageProps) {
   const hasLiveOrPreviewCatalog = products.length > 0;
 
   return (
-    <div className="min-h-screen bg-[#071015]">
+    <div className="min-h-screen bg-[#F4F7F6]">
       {isPreview && (
-        <div className="border-b border-amber-400/20 bg-amber-400/10 px-4 py-2 text-center text-[11px] sm:text-xs font-semibold text-amber-100">
+        <div className="border-b border-amber-300 bg-amber-50 px-4 py-2 text-center text-[11px] sm:text-xs font-semibold text-amber-900">
           Development preview: product prices, retailer offers and history on this Vercel build are sample data for UI testing only.
         </div>
       )}
@@ -62,7 +60,7 @@ export default async function HomePage({ params }: HomePageProps) {
           <BestDealsSection products={topDeals} />
           <DiscoveryHubSection />
 
-          <div className="max-w-5xl mx-auto px-4">
+          <div className="max-w-5xl mx-auto px-4 py-2">
             <AdSlot slotId="home-after-deals" format="banner" />
           </div>
 
@@ -77,10 +75,10 @@ export default async function HomePage({ params }: HomePageProps) {
       ) : (
         <>
           <section className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
-            <div className="rounded-3xl border border-[#162633] bg-[#091217] p-6 sm:p-8 text-center">
-              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#00D27A]">Catalog setup in progress</p>
-              <h2 className="mt-2 text-xl sm:text-2xl font-extrabold text-[#F8FAFC]">Live retailer data is being connected.</h2>
-              <p className="mt-2 text-sm text-[#CBD5E1] max-w-2xl mx-auto leading-relaxed">
+            <div className="rounded-3xl border border-[#DDE7E3] bg-white p-6 sm:p-8 text-center shadow-[0_8px_28px_rgba(25,55,45,0.06)]">
+              <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-[#008D56]">Catalog setup in progress</p>
+              <h2 className="mt-2 text-xl sm:text-2xl font-extrabold text-[#102027]">Live retailer data is being connected.</h2>
+              <p className="mt-2 text-sm text-[#52636B] max-w-2xl mx-auto leading-relaxed">
                 CatchThePrice will only publish products when the exact variant, retailer destination, current price and source rights are verified. We do not generate placeholder prices on the production site.
               </p>
             </div>
