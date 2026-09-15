@@ -78,9 +78,7 @@ export function SearchBar({ isHero = false, autoFocus = false, className = '', o
     router.push(`/${country}/product/${slug}`);
   };
 
-  const shellClass = chrome
-    ? 'bg-white border-[#CBD9D3] text-[#102027]'
-    : 'ui-surface';
+  const shellClass = chrome ? 'ctp-search-light' : 'ui-surface';
 
   return (
     <div className={`relative w-full ${className}`} ref={containerRef}>
@@ -138,7 +136,7 @@ export function SearchBar({ isHero = false, autoFocus = false, className = '', o
       </form>
 
       {isOpen && suggestions.length > 0 && (
-        <div className="absolute left-0 right-0 top-full mt-2 rounded-2xl bg-white border border-[#DDE7E3] text-[#102027] shadow-[0_18px_48px_rgba(24,52,43,0.16)] overflow-hidden z-50">
+        <div className="ctp-popover-light absolute left-0 right-0 top-full mt-2 rounded-2xl border shadow-[0_18px_48px_rgba(24,52,43,0.16)] overflow-hidden z-50">
           <div className="px-3 sm:px-4 py-2 bg-[#F8FAF9] border-b border-[#E2EAE6] flex items-center justify-between gap-3 text-xs text-[#52636B]">
             <span className="flex items-center gap-1.5 font-bold text-[#0B8F58] min-w-0"><Sparkles className="w-3.5 h-3.5 shrink-0" /> Product suggestions</span>
             <span className="hidden sm:inline text-[11px] text-[#73858D]">Press Enter to search all</span>
