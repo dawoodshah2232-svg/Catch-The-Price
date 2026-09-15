@@ -12,7 +12,7 @@ function applyTheme(theme: Theme) {
   document.documentElement.style.colorScheme = theme;
 }
 
-export function ThemeToggle({ compact = false }: { compact?: boolean }) {
+export function ThemeToggle({ compact = false, onDark = false }: { compact?: boolean; onDark?: boolean }) {
   const [theme, setTheme] = useState<Theme>('light');
 
   useEffect(() => {
@@ -38,7 +38,11 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
       onClick={toggle}
       aria-label={label}
       title={label}
-      className="theme-toggle touch-target inline-flex items-center justify-center gap-2 rounded-xl border px-2.5 py-2 text-xs font-bold transition-colors"
+      className={`touch-target inline-flex items-center justify-center gap-2 rounded-xl border px-2.5 py-2 text-xs font-bold transition-colors ${
+        onDark
+          ? 'bg-[#0F1C24] border-[#223743] text-[#DCE8E3] hover:text-white hover:border-[#355361]'
+          : 'theme-toggle'
+      }`}
     >
       <Icon className="h-4 w-4" />
       {!compact && <span className="hidden xl:inline">{theme === 'light' ? 'Dark' : 'Light'}</span>}
