@@ -91,6 +91,8 @@ export function Footer() {
             <li><a href="/about" className="footer-link">About</a></li>
             <li><a href="/contact" className="footer-link">Contact</a></li>
             <li><a href="/how-pricing-works" className="footer-link">How Pricing Works</a></li>
+            <li><a href="/data-sources" className="footer-link">Data Sources</a></li>
+            <li><a href="/editorial-policy" className="footer-link">Editorial Policy</a></li>
             <li><a href="/affiliate-disclosure" className="footer-link">Affiliate Disclosure</a></li>
             <li><a href="/privacy" className="footer-link">Privacy Policy</a></li>
             <li><a href="/terms" className="footer-link">Terms</a></li>
