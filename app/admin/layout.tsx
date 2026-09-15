@@ -16,6 +16,7 @@ import {
   ExternalLink,
   ShieldCheck,
   Sparkles,
+  Bell,
 } from 'lucide-react';
 
 export const metadata: Metadata = {
@@ -47,6 +48,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { label: 'Source Rights', href: '/admin/source-rights', icon: ShieldCheck },
     { label: 'Data Ingestion', href: '/admin/ingestion', icon: RefreshCw },
     { label: 'Product Matching', href: '/admin/matching', icon: GitMerge },
+    { label: 'Price Alerts', href: '/admin/alerts', icon: Bell },
     { label: 'Content & AI', href: '/admin/content', icon: Sparkles },
     { label: 'Analytics & Clicks', href: '/admin/analytics', icon: BarChart3 },
     { label: 'SEO & Structured Data', href: '/admin/seo', icon: Globe },
