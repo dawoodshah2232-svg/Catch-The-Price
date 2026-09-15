@@ -35,7 +35,7 @@ export default async function CountryLayout({
 
   return (
     <CountryProvider initialCountry={country}>
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="public-shell ui-page flex-1 flex flex-col min-h-screen">
         <Header />
         <main className="flex-1 pb-mobile-nav md:pb-0">{children}</main>
         <MobileBottomNav />
