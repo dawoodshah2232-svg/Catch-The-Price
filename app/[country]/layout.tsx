@@ -6,6 +6,7 @@ import { COUNTRIES, DEFAULT_COUNTRY } from '@/lib/data/countries';
 import { Header } from '@/components/layout/Header';
 import { MobileBottomNav } from '@/components/layout/MobileBottomNav';
 import { Footer } from '@/components/layout/Footer';
+import { AnalyticsTracker } from '@/components/analytics/AnalyticsTracker';
 
 interface CountryLayoutProps {
   children: React.ReactNode;
@@ -35,6 +36,7 @@ export default async function CountryLayout({
 
   return (
     <CountryProvider initialCountry={country}>
+      <AnalyticsTracker />
       <div className="flex-1 flex flex-col min-h-screen">
         <Header />
         <main className="flex-1 pb-mobile-nav md:pb-0">{children}</main>
