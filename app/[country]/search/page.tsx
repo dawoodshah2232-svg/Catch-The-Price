@@ -7,13 +7,42 @@ import { useCountry } from '@/context/CountryContext';
 import { ProductCard } from '@/components/search/ProductCard';
 import { AdSlot } from '@/components/common/AdSlot';
 import { sendAnalyticsEvent } from '@/lib/analytics/client';
-import { ArrowUpDown, RotateCcw, Search as SearchIcon, SlidersHorizontal } from 'lucide-react';
+import { ArrowDown, ArrowUpDown, RotateCcw, Search as SearchIcon, SlidersHorizontal } from 'lucide-react';
 
 interface SearchPageProps {
   params: Promise<{ country: string }>;
 }
 
-type SortBy = 'deal_score' | 'price_asc' | 'price_desc' | 'biggest_drop';
+type SortBy = 'relevance' | 'price_asc' | 'price_desc' | 'biggest_drop';
+const PAGE_SIZE = 24;
+
+function relevanceScore(product: Product, query: string) {
+  const q = query.trim().toLowerCase();
+  if (!q) return 0;
+
+  const title = product.title.toLowerCase();
+  const brand = product.brand.toLowerCase();
+  const category = product.categoryName.toLowerCase();
+  const specText = Object.values(product.specs || {}).join(' ').toLowerCase();
+  let score = 0;
+
+  if (title === q) score += 100;
+  if (title.startsWith(q)) score += 55;
+  if (title.includes(q)) score += 35;
+  if (brand === q) score += 30;
+  else if (brand.includes(q)) score += 20;
+  if (category.includes(q)) score += 12;
+  if (specText.includes(q)) score += 8;
+
+  const tokens = q.split(/\s+/).filter(Boolean);
+  for (const token of tokens) {
+    if (title.includes(token)) score += 6;
+    if (brand.includes(token)) score += 4;
+    if (specText.includes(token)) score += 2;
+  }
+
+  return score;
+}
 
 function SearchContent() {
   const searchParams = useSearchParams();
@@ -23,13 +52,14 @@ function SearchContent() {
   const [loadError, setLoadError] = useState(false);
   const [isPreview, setIsPreview] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   const lastSearchSignature = useRef('');
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [category, setCategory] = useState(searchParams.get('category') || '');
   const [brand, setBrand] = useState(searchParams.get('brand') || '');
   const [merchant, setMerchant] = useState('');
-  const [sortBy, setSortBy] = useState<SortBy>('deal_score');
+  const [sortBy, setSortBy] = useState<SortBy>('relevance');
 
   useEffect(() => {
     let active = true;
@@ -60,6 +90,10 @@ function SearchContent() {
     };
   }, [country]);
 
+  useEffect(() => {
+    setVisibleCount(PAGE_SIZE);
+  }, [searchQuery, category, brand, merchant, sortBy, country]);
+
   const categories = useMemo(
     () => [...new Map(products.map((p) => [p.categorySlug, p.categoryName])).entries()],
     [products]
@@ -74,8 +108,10 @@ function SearchContent() {
     const q = searchQuery.trim().toLowerCase();
     const filtered = products.filter((product) => {
       if (q) {
-        const haystack = `${product.title} ${product.brand} ${product.categoryName}`.toLowerCase();
-        if (!haystack.includes(q)) return false;
+        const specText = Object.values(product.specs || {}).join(' ');
+        const haystack = `${product.title} ${product.brand} ${product.categoryName} ${specText}`.toLowerCase();
+        const tokens = q.split(/\s+/).filter(Boolean);
+        if (!tokens.every((token) => haystack.includes(token))) return false;
       }
       if (category && product.categorySlug !== category) return false;
       if (brand && product.brand !== brand) return false;
@@ -91,9 +127,16 @@ function SearchContent() {
         const bDrop = b.originalPrice > 0 ? (b.originalPrice - b.currentBestPrice) / b.originalPrice : 0;
         return bDrop - aDrop;
       }
-      return (b.dealScore || 0) - (a.dealScore || 0);
+
+      const relevanceDifference = relevanceScore(b, q) - relevanceScore(a, q);
+      if (relevanceDifference !== 0) return relevanceDifference;
+      if (a.offersCount !== b.offersCount) return b.offersCount - a.offersCount;
+      return a.currentBestPrice - b.currentBestPrice;
     });
   }, [products, searchQuery, category, brand, merchant, sortBy]);
+
+  const visibleResults = results.slice(0, visibleCount);
+  const remaining = Math.max(0, results.length - visibleResults.length);
 
   useEffect(() => {
     if (loading || loadError || isPreview) return;
@@ -122,7 +165,8 @@ function SearchContent() {
     setCategory('');
     setBrand('');
     setMerchant('');
-    setSortBy('deal_score');
+    setSortBy('relevance');
+    setVisibleCount(PAGE_SIZE);
   };
 
   const selectClass =
@@ -171,7 +215,7 @@ function SearchContent() {
               <div className="h-10 px-2.5 rounded-xl bg-white border border-[#D7E3DE] flex items-center gap-1.5 shadow-sm">
                 <ArrowUpDown className="w-3.5 h-3.5 text-[#73858D]" />
                 <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)} className="bg-transparent text-xs font-semibold text-[#31474F] outline-none max-w-[116px] sm:max-w-none">
-                  <option value="deal_score">Best match</option>
+                  <option value="relevance">Best match</option>
                   <option value="biggest_drop">Biggest drop</option>
                   <option value="price_asc">Price: low</option>
                   <option value="price_desc">Price: high</option>
@@ -186,10 +230,18 @@ function SearchContent() {
           </label>
         </div>
 
-        {filtersOpen && <div className="lg:hidden mt-3 p-3 rounded-2xl bg-[#EEF4F1] border border-[#D7E3DE]">{filterPanel}</div>}
+        {filtersOpen && (
+          <div className="lg:hidden mt-3 p-3 rounded-2xl bg-[#EEF4F1] border border-[#D7E3DE]">
+            <div className="flex items-center justify-between mb-3">
+              <span className="text-xs font-extrabold text-[#31474F]">Refine results</span>
+              <button type="button" onClick={reset} className="text-[11px] text-[#73858D] hover:text-[#08784B] flex items-center gap-1"><RotateCcw className="w-3 h-3" /> Reset</button>
+            </div>
+            {filterPanel}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-[220px_minmax(0,1fr)] gap-6 mt-5 sm:mt-6">
-          <aside className="hidden lg:block sticky top-24 self-start p-4 rounded-2xl bg-white border border-[#DDE7E3] space-y-4 shadow-sm">
+          <aside className="hidden lg:block sticky top-32 self-start p-4 rounded-2xl bg-white border border-[#DDE7E3] space-y-4 shadow-sm">
             <div className="flex items-center justify-between">
               <span className="text-xs font-extrabold uppercase tracking-wider text-[#31474F]">Filters</span>
               <button type="button" onClick={reset} className="text-xs text-[#73858D] hover:text-[#08784B] flex items-center gap-1"><RotateCcw className="w-3 h-3" /> Reset</button>
@@ -213,12 +265,25 @@ function SearchContent() {
                 <button type="button" onClick={reset} className="mt-4 h-11 px-4 rounded-xl bg-[#EAF5F0] text-[#08784B] border border-[#CFE3DB] text-sm font-extrabold">Clear filters</button>
               </div>
             ) : (
-              <div className="space-y-8">
+              <div className="space-y-6 sm:space-y-8">
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-5">
-                  {results.slice(0, 6).map((product) => <ProductCard key={product.id} product={product} />)}
-                  {results.length > 6 && <div className="col-span-2 md:col-span-3"><AdSlot slotId="search-infeed-middle" format="banner" /></div>}
-                  {results.slice(6).map((product) => <ProductCard key={product.id} product={product} />)}
+                  {visibleResults.slice(0, 6).map((product) => <ProductCard key={product.id} product={product} />)}
+                  {visibleResults.length > 6 && <div className="col-span-2 md:col-span-3"><AdSlot slotId="search-infeed-middle" format="banner" /></div>}
+                  {visibleResults.slice(6).map((product) => <ProductCard key={product.id} product={product} />)}
                 </div>
+
+                {remaining > 0 && (
+                  <div className="flex justify-center pt-1">
+                    <button
+                      type="button"
+                      onClick={() => setVisibleCount((count) => Math.min(results.length, count + PAGE_SIZE))}
+                      className="min-h-[46px] px-5 rounded-xl bg-white border border-[#CFE0DA] hover:border-[#9FCBB9] text-[#20343C] font-extrabold text-xs sm:text-sm inline-flex items-center justify-center gap-2 shadow-sm"
+                    >
+                      Show more products <span className="text-[#73858D]">({remaining})</span> <ArrowDown className="w-4 h-4 text-[#0B8F58]" />
+                    </button>
+                  </div>
+                )}
+
                 <AdSlot slotId="search-bottom-feed" format="banner" />
               </div>
             )}
