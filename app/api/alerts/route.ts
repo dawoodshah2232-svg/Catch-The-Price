@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getServerSupabase } from '@/lib/supabase/server';
 
 const VALID_ALERT_TYPES = new Set(['any_drop', 'below_amount', 'major_deal']);
 const VALID_COUNTRIES = new Set(['ae', 'us']);
@@ -33,53 +32,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid email address' }, { status: 400 });
     }
 
-    const supabase = getServerSupabase();
-    if (!supabase) {
-      return NextResponse.json(
-        { error: 'Price alerts are not available yet. Please try again later.' },
-        { status: 503 }
-      );
-    }
-
-    const { data, error } = await supabase
-      .from('watchlists')
-      .insert({
-        product_id: productId,
-        target_price: alertType === 'below_amount' ? targetPrice : null,
-        alert_type: alertType,
-        email: email || null,
-      })
-      .select('id, product_id, target_price, alert_type, created_at')
-      .single();
-
-    if (error) {
-      console.error('Supabase watchlist error:', error);
-      return NextResponse.json(
-        { error: 'We could not save this price alert. Please try again.' },
-        { status: 500 }
-      );
-    }
-
+    // The live Supabase watchlists table is account-owned and protected by RLS.
+    // Until the authenticated account + verification + notification flow is finished,
+    // we must not use the service role to create anonymous rows or claim alert delivery works.
     return NextResponse.json(
       {
-        success: true,
-        status: 'saved',
-        message: email
-          ? 'Price alert saved. Email delivery will be enabled only after verification is configured.'
-          : 'Price alert saved for this device.',
-        alert: {
-          id: data?.id,
-          productId: data?.product_id ?? productId,
-          targetPrice: data?.target_price ?? null,
-          alertType: data?.alert_type ?? alertType,
-          country,
-          createdAt: data?.created_at ?? new Date().toISOString(),
-        },
+        error: 'Price alerts are being connected to verified accounts and email delivery. This feature is not active yet.',
+        status: 'not_ready',
       },
-      { status: 201 }
+      { status: 503 }
     );
   } catch (error) {
     console.error('Error handling alert subscription:', error);
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+    return NextResponse.json({ error: 'Invalid request' }, { status: 400 });
   }
 }
