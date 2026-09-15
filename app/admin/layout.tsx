@@ -1,8 +1,10 @@
 import React from 'react';
 import { Metadata } from 'next';
-import { notFound } from 'next/navigation';
+import { redirect } from 'next/navigation';
 import { BrandLogo } from '@/components/common/BrandLogo';
 import { CountryProvider } from '@/context/CountryContext';
+import { AdminSignOut } from '@/components/admin/AdminSignOut';
+import { createAuthServerClient, isAllowedAdminEmail } from '@/lib/supabase/auth-server';
 import {
   LayoutDashboard,
   Package,
@@ -24,11 +26,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
-  // Temporary hard gate until Supabase admin authentication + server-side role checks are complete.
-  // This is intentionally closed by default in production rather than exposing simulated controls.
-  if (process.env.NODE_ENV === 'production' && process.env.ADMIN_UI_ENABLED !== 'true') {
-    notFound();
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+  const supabase = await createAuthServerClient();
+  if (!supabase) redirect('/admin-access');
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user || !isAllowedAdminEmail(user.email)) {
+    redirect('/admin-access');
   }
 
   const navItems = [
@@ -71,6 +78,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </div>
 
           <div className="pt-6 border-t border-ctp mt-6 space-y-2">
+            <div className="px-1 pb-1">
+              <div className="text-[9px] uppercase tracking-wider font-bold text-slate-500">Signed in</div>
+              <div className="text-[10px] text-slate-300 truncate mt-0.5">{user.email}</div>
+            </div>
             <a
               href="/ae"
               className="flex items-center justify-between px-3 py-2 rounded-xl bg-slate-900 border border-ctp text-xs text-slate-300 hover:text-white transition-colors"
@@ -78,9 +89,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <span>Back to Public Site</span>
               <ExternalLink className="w-3.5 h-3.5 text-emerald-400" />
             </a>
-            <div className="text-[10px] text-slate-400 px-1 leading-relaxed">
-              Admin access is temporary-disabled in production until authenticated role checks are complete.
-            </div>
+            <AdminSignOut />
           </div>
         </aside>
 
