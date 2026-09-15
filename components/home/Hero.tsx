@@ -9,7 +9,7 @@ export function Hero() {
   const { country } = useCountry();
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
 
-  const searchExamples = ['iPhone 17 Pro', 'PS5 Pro', 'MacBook Pro', 'Gaming Laptop'];
+  const searchExamples = ['iPhone', 'PS5', 'MacBook', 'Gaming Laptop'];
 
   const handleMouseMove = (event: React.MouseEvent<HTMLElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
@@ -58,7 +58,7 @@ export function Hero() {
         </h1>
 
         <p className="mt-4 text-[13px] sm:text-base ui-secondary max-w-2xl mx-auto leading-relaxed px-1">
-          Compare retailer offers, understand price history and make smarter buying decisions without opening ten different tabs.
+          Compare retailer offers, understand available price history and make smarter buying decisions without opening ten different tabs.
         </p>
 
         <div className="mt-6 sm:mt-8 max-w-2xl mx-auto">
@@ -66,7 +66,7 @@ export function Hero() {
         </div>
 
         <div className="mt-3.5 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-xs">
-          <span className="ui-muted font-semibold text-[10px] sm:text-[11px] self-center">Popular:</span>
+          <span className="ui-muted font-semibold text-[10px] sm:text-[11px] self-center">Try:</span>
           {searchExamples.map((term) => (
             <a
               key={term}
@@ -81,7 +81,7 @@ export function Hero() {
         <div className="mt-6 pt-4 border-t ui-border grid grid-cols-3 gap-1.5 sm:gap-2 max-w-lg mx-auto text-[9px] sm:text-xs ui-secondary">
           <div className="flex flex-col min-[390px]:flex-row items-center justify-center gap-1">
             <ShieldCheck className="w-3.5 h-3.5 text-[#0B8F58] shrink-0" />
-            <span>Retailer direct</span>
+            <span>Retailer checkout</span>
           </div>
           <div className="flex flex-col min-[390px]:flex-row items-center justify-center gap-1">
             <TrendingDown className="w-3.5 h-3.5 text-[#0B8F58] shrink-0" />
