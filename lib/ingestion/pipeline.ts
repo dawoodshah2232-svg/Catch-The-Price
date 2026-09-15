@@ -16,6 +16,7 @@ export interface RunPipelineOptions {
 export async function runIngestionPipeline(
   _options: RunPipelineOptions = {}
 ): Promise<IngestionPipelineResult> {
+  void _options;
   throw new Error(
     'Legacy ingestion runner is disabled. Use the authenticated database-backed ingestion workflow.'
   );
