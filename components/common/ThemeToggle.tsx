@@ -5,6 +5,8 @@ import { Moon, Sun } from 'lucide-react';
 
 type Theme = 'light' | 'dark';
 
+const THEME_KEY = 'ctp-theme-v2';
+
 function applyTheme(theme: Theme) {
   document.documentElement.dataset.theme = theme;
   document.documentElement.style.colorScheme = theme;
@@ -14,7 +16,7 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
   const [theme, setTheme] = useState<Theme>('light');
 
   useEffect(() => {
-    const stored = window.localStorage.getItem('ctp-theme');
+    const stored = window.localStorage.getItem(THEME_KEY);
     const initial: Theme = stored === 'dark' ? 'dark' : 'light';
     setTheme(initial);
     applyTheme(initial);
@@ -23,7 +25,7 @@ export function ThemeToggle({ compact = false }: { compact?: boolean }) {
   const toggle = () => {
     const next: Theme = theme === 'light' ? 'dark' : 'light';
     setTheme(next);
-    window.localStorage.setItem('ctp-theme', next);
+    window.localStorage.setItem(THEME_KEY, next);
     applyTheme(next);
   };
 
