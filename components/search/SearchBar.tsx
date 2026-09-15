@@ -13,6 +13,35 @@ interface SearchBarProps {
   onSearchSubmitted?: () => void;
 }
 
+function getSessionId(): string | null {
+  if (typeof window === 'undefined') return null;
+  const key = 'ctp-session-id';
+  const existing = window.sessionStorage.getItem(key);
+  if (existing) return existing;
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) {
+    const id = crypto.randomUUID();
+    window.sessionStorage.setItem(key, id);
+    return id;
+  }
+  return null;
+}
+
+function trackSearch(country: string, query: string) {
+  void fetch('/api/analytics/event', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      eventType: 'search',
+      country,
+      path: `/${country}/search`,
+      sessionId: getSessionId(),
+      searchQuery: query,
+    }),
+    keepalive: true,
+    cache: 'no-store',
+  }).catch(() => undefined);
+}
+
 export function SearchBar({
   isHero = false,
   autoFocus = false,
@@ -80,10 +109,12 @@ export function SearchBar({
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    if (!query.trim()) return;
+    const submittedQuery = query.trim();
+    if (!submittedQuery) return;
     setIsOpen(false);
+    trackSearch(country, submittedQuery);
     onSearchSubmitted?.();
-    router.push(`/${country}/search?q=${encodeURIComponent(query.trim())}`);
+    router.push(`/${country}/search?q=${encodeURIComponent(submittedQuery)}`);
   };
 
   const handleSelectProduct = (slug: string) => {
