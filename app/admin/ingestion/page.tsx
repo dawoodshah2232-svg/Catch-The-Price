@@ -64,6 +64,7 @@ export default function AdminIngestionPage() {
   const [runs, setRuns] = useState<RunRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [runningSource, setRunningSource] = useState<string | null>(null);
+  const [changingSource, setChangingSource] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -103,6 +104,26 @@ export default function AdminIngestionPage() {
       await load();
     } finally {
       setRunningSource(null);
+    }
+  };
+
+  const changeSourceState = async (source: SourceRow, isActive: boolean) => {
+    setChangingSource(source.id);
+    setNotice(null);
+    try {
+      const response = await fetch('/api/admin/ingestion', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sourceId: source.id, isActive }),
+      });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'Could not update source state');
+      setNotice(`${source.name} ${isActive ? 'enabled' : 'disabled'}.`);
+      await load();
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : 'Could not update source state');
+    } finally {
+      setChangingSource(null);
     }
   };
 
@@ -156,6 +177,9 @@ export default function AdminIngestionPage() {
             {sources.map((source) => {
               const ready = source.readiness === 'ready';
               const isRunning = runningSource === source.id;
+              const isChanging = changingSource === source.id;
+              const canEnable = source.rightsReady && source.credentialReady;
+
               return (
                 <article key={source.id} className="rounded-2xl border border-ctp bg-ctp-surface p-4 space-y-4">
                   <div className="flex items-start justify-between gap-3">
@@ -192,19 +216,29 @@ export default function AdminIngestionPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between gap-3 pt-3 border-t border-ctp">
+                  <div className="flex flex-wrap items-center justify-between gap-2 pt-3 border-t border-ctp">
                     <div className="text-[10px] text-slate-500">
                       <span className="font-mono">{source.rightsId || 'no-rights-id'}</span>
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => runSource(source.id)}
-                      disabled={!ready || Boolean(runningSource)}
-                      className="min-h-[40px] px-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-800 disabled:text-slate-500 text-slate-950 text-[11px] font-extrabold flex items-center gap-1.5 transition-colors"
-                    >
-                      {isRunning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
-                      {isRunning ? 'Running…' : 'Fetch & stage'}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={() => changeSourceState(source, !source.isActive)}
+                        disabled={Boolean(changingSource) || (!source.isActive && !canEnable)}
+                        className="min-h-[40px] px-3 rounded-xl bg-slate-900 border border-ctp disabled:opacity-40 text-[10px] font-bold text-slate-300 hover:text-white"
+                      >
+                        {isChanging ? 'Saving…' : source.isActive ? 'Disable' : 'Enable'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => runSource(source.id)}
+                        disabled={!ready || Boolean(runningSource) || Boolean(changingSource)}
+                        className="min-h-[40px] px-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-800 disabled:text-slate-500 text-slate-950 text-[11px] font-extrabold flex items-center gap-1.5 transition-colors"
+                      >
+                        {isRunning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
+                        {isRunning ? 'Running…' : 'Fetch & stage'}
+                      </button>
+                    </div>
                   </div>
                 </article>
               );
