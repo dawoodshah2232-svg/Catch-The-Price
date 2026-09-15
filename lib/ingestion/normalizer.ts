@@ -1,14 +1,12 @@
 import { RawMerchantItem, NormalizedItem } from './types';
 
-// Deterministic title normalization regex rules
 export function normalizeTitle(rawTitle: string): string {
   let cleaned = rawTitle
     .replace(/\s+/g, ' ')
-    .replace(/\[.*?\]/g, '') // remove brackets e.g. [UAE Version]
-    .replace(/\(.*?(warranty|free delivery|bundle).*?\)/gi, '') // remove promo parenthesis
+    .replace(/\[.*?\]/g, '')
+    .replace(/\(.*?(warranty|free delivery|bundle).*?\)/gi, '')
     .trim();
 
-  // Standardize common brand suffixes
   cleaned = cleaned.replace(/Apple\s+iPhone/i, 'Apple iPhone');
   cleaned = cleaned.replace(/Sony\s+PS5/i, 'Sony PlayStation 5');
   cleaned = cleaned.replace(/Samsung\s+Galaxy/i, 'Samsung Galaxy');
@@ -19,28 +17,35 @@ export function normalizeTitle(rawTitle: string): string {
 export function normalizeMerchantItem(item: RawMerchantItem): NormalizedItem {
   const title = normalizeTitle(item.rawTitle);
 
-  // Guess brand if missing
-  let brand = item.rawBrand || 'Generic';
-  const knownBrands = ['Apple', 'Samsung', 'Sony', 'Google', 'Dell', 'LG', 'Valve', 'Lenovo', 'Bose'];
-  for (const b of knownBrands) {
-    if (new RegExp(`\\b${b}\\b`, 'i').test(title)) {
-      brand = b;
+  let brand = item.rawBrand || 'Unknown';
+  const knownBrands = [
+    'Apple', 'Samsung', 'Sony', 'Google', 'Dell', 'LG', 'Valve', 'Lenovo', 'Bose',
+    'NVIDIA', 'AMD', 'Intel', 'ASUS', 'MSI', 'Gigabyte', 'Acer', 'HP', 'Razer',
+  ];
+
+  for (const candidate of knownBrands) {
+    if (new RegExp(`\\b${candidate}\\b`, 'i').test(title)) {
+      brand = candidate;
       break;
     }
   }
 
-  // Guess category
-  let categorySlug = 'phones';
-  const lower = title.toLowerCase();
-  if (lower.includes('macbook') || lower.includes('laptop') || lower.includes('xps')) {
+  const lower = `${item.rawCategory || ''} ${title}`.toLowerCase();
+  let categorySlug = 'products';
+
+  if (/iphone|galaxy|pixel|smartphone|mobile phone|rog phone|redmagic/.test(lower)) {
+    categorySlug = 'phones';
+  } else if (/macbook|laptop|notebook|xps|thinkpad|vivobook|zenbook|legion/.test(lower)) {
     categorySlug = 'laptops';
-  } else if (lower.includes('playstation') || lower.includes('ps5') || lower.includes('xbox') || lower.includes('steam deck') || lower.includes('nintendo')) {
+  } else if (/geforce|radeon|graphics card|\bgpu\b|\brtx\s?\d|\brx\s?\d|ryzen|core ultra|\bcpu\b|processor|motherboard/.test(lower)) {
+    categorySlug = 'pc-components';
+  } else if (/playstation|\bps5\b|xbox|steam deck|nintendo|gaming console|controller/.test(lower)) {
     categorySlug = 'gaming';
-  } else if (lower.includes('tv') || lower.includes('oled') || lower.includes('qled')) {
+  } else if (/\btv\b|oled|qled|mini-led|television/.test(lower)) {
     categorySlug = 'tvs';
-  } else if (lower.includes('wh-1000') || lower.includes('airpods') || lower.includes('headphones')) {
+  } else if (/wh-1000|airpods|headphones|headset|earbuds/.test(lower)) {
     categorySlug = 'headphones';
-  } else if (lower.includes('watch') || lower.includes('band')) {
+  } else if (/smartwatch|apple watch|galaxy watch|garmin|fitness band/.test(lower)) {
     categorySlug = 'smartwatches';
   }
 
@@ -49,11 +54,11 @@ export function normalizeMerchantItem(item: RawMerchantItem): NormalizedItem {
     title,
     brand,
     categorySlug,
-    price: item.rawPrice,
-    currency: item.rawCurrency,
+    price: Number(item.rawPrice),
+    currency: item.rawCurrency.toUpperCase(),
     url: item.rawUrl,
     inStock: item.inStock,
-    shippingInfo: item.shippingText || 'Standard Delivery',
+    shippingInfo: item.shippingText || 'See retailer for delivery details',
     merchantSlug: item.merchantSlug,
     merchantName: item.merchantName,
   };
