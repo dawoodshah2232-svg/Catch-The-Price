@@ -7,7 +7,7 @@ import { NormalizedItem, RawMerchantItem } from '@/lib/ingestion/types';
 export type LaunchMarket = 'ae' | 'us';
 
 export interface MerchantSourceAdapter {
-  /** Must match an entry in SOURCE_RIGHTS. */
+  /** Must match an approved row in public.source_rights. */
   sourceRightsId: string;
   market: LaunchMarket;
   adapterName: string;
@@ -48,22 +48,22 @@ function validateRawItem(item: RawMerchantItem, market: LaunchMarket): string | 
 }
 
 /**
- * Fetch and normalize a source batch only after commercial/source rights are ACTIVE.
- * This function intentionally does not persist anything. Persistence should happen in
- * a separate transaction after exact-variant matching and source provenance checks.
+ * Fetch and normalize a source batch only after its persisted source-rights row is ACTIVE,
+ * evidence-backed and permits price publishing + affiliate handoff. If the database is
+ * unavailable or the approval record is incomplete, ingestion fails closed.
  */
 export async function prepareApprovedSourceBatch(adapter: MerchantSourceAdapter): Promise<PreparedSourceBatch> {
-  const rights = getSourceRights(adapter.sourceRightsId);
+  const rights = await getSourceRights(adapter.sourceRightsId);
 
   if (!rights) {
-    throw new Error(`Unknown source rights record: ${adapter.sourceRightsId}`);
+    throw new Error(`Source rights record ${adapter.sourceRightsId} is missing or unavailable`);
   }
 
   if (rights.market !== adapter.market) {
     throw new Error(`Source market mismatch for ${adapter.sourceRightsId}`);
   }
 
-  if (!canPublishSource(adapter.sourceRightsId)) {
+  if (!canPublishSource(rights)) {
     throw new Error(`Source ${adapter.sourceRightsId} is not approved for production publishing`);
   }
 
