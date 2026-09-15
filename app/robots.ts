@@ -5,7 +5,16 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/api/outbound', '/admin'],
+      disallow: [
+        '/api/',
+        '/admin',
+        '/ae/search',
+        '/us/search',
+        '/uk/',
+        '/ca/',
+        '/au/',
+        '/sa/',
+      ],
     },
     sitemap: 'https://catchtheprice.com/sitemap.xml',
   };
