@@ -12,49 +12,51 @@ interface BrandLogoProps {
 export function BrandLogo({ variant = 'full', size = 'md', className = '' }: BrandLogoProps) {
   const { country } = useCountry();
 
-  // 1. Finalized Emerald Growth Tag Icon
-  if (variant === 'symbol') {
-    const symbolSizes = {
-      sm: 'w-7 h-7',
-      md: 'w-9 h-9',
-      lg: 'w-11 h-11',
-    };
+  const iconSizes = {
+    sm: 'w-7 h-7',
+    md: 'w-9 h-9',
+    lg: 'w-12 h-12',
+  };
 
+  const textSizes = {
+    sm: 'text-[15px]',
+    md: 'text-[19px] sm:text-[21px]',
+    lg: 'text-[25px] sm:text-[28px]',
+  };
+
+  const isMono = variant === 'monochrome';
+
+  if (variant === 'symbol') {
     return (
       <a
         href={`/${country}`}
-        className={`inline-flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-[#00D27A]/40 rounded-xl group ${className}`}
+        className={`inline-flex items-center justify-center rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00D27A]/40 ${className}`}
         aria-label="CatchThePrice Home"
       >
         <img
           src="/images/emerald_growth_tag_icon.png"
-          alt="CatchThePrice"
-          className={`${symbolSizes[size]} object-contain drop-shadow-md transition-transform duration-200 group-hover:scale-105`}
+          alt=""
+          className={`${iconSizes[size]} object-contain ${isMono ? 'grayscale opacity-80' : ''}`}
         />
       </a>
     );
   }
 
-  // 2. Finalized Main CatchThePrice Logo on Transparency
-  const heightClasses = {
-    sm: 'h-7 sm:h-8',
-    md: 'h-8 sm:h-9',
-    lg: 'h-10 sm:h-11',
-  };
-
   return (
     <a
       href={`/${country}`}
-      className={`inline-flex items-center focus:outline-none focus:ring-2 focus:ring-[#00D27A]/40 rounded-lg group ${className}`}
+      className={`inline-flex items-center gap-1.5 sm:gap-2 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00D27A]/40 ${className}`}
       aria-label="CatchThePrice Home"
     >
       <img
-        src="/images/catchtheprice_logo_on_transparency.png"
-        alt="CatchThePrice — TRACK IT. CATCH THE DROP. PAY LESS."
-        className={`${heightClasses[size]} w-auto object-contain transition-transform duration-200 group-hover:scale-[1.01] ${
-          variant === 'monochrome' ? 'grayscale opacity-75 contrast-125' : ''
-        }`}
+        src="/images/emerald_growth_tag_icon.png"
+        alt=""
+        className={`${iconSizes[size]} shrink-0 object-contain ${isMono ? 'grayscale opacity-80' : ''}`}
       />
+      <span className={`${textSizes[size]} leading-none font-extrabold tracking-[-0.045em] whitespace-nowrap`}>
+        <span className={isMono ? 'text-white/80' : 'text-[#F8FAFC]'}>CatchThe</span>
+        <span className={isMono ? 'text-white/80' : 'text-[#00D27A]'}>Price</span>
+      </span>
     </a>
   );
 }
