@@ -5,10 +5,13 @@ import { COUNTRIES, DEFAULT_COUNTRY } from '@/lib/data/countries';
 import { getTopDeals, getBiggestDrops, getTrendingProducts } from '@/lib/data/products';
 import { Hero } from '@/components/home/Hero';
 import { BestDealsSection } from '@/components/home/BestDealsSection';
+import { SmartComparisonBlock } from '@/components/home/SmartComparisonBlock';
 import { BiggestPriceDropsSection } from '@/components/home/BiggestPriceDropsSection';
 import { CategoryGrid } from '@/components/home/CategoryGrid';
+import { BuyingInsightBlock } from '@/components/home/BuyingInsightBlock';
 import { TrendingSection } from '@/components/home/TrendingSection';
 import { PriceIntelligenceSection } from '@/components/home/PriceIntelligenceSection';
+import { TrustPillarsBlock } from '@/components/home/TrustPillarsBlock';
 import { CountrySection } from '@/components/home/CountrySection';
 import { RecentlyDroppedSection } from '@/components/home/RecentlyDroppedSection';
 import { PriceAlertCTASection } from '@/components/home/PriceAlertCTASection';
@@ -33,6 +36,7 @@ export async function generateMetadata({ params }: HomePageProps): Promise<Metad
       languages: {
         'en-AE': 'https://catchtheprice.com/ae',
         'en-US': 'https://catchtheprice.com/us',
+        'en-SA': 'https://catchtheprice.com/sa',
         'en-GB': 'https://catchtheprice.com/uk',
         'en-CA': 'https://catchtheprice.com/ca',
         'en-AU': 'https://catchtheprice.com/au',
@@ -57,30 +61,39 @@ export default async function HomePage({ params }: HomePageProps) {
       {/* 1. Today's Best Deals (Swipe on mobile, Grid on desktop) */}
       <BestDealsSection products={topDeals} />
 
+      {/* 2. Flagship Smart Comparison Block (Breaks repetitive card grid) */}
+      <SmartComparisonBlock />
+
+      {/* 3. Biggest Price Drops */}
+      <BiggestPriceDropsSection products={biggestDrops} />
+
       {/* Reserved Ad Slot between primary sections */}
       <div className="max-w-5xl mx-auto px-4">
         <AdSlot slotId="home-after-deals" format="banner" />
       </div>
 
-      {/* 2. Biggest Price Drops */}
-      <BiggestPriceDropsSection products={biggestDrops} />
-
-      {/* 3. Browse Categories */}
+      {/* 4. Browse Categories */}
       <CategoryGrid />
 
-      {/* 4. Trending Now */}
+      {/* 5. Buying Insight: How Deal Score Cuts Fake Discounts */}
+      <BuyingInsightBlock />
+
+      {/* 6. Trending Now */}
       <TrendingSection products={trending} />
 
-      {/* 5. Price Intelligence (Compare -> Track -> Catch) */}
+      {/* 7. Price Intelligence (Compare -> Track -> Catch) */}
       <PriceIntelligenceSection />
 
-      {/* 6. Country Section */}
+      {/* 8. The CatchThePrice Trust Pillars */}
+      <TrustPillarsBlock />
+
+      {/* 9. Global Market Coverage */}
       <CountrySection />
 
-      {/* 7. Recently Dropped Prices */}
+      {/* 10. Recently Dropped Prices */}
       <RecentlyDroppedSection />
 
-      {/* 8. Price Alert CTA */}
+      {/* 11. Price Alert CTA */}
       <PriceAlertCTASection />
     </div>
   );

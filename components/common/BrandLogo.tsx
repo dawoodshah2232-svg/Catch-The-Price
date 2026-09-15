@@ -37,9 +37,9 @@ export function BrandLogo({ variant = 'full', size = 'md', className = '' }: Bra
 
   // 2. Finalized Main CatchThePrice Logo on Transparency
   const heightClasses = {
-    sm: 'h-7 sm:h-8',
-    md: 'h-8 sm:h-9',
-    lg: 'h-10 sm:h-11',
+    sm: 'h-8 sm:h-9',
+    md: 'h-9 sm:h-11',
+    lg: 'h-12 sm:h-14',
   };
 
   return (

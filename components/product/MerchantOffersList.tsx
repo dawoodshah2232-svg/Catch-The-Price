@@ -121,10 +121,10 @@ export function MerchantOffersList({ offers, productTitle }: MerchantOffersListP
                   href={outboundHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className={`inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-xs transition-all touch-target shrink-0 ${
+                  className={`inline-flex items-center justify-center gap-1.5 px-4 py-2.5 rounded-xl text-xs transition-all duration-200 touch-target shrink-0 ${
                     isBest
-                      ? 'btn-conversion-primary font-extrabold shadow-md'
-                      : 'bg-[#0f1c24] hover:bg-[#00D27A] text-[#F8FAFC] hover:text-[#071015] border border-[#203648] hover:border-[#00D27A] font-bold'
+                      ? 'bg-[#00D27A] hover:bg-[#00E6A2] text-[#071015] font-extrabold shadow-md'
+                      : 'bg-[#00D27A]/10 hover:bg-[#00D27A] text-[#00D27A] hover:text-[#060D12] border border-[#00D27A]/30 hover:border-[#00D27A] font-bold'
                   }`}
                 >
                   <span>Buy on {primaryStoreWord}</span>

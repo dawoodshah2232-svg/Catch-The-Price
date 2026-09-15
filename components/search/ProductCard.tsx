@@ -3,7 +3,7 @@
 import React from 'react';
 import { Product } from '@/lib/types';
 import { useCountry } from '@/context/CountryContext';
-import { Bookmark, Store } from 'lucide-react';
+import { Bookmark, Store, ArrowRight } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -78,7 +78,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           {/* Product Name */}
           <a
             href={`/${country}/product/${product.slug}`}
-            className="block font-bold text-xs sm:text-sm text-[#F8FAFC] group-hover:text-[#00E6A2] transition-colors line-clamp-2 leading-snug"
+            className="block font-bold text-xs sm:text-sm text-[#F8FAFC] group-hover:text-[#00E6A2] transition-colors line-clamp-2 leading-snug min-h-[2.5rem]"
           >
             {product.title}
           </a>
@@ -103,18 +103,19 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
 
             {/* Deal Score Badge */}
             <div className="text-right shrink-0">
-              <span className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-[#00D27A]/15 text-[#00D27A] border border-[#00D27A]/30 whitespace-nowrap">
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[10px] font-extrabold bg-[#00D27A]/15 text-[#00D27A] border border-[#00D27A]/30 whitespace-nowrap">
                 <span className="hidden sm:inline">Deal </span>Score: {product.dealScore}
               </span>
             </div>
           </div>
 
-          {/* View Prices CTA Button - High-Conversion */}
+          {/* View Prices CTA Button - Balanced Luxury Affordance */}
           <a
             href={`/${country}/product/${product.slug}`}
-            className="w-full mt-2.5 py-2.5 px-3 rounded-xl btn-conversion-primary text-xs text-center touch-target flex items-center justify-center font-extrabold tracking-wide"
+            className="w-full mt-2 py-2.5 px-3 rounded-xl bg-[#00D27A]/12 hover:bg-[#00D27A] text-[#00D27A] hover:text-[#060D12] border border-[#00D27A]/30 hover:border-[#00D27A] text-xs text-center touch-target flex items-center justify-center gap-1.5 font-bold tracking-wide transition-all duration-200 group/btn shadow-sm"
           >
-            View Prices
+            <span>View Prices</span>
+            <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover/btn:translate-x-0.5" />
           </a>
         </div>
       </div>

@@ -17,6 +17,14 @@ export const COUNTRIES: Record<CountryCode, CountryInfo> = {
     symbol: '$',
     locale: 'en-US',
   },
+  sa: {
+    code: 'sa',
+    name: 'Saudi Arabia',
+    flag: '🇸🇦',
+    currency: 'SAR',
+    symbol: 'SAR',
+    locale: 'en-SA',
+  },
   uk: {
     code: 'uk',
     name: 'United Kingdom',
@@ -50,6 +58,10 @@ export function formatPrice(amount: number, countryCode: CountryCode = 'ae'): st
   
   if (countryCode === 'ae') {
     return `AED ${amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
+  }
+
+  if (countryCode === 'sa') {
+    return `SAR ${amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`;
   }
   
   return new Intl.NumberFormat(info.locale, {

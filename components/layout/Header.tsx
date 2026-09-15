@@ -31,7 +31,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 w-full bg-[#071015]/95 backdrop-blur-md border-b border-[#162633] transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="hidden lg:flex items-center justify-between h-16 gap-5">
+        <div className="hidden lg:flex items-center justify-between h-[72px] gap-6">
           <div className="shrink-0 flex items-center">
             <BrandLogo size="md" variant="full" />
           </div>

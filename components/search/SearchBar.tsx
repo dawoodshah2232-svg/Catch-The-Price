@@ -79,12 +79,12 @@ export function SearchBar({
         <div
           className={`flex items-center w-full min-w-0 transition-all duration-200 rounded-2xl border ${
             isHero
-              ? 'bg-[#091217] border-[#203648] hover:border-[#00D27A]/60 focus-within:border-[#00D27A] focus-within:ring-2 focus-within:ring-[#00D27A]/25 shadow-2xl'
-              : 'bg-[#091217] border-[#162633] hover:border-[#203648] focus-within:border-[#00D27A] focus-within:ring-1 focus-within:ring-[#00D27A]/25'
+              ? 'bg-[#091217] border-[#22384a] hover:border-[#00D27A]/60 focus-within:border-[#00D27A] focus-within:ring-2 focus-within:ring-[#00D27A]/25 shadow-2xl'
+              : 'bg-[#0b161e] border-[#1b2d3c] hover:border-[#294359] focus-within:border-[#00D27A] focus-within:ring-2 focus-within:ring-[#00D27A]/20 shadow-sm'
           }`}
         >
           <div className="pl-3.5 sm:pl-4 pr-2 flex items-center pointer-events-none text-[#CBD5E1] shrink-0">
-            <Search className={isHero ? 'w-5 h-5 text-[#00D27A]' : 'w-4 h-4'} />
+            <Search className={isHero ? 'w-5 h-5 text-[#00D27A]' : 'w-4 h-4 text-[#00D27A]'} />
           </div>
 
           <input
@@ -94,10 +94,18 @@ export function SearchBar({
             onFocus={() => query.trim().length >= 2 && setIsOpen(true)}
             placeholder={isHero ? 'Search products, brands or models…' : 'Search products, brands or models…'}
             autoFocus={autoFocus}
-            className={`min-w-0 flex-1 bg-transparent text-[#F8FAFC] placeholder:text-[#94A3B8] focus:outline-none ${
-              isHero ? 'py-3.5 sm:py-5 text-[13px] sm:text-base font-medium' : 'py-3.5 text-[13px] sm:text-sm'
+            className={`min-w-0 flex-1 bg-transparent text-[#F8FAFC] placeholder:text-[#8295A8] focus:outline-none ${
+              isHero ? 'py-3.5 sm:py-5 text-[13px] sm:text-base font-medium' : 'py-2.5 sm:py-3 text-[13px] sm:text-sm font-medium'
             }`}
           />
+
+          {!isHero && !query && (
+            <div className="hidden xl:flex items-center pr-2 pointer-events-none">
+              <kbd className="inline-flex items-center px-1.5 py-0.5 text-[10px] font-mono text-[#64748B] bg-[#071015] border border-[#1b2d3c] rounded-md">
+                /
+              </kbd>
+            </div>
+          )}
 
           {query && (
             <button
@@ -106,7 +114,7 @@ export function SearchBar({
                 setQuery('');
                 setIsOpen(false);
               }}
-              className="p-2 mr-0.5 text-[#CBD5E1] hover:text-white focus:outline-none touch-target flex items-center justify-center min-h-[44px] min-w-[44px] shrink-0"
+              className="p-2 mr-0.5 text-[#CBD5E1] hover:text-white focus:outline-none touch-target flex items-center justify-center min-h-[40px] min-w-[40px] shrink-0"
               aria-label="Clear search"
             >
               <X className="w-4 h-4" />
@@ -119,7 +127,7 @@ export function SearchBar({
             className={`flex items-center justify-center font-bold transition-all shrink-0 ${
               isHero
                 ? 'mr-1.5 sm:mr-2 px-3 sm:px-6 py-2.5 sm:py-3.5 min-h-[46px] sm:min-h-[48px] rounded-xl btn-conversion-primary text-xs sm:text-base shadow-md touch-target font-extrabold'
-                : 'mr-1.5 p-2.5 rounded-xl text-[#00D27A] hover:text-[#00E6A2] min-h-[44px] min-w-[44px] touch-target'
+                : 'mr-1.5 p-2 rounded-xl text-[#00D27A] hover:bg-[#00D27A]/10 min-h-[40px] min-w-[40px] touch-target'
             }`}
           >
             {isHero ? (

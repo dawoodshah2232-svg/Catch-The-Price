@@ -14,7 +14,7 @@ interface CountryLayoutProps {
   }>;
 }
 
-const LIVE_COUNTRIES = ['ae', 'us'] as const;
+const LIVE_COUNTRIES = ['ae', 'us', 'sa', 'uk', 'ca', 'au'] as const;
 
 export function generateStaticParams() {
   return LIVE_COUNTRIES.map((country) => ({ country }));

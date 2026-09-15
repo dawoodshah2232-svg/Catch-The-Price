@@ -4,7 +4,7 @@ import { getAllProducts } from '@/lib/data/products';
 import { BLOG_POSTS } from '@/lib/data/blog';
 import { CountryCode } from '@/lib/types';
 
-const LIVE_COUNTRIES: CountryCode[] = ['ae', 'us'];
+const LIVE_COUNTRIES: CountryCode[] = ['ae', 'us', 'sa', 'uk', 'ca', 'au'];
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://catchtheprice.com';

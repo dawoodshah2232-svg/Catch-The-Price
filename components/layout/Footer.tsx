@@ -8,7 +8,7 @@ import { COUNTRIES } from '@/lib/data/countries';
 import { CountryCode } from '@/lib/types';
 import { ShieldCheck, TrendingDown, BellRing, Sparkles, ChevronDown, BookOpen } from 'lucide-react';
 
-const LIVE_MARKETS: CountryCode[] = ['ae', 'us'];
+const LIVE_MARKETS: CountryCode[] = ['ae', 'us', 'sa', 'uk', 'ca', 'au'];
 
 export function Footer() {
   const { country, setCountry } = useCountry();

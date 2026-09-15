@@ -1,4 +1,4 @@
-export type CountryCode = 'ae' | 'us' | 'uk' | 'ca' | 'au';
+export type CountryCode = 'ae' | 'us' | 'sa' | 'uk' | 'ca' | 'au';
 
 export interface CountryInfo {
   code: CountryCode;
