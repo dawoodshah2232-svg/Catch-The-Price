@@ -1,11 +1,12 @@
 'use client';
 
-import React, { Suspense, use, useEffect, useMemo, useState } from 'react';
+import React, { Suspense, use, useEffect, useMemo, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Product } from '@/lib/types';
 import { useCountry } from '@/context/CountryContext';
 import { ProductCard } from '@/components/search/ProductCard';
 import { AdSlot } from '@/components/common/AdSlot';
+import { sendAnalyticsEvent } from '@/lib/analytics/client';
 import { ArrowUpDown, RotateCcw, Search as SearchIcon, SlidersHorizontal } from 'lucide-react';
 
 interface SearchPageProps {
@@ -22,6 +23,7 @@ function SearchContent() {
   const [loadError, setLoadError] = useState(false);
   const [isPreview, setIsPreview] = useState(false);
   const [filtersOpen, setFiltersOpen] = useState(false);
+  const lastSearchSignature = useRef('');
 
   const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
   const [category, setCategory] = useState(searchParams.get('category') || '');
@@ -92,6 +94,28 @@ function SearchContent() {
       return (b.dealScore || 0) - (a.dealScore || 0);
     });
   }, [products, searchQuery, category, brand, merchant, sortBy]);
+
+  useEffect(() => {
+    if (loading || loadError || isPreview) return;
+
+    const query = searchQuery.trim();
+    if (query.length < 2) return;
+
+    const signature = `${country}|${query.toLowerCase()}|${category}|${brand}|${merchant}|${results.length}`;
+    const timer = window.setTimeout(() => {
+      if (lastSearchSignature.current === signature) return;
+      lastSearchSignature.current = signature;
+      void sendAnalyticsEvent({
+        eventType: 'search',
+        country,
+        path: `/${country}/search`,
+        searchQuery: query,
+        resultCount: results.length,
+      });
+    }, 800);
+
+    return () => window.clearTimeout(timer);
+  }, [brand, category, country, isPreview, loadError, loading, merchant, results.length, searchQuery]);
 
   const reset = () => {
     setSearchQuery('');
