@@ -58,9 +58,9 @@ export default async function HomePage({ params }: HomePageProps) {
       )}
 
       <Hero />
+      <CategoryGrid />
       <CommerceHubSection />
       <BestDealsSection products={topDeals} />
-      <CategoryGrid />
 
       <div className="max-w-5xl mx-auto px-4 py-1">
         <AdSlot slotId="home-after-deals" format="banner" />
