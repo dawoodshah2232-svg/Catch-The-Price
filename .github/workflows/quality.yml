@@ -13,7 +13,7 @@ permissions:
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     env:
       NEXT_PUBLIC_SITE_URL: https://catchtheprice.com
       NEXT_PUBLIC_SUPABASE_URL: https://jghpyvawgdfhfqmtiexb.supabase.co
@@ -30,7 +30,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
 
       - name: Install dependencies
@@ -47,3 +47,46 @@ jobs:
 
       - name: Runtime smoke checks
         run: npm run smoke
+
+      - name: Install screenshot browser
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: npx --yes playwright@1.57.0 install --with-deps chromium
+
+      - name: Start preview server
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: |
+          nohup npm run start -- -H 127.0.0.1 -p 3101 > /tmp/catchtheprice-preview.log 2>&1 &
+          echo $! > /tmp/catchtheprice-preview.pid
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:3101/ae >/dev/null; then exit 0; fi
+            sleep 1
+          done
+          cat /tmp/catchtheprice-preview.log
+          exit 1
+
+      - name: Capture desktop and mobile screenshots
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        run: |
+          mkdir -p screenshots
+          shot() { npx --yes playwright@1.57.0 screenshot --browser chromium --wait-for-timeout 1200 --full-page "$1" "$2"; }
+          shot http://127.0.0.1:3101/ae screenshots/01-home-desktop.png
+          shot http://127.0.0.1:3101/ae/search?q=Samsung screenshots/02-search-desktop.png
+          shot http://127.0.0.1:3101/ae/product/samsung-galaxy-s24-ultra-512gb screenshots/03-product-desktop.png
+          shot http://127.0.0.1:3101/ae/compare screenshots/04-compare-desktop.png
+          shot http://127.0.0.1:3101/ae/account screenshots/05-account-desktop.png
+          shot http://127.0.0.1:3101/ae/blog screenshots/06-guides-desktop.png
+          shot http://127.0.0.1:3101/admin-access screenshots/07-admin-access-desktop.png
+          npx --yes playwright@1.57.0 screenshot --browser chromium --device "iPhone 13" --wait-for-timeout 1200 --full-page http://127.0.0.1:3101/ae screenshots/08-home-mobile.png
+          npx --yes playwright@1.57.0 screenshot --browser chromium --device "iPhone 13" --wait-for-timeout 1200 --full-page "http://127.0.0.1:3101/ae/search?q=Samsung" screenshots/09-search-mobile.png
+          npx --yes playwright@1.57.0 screenshot --browser chromium --device "iPhone 13" --wait-for-timeout 1200 --full-page http://127.0.0.1:3101/ae/product/samsung-galaxy-s24-ultra-512gb screenshots/10-product-mobile.png
+          npx --yes playwright@1.57.0 screenshot --browser chromium --device "iPhone 13" --wait-for-timeout 1200 --full-page http://127.0.0.1:3101/ae/compare screenshots/11-compare-mobile.png
+          npx --yes playwright@1.57.0 screenshot --browser chromium --device "iPhone 13" --wait-for-timeout 1200 --full-page http://127.0.0.1:3101/ae/account screenshots/12-account-mobile.png
+
+      - name: Upload screenshot pack
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        uses: actions/upload-artifact@v4
+        with:
+          name: catchtheprice-screenshot-pack
+          path: screenshots/*.png
+          if-no-files-found: error
+          retention-days: 7
