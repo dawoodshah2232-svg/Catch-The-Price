@@ -2,16 +2,43 @@
 
 import React from 'react';
 import { useCountry } from '@/context/CountryContext';
-import { getProductBySlug } from '@/lib/data/products';
-import { ArrowRight, Scale } from 'lucide-react';
+import { Product } from '@/lib/types';
+import { ArrowRight, Scale, Sparkles } from 'lucide-react';
 
-export function SmartComparisonBlock() {
+interface SmartComparisonBlockProps {
+  products: Product[];
+}
+
+function pickComparison(products: Product[]) {
+  for (const product of products) {
+    const sibling = products.find(
+      (candidate) => candidate.id !== product.id && candidate.categorySlug === product.categorySlug
+    );
+    if (sibling) return [product, sibling];
+  }
+  return products.slice(0, 2);
+}
+
+export function SmartComparisonBlock({ products }: SmartComparisonBlockProps) {
   const { country, formatLocalPrice } = useCountry();
-  const iphone = getProductBySlug('iphone-16-pro-max-256gb', country);
-  const samsung = getProductBySlug('samsung-galaxy-s24-ultra-512gb', country);
-  if (!iphone || !samsung) return null;
+  const items = pickComparison(products);
 
-  const items = [iphone, samsung];
+  if (items.length < 2) {
+    return (
+      <section className="py-8 sm:py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-[#DDE7E3]">
+        <div className="rounded-[28px] bg-white border border-[#DDE7E3] p-5 sm:p-7 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-[0_10px_30px_rgba(29,71,57,.05)]">
+          <div>
+            <span className="text-xs font-bold uppercase tracking-wider text-[#08784B] flex items-center gap-1.5"><Scale className="w-3.5 h-3.5" /> Compare workspace</span>
+            <h2 className="text-xl sm:text-2xl font-extrabold text-[#102027] mt-1.5">Compare products when the live catalog is ready</h2>
+            <p className="text-xs sm:text-sm text-[#64767E] mt-1.5 max-w-2xl">CatchThePrice compares real catalog records only. More comparison suggestions will appear after approved retailer data is published.</p>
+          </div>
+          <a href={`/${country}/compare`} className="min-h-[44px] px-4 rounded-xl bg-[#0B8F58] hover:bg-[#08784B] text-white font-extrabold text-xs flex items-center justify-center gap-2 shrink-0">
+            Open Compare <ArrowRight className="w-3.5 h-3.5" />
+          </a>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="py-10 sm:py-14 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-[#DDE7E3]">
@@ -20,13 +47,9 @@ export function SmartComparisonBlock() {
           <span className="text-xs font-bold uppercase tracking-wider text-[#08784B] flex items-center gap-1.5">
             <Scale className="w-3.5 h-3.5" /> Smart comparison
           </span>
-          <h2 className="text-xl sm:text-2xl font-extrabold text-[#102027] mt-1.5">
-            Compare popular choices side by side
-          </h2>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-[#102027] mt-1.5">Compare live catalog choices side by side</h2>
         </div>
-        <p className="text-xs text-[#64767E] max-w-md">
-          Compare current listed prices and key specifications before choosing where to buy.
-        </p>
+        <p className="text-xs text-[#64767E] max-w-md">Current listed prices and available structured specifications only. Missing facts stay unknown.</p>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
@@ -57,11 +80,14 @@ export function SmartComparisonBlock() {
                     <span className="font-semibold text-[#20343C] text-right">{value}</span>
                   </div>
                 ))}
+                {Object.keys(product.specs).length === 0 && (
+                  <div className="flex items-center gap-2 text-[#73858D]"><Sparkles className="w-3.5 h-3.5 text-[#08784B]" /> Specifications have not been verified yet.</div>
+                )}
               </div>
             </div>
 
-            <a href={`/${country}/product/${product.slug}`} className="mt-4 w-full py-2.5 px-4 rounded-xl bg-[#F0FAF5] hover:bg-[#DDF8EB] text-[#08784B] border border-[#CFE6DC] hover:border-[#9FD2BC] font-bold text-xs flex items-center justify-center gap-2 transition-all">
-              <span>View product & prices</span>
+            <a href={`/${country}/compare?products=${encodeURIComponent(items.map((item) => item.slug).join(','))}`} className="mt-4 w-full py-2.5 px-4 rounded-xl bg-[#F0FAF5] hover:bg-[#DDF8EB] text-[#08784B] border border-[#CFE6DC] hover:border-[#9FD2BC] font-bold text-xs flex items-center justify-center gap-2 transition-all">
+              <span>Compare these products</span>
               <ArrowRight className="w-3.5 h-3.5" />
             </a>
           </div>
