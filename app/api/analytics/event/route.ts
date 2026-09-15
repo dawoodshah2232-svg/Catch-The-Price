@@ -36,6 +36,12 @@ function safeText(value: unknown, max = 120): string | null {
   return text ? text.slice(0, max) : null;
 }
 
+function safeCount(value: unknown): number | null {
+  const number = Number(value);
+  if (!Number.isInteger(number) || number < 0 || number > 100000) return null;
+  return number;
+}
+
 export async function POST(request: NextRequest) {
   const supabase = getServerSupabase();
   if (!supabase) return NextResponse.json({ ok: false }, { status: 503 });
@@ -61,6 +67,18 @@ export async function POST(request: NextRequest) {
     ? safeText(body.productSlug, 160)
     : null;
 
+  const metadata: Record<string, string | number | boolean> = {};
+  if (eventType === 'search') {
+    const resultCount = safeCount(body.resultCount);
+    if (resultCount !== null) {
+      metadata.result_count = resultCount;
+      metadata.zero_result = resultCount === 0;
+    }
+  }
+  if (eventType === 'save' && typeof body.saved === 'boolean') {
+    metadata.saved = body.saved;
+  }
+
   const { error } = await supabase.from('analytics_events').insert({
     event_type: eventType,
     country_code: country,
@@ -70,7 +88,7 @@ export async function POST(request: NextRequest) {
     session_id: sessionId,
     search_query: searchQuery,
     product_slug: productSlug,
-    metadata: {},
+    metadata,
   });
 
   if (error) {
