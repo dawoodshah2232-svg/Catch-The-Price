@@ -34,7 +34,7 @@ export const metadata: Metadata = {
 const themeScript = `
 (function(){
   try {
-    var saved = localStorage.getItem('ctp-theme');
+    var saved = localStorage.getItem('ctp-theme-v2');
     var theme = saved === 'dark' ? 'dark' : 'light';
     document.documentElement.dataset.theme = theme;
     document.documentElement.style.colorScheme = theme;
