@@ -12,6 +12,7 @@ import { PriceIntelligenceSection } from '@/components/home/PriceIntelligenceSec
 import { CountrySection } from '@/components/home/CountrySection';
 import { RecentlyDroppedSection } from '@/components/home/RecentlyDroppedSection';
 import { PriceAlertCTASection } from '@/components/home/PriceAlertCTASection';
+import { DiscoveryHubSection } from '@/components/home/DiscoveryHubSection';
 import { AdSlot } from '@/components/common/AdSlot';
 
 interface HomePageProps {
@@ -33,9 +34,6 @@ export async function generateMetadata({ params }: HomePageProps): Promise<Metad
       languages: {
         'en-AE': 'https://catchtheprice.com/ae',
         'en-US': 'https://catchtheprice.com/us',
-        'en-GB': 'https://catchtheprice.com/uk',
-        'en-CA': 'https://catchtheprice.com/ca',
-        'en-AU': 'https://catchtheprice.com/au',
       },
     },
   };
@@ -51,36 +49,28 @@ export default async function HomePage({ params }: HomePageProps) {
 
   return (
     <div className="min-h-screen bg-[#071015]">
-      {/* Homepage Hero */}
       <Hero />
 
-      {/* 1. Today's Best Deals (Swipe on mobile, Grid on desktop) */}
       <BestDealsSection products={topDeals} />
 
-      {/* Reserved Ad Slot between primary sections */}
+      <DiscoveryHubSection />
+
       <div className="max-w-5xl mx-auto px-4">
         <AdSlot slotId="home-after-deals" format="banner" />
       </div>
 
-      {/* 2. Biggest Price Drops */}
       <BiggestPriceDropsSection products={biggestDrops} />
 
-      {/* 3. Browse Categories */}
       <CategoryGrid />
 
-      {/* 4. Trending Now */}
       <TrendingSection products={trending} />
 
-      {/* 5. Price Intelligence (Compare -> Track -> Catch) */}
       <PriceIntelligenceSection />
 
-      {/* 6. Country Section */}
       <CountrySection />
 
-      {/* 7. Recently Dropped Prices */}
       <RecentlyDroppedSection />
 
-      {/* 8. Price Alert CTA */}
       <PriceAlertCTASection />
     </div>
   );
