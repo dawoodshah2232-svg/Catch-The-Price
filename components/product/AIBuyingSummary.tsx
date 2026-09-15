@@ -14,7 +14,7 @@ interface AIBuyingSummaryProps {
   dealScore: number;
 }
 
-export function AIBuyingSummary({ summary, productTitle }: AIBuyingSummaryProps) {
+export function AIBuyingSummary({ summary, productTitle, dealScore }: AIBuyingSummaryProps) {
   if (!summary) return null;
 
   return (
@@ -84,11 +84,6 @@ export function AIBuyingSummary({ summary, productTitle }: AIBuyingSummaryProps)
           </ul>
         </div>
       </div>
-
-      <div className="mt-4 flex items-start gap-2 text-[11px] text-[#6D7E78] leading-relaxed">
-        <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[#0B8F58]" />
-        <span>CatchThePrice does not invent missing specifications or retailer facts. If source data is incomplete, this section should remain limited rather than guessing.</span>
-      </div>
-    </section>
+    </div>
   );
 }

@@ -42,28 +42,17 @@ export function BrandLogo({ variant = 'full', size = 'md', className = '' }: Bra
     lg: 'h-12 sm:h-14',
   };
 
-  const fullSizes = {
-    sm: 'h-8 max-w-[168px]',
-    md: 'h-10 max-w-[222px]',
-    lg: 'h-[52px] max-w-[286px]',
-  };
-
-  const isSymbol = variant === 'symbol';
-  const src = isSymbol
-    ? '/images/emerald_growth_tag_icon.png'
-    : '/images/catchtheprice_logo_on_transparency.png';
-
   return (
     <a
       href={`/${country}`}
-      className={`inline-flex items-center rounded-xl focus:outline-none focus:ring-2 focus:ring-[#00D27A]/40 ${className}`}
+      className={`inline-flex items-center focus:outline-none focus:ring-2 focus:ring-[#00D27A]/40 rounded-lg group ${className}`}
       aria-label="CatchThePrice Home"
     >
       <img
-        src={src}
-        alt={isSymbol ? '' : 'CatchThePrice'}
-        className={`${isSymbol ? symbolSizes[size] : fullSizes[size]} w-auto shrink-0 object-contain ${
-          variant === 'monochrome' ? 'grayscale opacity-85' : ''
+        src="/images/catchtheprice_logo_on_transparency.png"
+        alt="CatchThePrice — TRACK IT. CATCH THE DROP. PAY LESS."
+        className={`${heightClasses[size]} w-auto object-contain transition-transform duration-200 group-hover:scale-[1.01] ${
+          variant === 'monochrome' ? 'grayscale opacity-75 contrast-125' : ''
         }`}
       />
     </a>

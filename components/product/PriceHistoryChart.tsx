@@ -31,7 +31,8 @@ export function PriceHistoryChart({ history, stats }: PriceHistoryChartProps) {
   const filteredPoints = useMemo(() => {
     if (orderedHistory.length === 0 || period === 'ALL') return orderedHistory;
     const days = period === '7D' ? 7 : period === '30D' ? 30 : 90;
-    const cutoff = Date.now() - days * 24 * 60 * 60 * 1000;
+    const lastDate = pointDate(orderedHistory[orderedHistory.length - 1].date);
+    const cutoff = lastDate - days * 24 * 60 * 60 * 1000;
     const filtered = orderedHistory.filter((point) => pointDate(point.date) >= cutoff);
     return filtered.length >= 2 ? filtered : orderedHistory;
   }, [orderedHistory, period]);

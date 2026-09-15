@@ -1,26 +1,16 @@
 import { MetadataRoute } from 'next';
 import { CATEGORIES } from '@/lib/data/categories';
-import { getCatalogProducts, isPreviewCatalogEnabled } from '@/lib/data/catalog.server';
+import { getAllProducts } from '@/lib/data/products';
 import { BLOG_POSTS } from '@/lib/data/blog';
 import { CountryCode } from '@/lib/types';
 
 const LIVE_COUNTRIES: CountryCode[] = ['ae', 'us', 'sa', 'uk', 'ca', 'au'];
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = 'https://catchtheprice.com';
   const entries: MetadataRoute.Sitemap = [];
-  const preview = isPreviewCatalogEnabled();
 
-  TRUST_PAGES.forEach((path) => {
-    entries.push({
-      url: `${baseUrl}${path}`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.55,
-    });
-  });
-
-  for (const c of LIVE_COUNTRIES) {
+  LIVE_COUNTRIES.forEach((c) => {
     entries.push({
       url: `${baseUrl}/${c}`,
       lastModified: new Date(),
@@ -40,13 +30,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.9,
-    });
-
-    entries.push({
-      url: `${baseUrl}/${c}/compare`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.75,
     });
 
     entries.push({
@@ -81,19 +64,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       });
     });
 
-    // Never advertise fixture/demo product URLs to search engines.
-    if (!preview) {
-      const { products } = await getCatalogProducts(c);
-      products.forEach((product) => {
-        entries.push({
-          url: `${baseUrl}/${c}/product/${product.slug}`,
-          lastModified: new Date(),
-          changeFrequency: 'daily',
-          priority: 0.9,
-        });
+    const products = getAllProducts(c);
+    products.forEach((p) => {
+      entries.push({
+        url: `${baseUrl}/${c}/product/${p.slug}`,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: 0.9,
       });
-    }
-  }
+    });
+  });
 
   return entries;
 }

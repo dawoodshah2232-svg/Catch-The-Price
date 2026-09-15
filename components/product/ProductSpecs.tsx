@@ -104,11 +104,6 @@ export function ProductSpecs({ specs, brand }: ProductSpecsProps) {
           </div>
         ))}
       </div>
-
-      <div className="px-4 sm:px-6 py-3 border-t border-[#E5ECE9] bg-[#F7FAF8] flex items-start gap-2 text-[11px] text-[#73837D]">
-        <Info className="w-3.5 h-3.5 shrink-0 mt-0.5 text-[#0B8F58]" />
-        <span>Specifications are shown only when present in our structured source data. CatchThePrice does not fill missing values by guessing.</span>
-      </div>
-    </section>
+    </div>
   );
 }
