@@ -30,23 +30,19 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   const dropPercent = hasReferencePrice
     ? Math.round(((product.originalPrice - product.currentBestPrice) / product.originalPrice) * 100)
     : 0;
-  const historyCopy = product.priceHistory.length > 1 ? ' and available price history' : '';
-  const savingsCopy = dropPercent > 0 ? ` (${dropPercent}% below the listed reference price)` : '';
+  const historyCopy = product.priceHistory.length > 1 ? ' Price history is available.' : '';
+  const savingsCopy = dropPercent > 0 ? ` The lowest listed price is ${dropPercent}% below the recorded reference price.` : '';
 
   return {
     title: `${product.title} — Compare Prices in ${info.name}`,
-    description: `Compare ${product.title} across ${product.offersCount} listed retailer offer${product.offersCount === 1 ? '' : 's'} in ${info.name}. Current lowest listed price: ${info.currency} ${product.currentBestPrice}${savingsCopy}${historyCopy}.`,
+    description: `Compare ${product.title} across ${product.offersCount} current retailer offer${product.offersCount === 1 ? '' : 's'} in ${info.name}. Lowest listed price: ${info.currency} ${product.currentBestPrice}.${savingsCopy}${historyCopy}`,
     robots: isPreview ? { index: false, follow: false } : undefined,
     alternates: {
       canonical: `https://catchtheprice.com/${country}/product/${product.slug}`,
-      languages: {
-        'en-AE': `https://catchtheprice.com/ae/product/${product.slug}`,
-        'en-US': `https://catchtheprice.com/us/product/${product.slug}`,
-      },
     },
     openGraph: {
       title: `${product.title} — Compare Retailer Prices`,
-      description: `Compare listed retailer offers for ${product.title} in ${info.name}.`,
+      description: `Compare current retailer offers for ${product.title} in ${info.name}.`,
       images: product.imageUrl
         ? [
             {
@@ -66,27 +62,31 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const country = (rawCountry?.toLowerCase() in COUNTRIES ? rawCountry.toLowerCase() : DEFAULT_COUNTRY) as CountryCode;
   const { product, related, isPreview } = await getCatalogProductBySlug(slug, country);
 
-  if (!product) {
-    notFound();
-  }
+  if (!product) notFound();
 
-  const jsonLd = !isPreview
+  const liveOfferPrices = product.offers.map((offer) => offer.price).filter((price) => Number.isFinite(price) && price > 0);
+  const lowPrice = liveOfferPrices.length ? Math.min(...liveOfferPrices) : product.currentBestPrice;
+  const highPrice = liveOfferPrices.length ? Math.max(...liveOfferPrices) : product.currentBestPrice;
+
+  const jsonLd = !isPreview && product.offers.length > 0
     ? {
         '@context': 'https://schema.org',
         '@type': 'Product',
         name: product.title,
-        image: product.imageUrl,
-        description: product.description,
-        brand: {
-          '@type': 'Brand',
-          name: product.brand,
-        },
+        image: product.imageUrl ? [product.imageUrl] : undefined,
+        description: product.description || undefined,
+        brand: product.brand
+          ? {
+              '@type': 'Brand',
+              name: product.brand,
+            }
+          : undefined,
         offers: {
           '@type': 'AggregateOffer',
           priceCurrency: product.currency,
-          lowPrice: product.currentBestPrice,
-          highPrice: product.originalPrice,
-          offerCount: product.offersCount,
+          lowPrice,
+          highPrice,
+          offerCount: product.offers.length,
           offers: product.offers.map((offer) => ({
             '@type': 'Offer',
             price: offer.price,
