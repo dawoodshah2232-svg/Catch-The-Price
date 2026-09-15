@@ -34,17 +34,15 @@ function numberValue(value: number | string | null | undefined) {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
-function previousObservedPrice(history: HistoryRow[], offerIds: Set<string>, currentPrice: number): number | null {
+function previousObservedPrice(history: HistoryRow[], offerId: string, currentPrice: number): number | null {
   const points = history
-    .filter((row) => offerIds.has(row.offer_id))
+    .filter((row) => row.offer_id === offerId)
     .map((row) => ({ price: numberValue(row.price), capturedAt: row.captured_at }))
     .filter((row): row is { price: number; capturedAt: string } => row.price !== null && row.price > 0)
     .sort((a, b) => b.capturedAt.localeCompare(a.capturedAt));
 
   if (points.length === 0) return null;
 
-  // Ignore the newest observation when it simply reflects the current price,
-  // then use the most recent different/earlier observation as the comparison baseline.
   let skippedCurrent = false;
   for (const point of points) {
     if (!skippedCurrent && point.price === currentPrice) {
@@ -149,8 +147,9 @@ export async function evaluatePriceAlerts(): Promise<AlertEvaluationResult> {
       eventType = 'target_reached';
       message = `Target reached: current lowest listed price is ${bestOffer.currency} ${bestOffer.numericPrice}, at or below your target of ${bestOffer.currency} ${target}.`;
     } else if (watch.alert_type === 'any_drop') {
-      const relevantOfferIds = new Set(matchingOffers.map((offer) => offer.id));
-      const previous = previousObservedPrice(history, relevantOfferIds, bestOffer.numericPrice);
+      // Compare the current lowest offer only against that exact offer's own stored
+      // history. Mixing different merchants would create false "drop" claims.
+      const previous = previousObservedPrice(history, bestOffer.id, bestOffer.numericPrice);
       if (!previous) {
         result.skippedNoBaseline += 1;
         continue;
@@ -158,7 +157,7 @@ export async function evaluatePriceAlerts(): Promise<AlertEvaluationResult> {
       if (bestOffer.numericPrice >= previous) continue;
       shouldTrigger = true;
       eventType = 'price_drop';
-      message = `Price drop observed: current lowest listed price is ${bestOffer.currency} ${bestOffer.numericPrice}, below the previous stored observation of ${bestOffer.currency} ${previous}.`;
+      message = `Price drop observed: current lowest listed price is ${bestOffer.currency} ${bestOffer.numericPrice}, below this offer's previous stored observation of ${bestOffer.currency} ${previous}.`;
     }
 
     if (!shouldTrigger) continue;
