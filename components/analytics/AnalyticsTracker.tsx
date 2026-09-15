@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { usePathname, useSearchParams } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useCountry } from '@/context/CountryContext';
 
 function getSessionId(): string | null {
@@ -34,34 +34,23 @@ async function sendEvent(payload: Record<string, unknown>) {
 
 export function AnalyticsTracker() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
   const { country } = useCountry();
-  const lastKey = useRef('');
+  const lastPath = useRef('');
 
   useEffect(() => {
-    if (!pathname) return;
-
-    const queryString = searchParams?.toString() || '';
-    const key = `${pathname}?${queryString}`;
-    if (lastKey.current === key) return;
-    lastKey.current = key;
+    if (!pathname || lastPath.current === pathname) return;
+    lastPath.current = pathname;
 
     const sessionId = getSessionId();
     const base = { country, path: pathname, sessionId };
-
     void sendEvent({ eventType: 'page_view', ...base });
-
-    if (pathname === `/${country}/search`) {
-      const q = searchParams?.get('q')?.trim();
-      if (q) void sendEvent({ eventType: 'search', ...base, searchQuery: q });
-    }
 
     const productPrefix = `/${country}/product/`;
     if (pathname.startsWith(productPrefix)) {
       const productSlug = pathname.slice(productPrefix.length).split('/')[0];
       if (productSlug) void sendEvent({ eventType: 'product_view', ...base, productSlug });
     }
-  }, [pathname, searchParams, country]);
+  }, [pathname, country]);
 
   return null;
 }
