@@ -10,17 +10,16 @@ import { AIBuyingSummary } from '@/components/product/AIBuyingSummary';
 import { ProductSpecs } from '@/components/product/ProductSpecs';
 import { PriceAlertModal } from '@/components/product/PriceAlertModal';
 import { ProductCard } from '@/components/search/ProductCard';
+import { QuickCompareSection } from '@/components/product/QuickCompareSection';
 import { AdSlot } from '@/components/common/AdSlot';
 import {
   Bell,
   ExternalLink,
   Bookmark,
-  Share2,
   TrendingDown,
   ShieldCheck,
   Store,
   ChevronRight,
-  Star,
 } from 'lucide-react';
 
 interface ProductClientPageProps {
@@ -49,7 +48,6 @@ export function ProductClientPage({ product, relatedProducts }: ProductClientPag
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-8 space-y-6 sm:space-y-8">
-      {/* Breadcrumb Navigation */}
       <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-[#CBD5E1] overflow-x-auto whitespace-nowrap">
         <a href={`/${country}`} className="hover:text-white transition-colors">
           Home
@@ -62,22 +60,9 @@ export function ProductClientPage({ product, relatedProducts }: ProductClientPag
         <span className="text-[#F8FAFC] font-medium truncate max-w-xs">{product.brand}</span>
       </nav>
 
-      {/* =========================================================================
-          PRODUCT DETAIL UPPER SECTION (EXACT SPECIFICATION)
-          - Product Image
-          - Product Name
-          - Rating / Relevance Information
-          - Current Lowest Price
-          - Previous Price
-          - Discount %
-          - Deal Score
-          - Two Main CTAs: View Best Deal | Track Price
-          ========================================================================= */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-10 items-start">
-        {/* Product Image Gallery */}
         <div className="lg:col-span-5 space-y-3">
           <div className="relative aspect-square max-h-[290px] sm:max-h-[460px] mx-auto w-full rounded-3xl bg-[#091217] border border-[#162633] p-4 sm:p-6 flex items-center justify-center overflow-hidden shadow-2xl">
-            {/* Discount Tag */}
             {discountPercent > 0 && (
               <div className="absolute top-3.5 left-3.5 flex items-center gap-1 px-2.5 py-1 rounded-xl text-xs font-extrabold bg-[#00D27A] text-[#071015] shadow-md z-10">
                 <TrendingDown className="w-3.5 h-3.5 stroke-[2.5]" />
@@ -85,7 +70,6 @@ export function ProductClientPage({ product, relatedProducts }: ProductClientPag
               </div>
             )}
 
-            {/* Save / Bookmark Button */}
             <div className="absolute top-3.5 right-3.5 z-10">
               <button
                 type="button"
@@ -104,11 +88,10 @@ export function ProductClientPage({ product, relatedProducts }: ProductClientPag
             <img
               src={selectedImage}
               alt={product.title}
-              className="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-105"
+              className="max-h-full max-w-full object-contain transition-transform duration-300 hover:scale-[1.03]"
             />
           </div>
 
-          {/* Thumbnails */}
           {product.gallery.length > 1 && (
             <div className="flex items-center gap-2.5 overflow-x-auto pb-1">
               {product.gallery.map((img, idx) => (
@@ -128,28 +111,21 @@ export function ProductClientPage({ product, relatedProducts }: ProductClientPag
           )}
         </div>
 
-        {/* Product Details & Pricing CTAs */}
         <div className="lg:col-span-7 space-y-4 sm:space-y-6">
           <div>
-            {/* Rating / Relevance Information */}
-            <div className="flex items-center gap-2 mb-2 text-xs">
+            <div className="flex flex-wrap items-center gap-2 mb-2 text-xs">
               <span className="font-extrabold uppercase tracking-wider text-[#00D27A]">
                 {product.brand}
               </span>
               <span className="text-[#94A3B8]">•</span>
-              <div className="flex items-center gap-1 text-amber-400 font-semibold">
-                <Star className="w-3.5 h-3.5 fill-amber-400" />
-                <span>4.8</span>
-                <span className="text-[#CBD5E1] font-normal">(Verified Rating)</span>
-              </div>
-              <span className="text-[#94A3B8]">•</span>
               <span className="text-[#CBD5E1] flex items-center gap-1">
                 <Store className="w-3.5 h-3.5 text-[#00D27A]" />
-                {product.offersCount} stores comparing
+                {product.offersCount} stores listed
               </span>
+              <span className="text-[#94A3B8]">•</span>
+              <span className="text-[#94A3B8]">Updated product comparison</span>
             </div>
 
-            {/* Product Name */}
             <h1 className="text-xl sm:text-3xl lg:text-4xl font-extrabold text-[#F8FAFC] leading-tight">
               {product.title}
             </h1>
@@ -159,13 +135,11 @@ export function ProductClientPage({ product, relatedProducts }: ProductClientPag
             </p>
           </div>
 
-          {/* Pricing & CTA Card */}
           <div className="p-4 sm:p-5 rounded-3xl bg-[#091217] border border-[#162633] space-y-3.5 shadow-xl">
-            {/* Price Row: Current lowest, previous, discount % */}
             <div className="flex flex-wrap items-baseline justify-between gap-3">
               <div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-[#94A3B8] block mb-0.5">
-                  Current Lowest Price
+                  Current Listed Price
                 </span>
                 <div className="flex items-baseline gap-2.5 sm:gap-3">
                   <span className="text-2xl sm:text-4xl font-extrabold text-[#00D27A]">
@@ -182,85 +156,76 @@ export function ProductClientPage({ product, relatedProducts }: ProductClientPag
               {discountPercent > 0 && (
                 <div className="text-right">
                   <span className="px-2.5 sm:px-3 py-1 rounded-xl text-xs font-extrabold bg-[#00D27A]/15 text-[#00D27A] border border-[#00D27A]/30 inline-block">
-                    ↓ {discountPercent}% Discount
+                    ↓ {discountPercent}% Difference
                   </span>
                   <span className="text-[10px] text-[#94A3B8] block mt-1">
-                    Lowest recorded in 90 days
+                    Based on the listed reference price
                   </span>
                 </div>
               )}
             </div>
 
-            {/* Deal Score Component */}
             <div className="pt-2 border-t border-[#162633]">
               <DealScoreBadge score={product.dealScore} size="lg" />
             </div>
 
-            {/* Two Main CTAs: View Best Deal | Track Price */}
             <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {/* View Best Deal CTA - High Conversion */}
               <a
                 href={outboundBestDealHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="py-3.5 sm:py-4 px-5 rounded-2xl btn-conversion-primary text-sm sm:text-base flex items-center justify-center gap-2 touch-target font-extrabold tracking-wide"
+                className="py-3.5 sm:py-4 px-5 rounded-2xl bg-[#00D27A] hover:bg-[#00E6A2] text-[#071015] text-sm sm:text-base flex items-center justify-center gap-2 touch-target font-extrabold tracking-wide transition-colors"
               >
                 <span>View Best Deal on {product.bestMerchantName.split(' ')[0]}</span>
                 <ExternalLink className="w-4 h-4" />
               </a>
 
-              {/* Track Price CTA - High-Contrast Secondary Action */}
               <button
                 type="button"
                 onClick={() => setIsAlertModalOpen(true)}
-                className="py-3.5 sm:py-4 px-5 rounded-2xl bg-[#0f1c24] hover:bg-[#152733] text-[#F8FAFC] border-2 border-[#00D27A]/40 hover:border-[#00D27A] font-extrabold text-sm sm:text-base transition-all flex items-center justify-center gap-2 touch-target"
+                className="py-3.5 sm:py-4 px-5 rounded-2xl bg-[#0f1c24] hover:bg-[#152733] text-[#F8FAFC] border border-[#00D27A]/35 hover:border-[#00D27A] font-extrabold text-sm sm:text-base transition-all flex items-center justify-center gap-2 touch-target"
               >
                 <Bell className="w-4 h-4 text-[#00D27A]" />
                 <span>Track Price</span>
               </button>
             </div>
 
-            {/* Transparent Retailer Notice */}
             <div className="pt-1 flex items-center gap-2 text-[11px] text-[#94A3B8]">
               <ShieldCheck className="w-4 h-4 text-[#00D27A] shrink-0" />
-              <span>You will complete your purchase directly on the retailer&apos;s website.</span>
+              <span>You complete your purchase directly on the retailer&apos;s website.</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Merchant Comparison List */}
       <div id="offers">
         <MerchantOffersList offers={product.offers} productTitle={product.title} />
       </div>
 
-      {/* Price History Component */}
       <PriceHistoryChart
         history={product.priceHistory}
         stats={product.priceStats}
         productTitle={product.title}
       />
 
-      {/* Reserved AdSlot */}
       <AdSlot slotId="product-lower-feed" format="banner" />
 
-      {/* AI Buying Summary */}
       <AIBuyingSummary
         summary={product.aiSummary}
         productTitle={product.title}
         dealScore={product.dealScore}
       />
 
-      {/* Product Specifications */}
       <ProductSpecs specs={product.specs} brand={product.brand} />
 
-      {/* Related Products Carousel */}
+      <QuickCompareSection current={product} alternatives={relatedProducts} />
+
       {relatedProducts.length > 0 && (
         <section className="pt-6 border-t border-[#162633]">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h3 className="font-bold text-lg text-[#F8FAFC]">Compare Alternative Models</h3>
-              <p className="text-xs text-[#CBD5E1]">Similar electronics in {product.categoryName}</p>
+              <h3 className="font-bold text-lg text-[#F8FAFC]">Explore Alternative Models</h3>
+              <p className="text-xs text-[#CBD5E1]">Similar products in {product.categoryName}</p>
             </div>
           </div>
 
@@ -272,7 +237,6 @@ export function ProductClientPage({ product, relatedProducts }: ProductClientPag
         </section>
       )}
 
-      {/* Price Alert Bottom Sheet Modal */}
       <PriceAlertModal
         product={product}
         isOpen={isAlertModalOpen}
