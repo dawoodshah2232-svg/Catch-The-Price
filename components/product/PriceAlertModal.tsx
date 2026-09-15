@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Product } from '@/lib/types';
 import { useCountry } from '@/context/CountryContext';
-import { Bell, X, Check, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Bell, X, Check, ArrowRight, ShieldCheck, AlertCircle } from 'lucide-react';
 
 interface PriceAlertModalProps {
   product: Product;
@@ -20,15 +20,35 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
+    setErrorMessage(null);
 
     try {
       const parsedTarget = alertType === 'below_amount' ? parseFloat(targetPrice) : undefined;
+
+      const response = await fetch('/api/alerts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          productId: product.id,
+          targetPrice: parsedTarget,
+          alertType,
+          email: email.trim() || undefined,
+          country,
+        }),
+      });
+
+      const result = await response.json().catch(() => null);
+
+      if (!response.ok || !result?.success) {
+        throw new Error(result?.error || 'We could not save this price alert. Please try again.');
+      }
 
       addAlert({
         productId: product.id,
@@ -42,29 +62,20 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
         isActive: true,
       });
 
-      // API call to record tracker
-      fetch('/api/alerts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          productId: product.id,
-          targetPrice: parsedTarget,
-          alertType,
-          email: email.trim() || undefined,
-          country,
-        }),
-      }).catch(() => {});
-
-      setIsSubmitting(false);
       setIsSuccess(true);
-      setTimeout(() => {
-        setIsSuccess(false);
-        onClose();
-      }, 2000);
-    } catch {
+    } catch (error) {
+      setErrorMessage(
+        error instanceof Error ? error.message : 'We could not save this price alert. Please try again.'
+      );
+    } finally {
       setIsSubmitting(false);
-      onClose();
     }
+  };
+
+  const handleClose = () => {
+    setIsSuccess(false);
+    setErrorMessage(null);
+    onClose();
   };
 
   return (
@@ -73,16 +84,15 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
         className="relative w-full max-w-md rounded-t-3xl sm:rounded-3xl bg-[#091217] border border-[#162633] p-5 sm:p-6 shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-200"
         role="dialog"
         aria-modal="true"
+        aria-labelledby="price-alert-title"
       >
-        {/* Mobile drag handle */}
         <div className="sm:hidden -mt-2 pb-3 flex justify-center">
           <div className="w-12 h-1.5 rounded-full bg-[#162633]" />
         </div>
 
-        {/* Close Button */}
         <button
           type="button"
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute top-4 right-4 p-2 rounded-xl bg-[#071015] text-[#CBD5E1] hover:text-white border border-[#162633] touch-target flex items-center justify-center"
           aria-label="Close"
         >
@@ -94,29 +104,36 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
             <div className="w-14 h-14 rounded-2xl bg-[#00D27A]/15 text-[#00D27A] border border-[#00D27A]/40 mx-auto flex items-center justify-center">
               <Check className="w-8 h-8" />
             </div>
-            <h3 className="text-xl font-bold text-[#F8FAFC]">Price Tracker Activated!</h3>
-            <p className="text-xs text-[#CBD5E1] max-w-xs mx-auto">
-              We&apos;re monitoring all {product.offersCount} stores 24/7. You will be alerted the minute the price hits your target.
+            <h3 id="price-alert-title" className="text-xl font-bold text-[#F8FAFC]">
+              Price alert saved
+            </h3>
+            <p className="text-xs text-[#CBD5E1] max-w-xs mx-auto leading-relaxed">
+              Your alert was saved successfully. We will only claim email delivery after the verification and notification service is active.
             </p>
+            <button
+              type="button"
+              onClick={handleClose}
+              className="mt-3 px-5 py-2.5 rounded-xl bg-[#0f1c24] border border-[#203648] text-sm font-bold text-[#F8FAFC]"
+            >
+              Done
+            </button>
           </div>
         ) : (
           <div>
-            {/* Modal Header */}
-            <div className="flex items-center gap-3 mb-4">
+            <div className="flex items-center gap-3 mb-4 pr-10">
               <div className="w-10 h-10 rounded-2xl bg-[#00D27A]/10 text-[#00D27A] border border-[#00D27A]/25 flex items-center justify-center shrink-0">
                 <Bell className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="font-bold text-base sm:text-lg text-[#F8FAFC] leading-tight">
+                <h3 id="price-alert-title" className="font-bold text-base sm:text-lg text-[#F8FAFC] leading-tight">
                   Track Price
                 </h3>
                 <p className="text-xs text-[#CBD5E1] mt-0.5">
-                  Catch the drop before items sell out
+                  Save a target and check back when prices change
                 </p>
               </div>
             </div>
 
-            {/* Product Snapshot */}
             <div className="flex items-center gap-3 p-3 rounded-2xl bg-[#071015] border border-[#162633] mb-5">
               <img
                 src={product.imageUrl}
@@ -129,12 +146,18 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
                   <span className="text-sm font-extrabold text-[#00D27A]">
                     {formatLocalPrice(product.currentBestPrice)}
                   </span>
-                  <span className="text-[10px] text-[#94A3B8] font-semibold">Current Lowest</span>
+                  <span className="text-[10px] text-[#94A3B8] font-semibold">Displayed price</span>
                 </div>
               </div>
             </div>
 
-            {/* Form */}
+            {errorMessage && (
+              <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-200 text-xs flex items-start gap-2" role="alert">
+                <AlertCircle className="w-4 h-4 text-red-300 shrink-0 mt-0.5" />
+                <span>{errorMessage}</span>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-[#F8FAFC] mb-2">
@@ -142,7 +165,6 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
                 </label>
 
                 <div className="space-y-2">
-                  {/* Option 1: Notify me on any drop */}
                   <label
                     className={`flex items-center justify-between p-3.5 rounded-2xl border cursor-pointer transition-all ${
                       alertType === 'any_drop'
@@ -160,10 +182,8 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
                       />
                       <span className="text-xs font-semibold">Notify me on any drop</span>
                     </div>
-                    <span className="text-[10px] text-[#00D27A] font-bold">Fastest</span>
                   </label>
 
-                  {/* Option 2: Notify below target price */}
                   <label
                     className={`flex flex-col p-3.5 rounded-2xl border cursor-pointer transition-all ${
                       alertType === 'below_amount'
@@ -186,11 +206,11 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
 
                     {alertType === 'below_amount' && (
                       <div className="mt-3 flex items-center gap-2 pl-7">
-                        <span className="text-xs font-bold text-[#CBD5E1]">
-                          {countryInfo.currency}
-                        </span>
+                        <span className="text-xs font-bold text-[#CBD5E1]">{countryInfo.currency}</span>
                         <input
                           type="number"
+                          min="1"
+                          step="0.01"
                           value={targetPrice}
                           onChange={(e) => setTargetPrice(e.target.value)}
                           className="w-full bg-[#091217] border border-[#203648] rounded-xl px-3.5 py-2 text-sm text-[#F8FAFC] focus:outline-none focus:border-[#00D27A]"
@@ -201,7 +221,6 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
                     )}
                   </label>
 
-                  {/* Option 3: Notify only for major deals */}
                   <label
                     className={`flex items-center justify-between p-3.5 rounded-2xl border cursor-pointer transition-all ${
                       alertType === 'major_deal'
@@ -219,15 +238,13 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
                       />
                       <span className="text-xs font-semibold">Notify only for major deals</span>
                     </div>
-                    <span className="text-[10px] text-[#00E6A2] font-bold">Deal Score 90+</span>
                   </label>
                 </div>
               </div>
 
-              {/* Email notification */}
               <div>
                 <label className="block text-xs font-bold uppercase tracking-wider text-[#F8FAFC] mb-1.5">
-                  Email Notification
+                  Email for future notifications
                 </label>
                 <input
                   type="email"
@@ -236,20 +253,19 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
                   placeholder="your.email@example.com"
                   className="w-full bg-[#071015] border border-[#162633] rounded-2xl px-3.5 py-3 text-xs text-[#F8FAFC] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#00D27A]"
                 />
-                <p className="text-[10px] text-[#94A3B8] mt-1.5 flex items-center gap-1">
-                  <ShieldCheck className="w-3 h-3 text-[#00D27A]" />
-                  Push notification support ready. No spam ever.
+                <p className="text-[10px] text-[#94A3B8] mt-1.5 flex items-start gap-1">
+                  <ShieldCheck className="w-3 h-3 text-[#00D27A] shrink-0 mt-0.5" />
+                  <span>Email delivery will be activated only after verification is configured.</span>
                 </p>
               </div>
 
-              {/* Submit CTA - High Conversion */}
               <div className="pt-2">
                 <button
                   type="submit"
                   disabled={isSubmitting}
                   className="w-full py-3.5 rounded-2xl btn-conversion-primary disabled:opacity-50 text-sm font-extrabold flex items-center justify-center gap-2 touch-target"
                 >
-                  <span>{isSubmitting ? 'Activating Tracker...' : 'Track Price Now'}</span>
+                  <span>{isSubmitting ? 'Saving Alert...' : 'Save Price Alert'}</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
