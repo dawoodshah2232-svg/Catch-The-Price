@@ -5,7 +5,7 @@
     color-scheme: light;
     --font-sans: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 
-    /* Brand / dark chrome */
+    /* Brand */
     --ctp-bg: #071015;
     --ctp-surface: #091217;
     --ctp-surface-elevated: #0f1c24;
@@ -15,41 +15,99 @@
     --ctp-accent-1: #00D27A;
     --ctp-accent-2: #00C996;
     --ctp-accent-3: #00E6A2;
-    --ctp-text: #F8FAFC;
-    --ctp-text-secondary: #CBD5E1;
-    --ctp-muted: #94A3B8;
-    --ctp-subtle: #64748B;
 
-    /* Shopping canvas */
-    --shop-bg: #F4F7F6;
-    --shop-surface: #FFFFFF;
-    --shop-surface-soft: #F8FAF9;
-    --shop-border: #DDE7E3;
-    --shop-border-strong: #C9D8D2;
-    --shop-text: #102027;
-    --shop-text-secondary: #52636B;
-    --shop-muted: #73858D;
+    /* Public UI — light is always the default */
+    --ui-bg: #F4F7F6;
+    --ui-surface: #FFFFFF;
+    --ui-soft: #F8FAF9;
+    --ui-soft-2: #EFF6F3;
+    --ui-border: #DDE7E3;
+    --ui-border-strong: #C9D8D2;
+    --ui-text: #102027;
+    --ui-text-secondary: #52636B;
+    --ui-muted: #73858D;
+    --ui-header: rgba(255,255,255,.96);
+    --ui-footer: #F8FAF9;
+    --ui-shadow: rgba(25,55,45,.08);
   }
 
-  * {
-    -webkit-tap-highlight-color: transparent;
+  html[data-theme='dark'] {
+    color-scheme: dark;
+    --ui-bg: #071015;
+    --ui-surface: #0B161E;
+    --ui-soft: #0F1C24;
+    --ui-soft-2: #13232D;
+    --ui-border: #203442;
+    --ui-border-strong: #2B4658;
+    --ui-text: #F8FAFC;
+    --ui-text-secondary: #CBD5E1;
+    --ui-muted: #94A3B8;
+    --ui-header: rgba(7,16,21,.96);
+    --ui-footer: #091217;
+    --ui-shadow: rgba(0,0,0,.30);
   }
+
+  * { -webkit-tap-highlight-color: transparent; }
 
   html {
     color-scheme: light;
-    background-color: var(--shop-bg);
+    background-color: var(--ui-bg);
   }
 
   body {
-    background-color: var(--shop-bg);
-    color: var(--shop-text);
+    background-color: var(--ui-bg);
+    color: var(--ui-text);
     font-family: var(--font-sans);
     overflow-x: hidden;
     min-height: 100vh;
+    transition: background-color .18s ease, color .18s ease;
   }
 }
 
-/* CatchThePrice dark brand utility classes */
+/* Shared theme utilities */
+.ui-page { background-color: var(--ui-bg); color: var(--ui-text); }
+.ui-surface { background-color: var(--ui-surface); border-color: var(--ui-border); color: var(--ui-text); }
+.ui-soft { background-color: var(--ui-soft); border-color: var(--ui-border); }
+.ui-header { background-color: var(--ui-header); border-color: var(--ui-border); color: var(--ui-text); }
+.ui-footer { background-color: var(--ui-footer); border-color: var(--ui-border); color: var(--ui-text-secondary); }
+.ui-text { color: var(--ui-text); }
+.ui-secondary { color: var(--ui-text-secondary); }
+.ui-muted { color: var(--ui-muted); }
+.ui-border { border-color: var(--ui-border); }
+.ui-shadow { box-shadow: 0 12px 34px var(--ui-shadow); }
+
+.theme-toggle {
+  background: var(--ui-surface);
+  border-color: var(--ui-border);
+  color: var(--ui-text-secondary);
+}
+.theme-toggle:hover { color: #0B8F58; border-color: #9CCFBA; }
+html[data-theme='dark'] .theme-toggle:hover { color: #67EFB8; border-color: #24543F; }
+
+/* Dark mode compatibility for public pages that still use fixed light shopping tokens. */
+html[data-theme='dark'] [class~="bg-[#F4F7F6]"] { background-color: var(--ui-bg) !important; }
+html[data-theme='dark'] [class~="bg-white"] { background-color: var(--ui-surface) !important; }
+html[data-theme='dark'] [class~="bg-[#F3F8F6]"],
+html[data-theme='dark'] [class~="bg-[#F7FAF8]"],
+html[data-theme='dark'] [class~="bg-[#FBFDFC]"],
+html[data-theme='dark'] [class~="bg-[#F8FAF9]"] { background-color: var(--ui-soft) !important; }
+html[data-theme='dark'] [class~="border-[#DDE7E3]"],
+html[data-theme='dark'] [class~="border-[#D7E3DE]"],
+html[data-theme='dark'] [class~="border-[#E1E9E5]"],
+html[data-theme='dark'] [class~="border-[#E5ECE9]"],
+html[data-theme='dark'] [class~="border-[#CFE0DA]"] { border-color: var(--ui-border) !important; }
+html[data-theme='dark'] [class~="text-[#102027]"],
+html[data-theme='dark'] [class~="text-[#173028]"],
+html[data-theme='dark'] [class~="text-[#20343C]"] { color: var(--ui-text) !important; }
+html[data-theme='dark'] [class~="text-[#52636B]"],
+html[data-theme='dark'] [class~="text-[#65777F]"],
+html[data-theme='dark'] [class~="text-[#334B43]"],
+html[data-theme='dark'] [class~="text-[#455B53]"] { color: var(--ui-text-secondary) !important; }
+html[data-theme='dark'] [class~="text-[#73858D]"],
+html[data-theme='dark'] [class~="text-[#6D7E78]"],
+html[data-theme='dark'] [class~="text-[#829198]"] { color: var(--ui-muted) !important; }
+
+/* CatchThePrice brand utility classes */
 .bg-ctp-base { background-color: #071015; }
 .bg-ctp-surface { background-color: #091217; }
 .bg-ctp-surface-elevated { background-color: #0f1c24; }
@@ -64,37 +122,23 @@
 .text-ctp-muted { color: #94A3B8; }
 .text-ctp-subtle { color: #64748B; }
 
-/* Light shopping utility classes */
-.bg-shop { background-color: var(--shop-bg); }
-.bg-shop-surface { background-color: var(--shop-surface); }
-.bg-shop-soft { background-color: var(--shop-surface-soft); }
-.border-shop { border-color: var(--shop-border); }
-.text-shop { color: var(--shop-text); }
-.text-shop-secondary { color: var(--shop-text-secondary); }
-.text-shop-muted { color: var(--shop-muted); }
+.bg-shop { background-color: var(--ui-bg); }
+.bg-shop-surface { background-color: var(--ui-surface); }
+.bg-shop-soft { background-color: var(--ui-soft); }
+.border-shop { border-color: var(--ui-border); }
+.text-shop { color: var(--ui-text); }
+.text-shop-secondary { color: var(--ui-text-secondary); }
+.text-shop-muted { color: var(--ui-muted); }
 
-.gradient-ctp-accent {
-  background: linear-gradient(135deg, #00D27A 0%, #00C996 50%, #00E6A2 100%);
-}
-
+.gradient-ctp-accent { background: linear-gradient(135deg, #00D27A 0%, #00C996 50%, #00E6A2 100%); }
 .text-gradient-ctp {
   background: linear-gradient(135deg, #00D27A 0%, #00E6A2 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
 }
-
-.glow-accent-subtle {
-  box-shadow: 0 0 20px -3px rgba(0, 210, 122, 0.18);
-}
-
-.touch-target {
-  min-height: 44px;
-  min-width: 44px;
-}
-
-.pb-mobile-nav {
-  padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 8px));
-}
+.glow-accent-subtle { box-shadow: 0 0 20px -3px rgba(0, 210, 122, 0.18); }
+.touch-target { min-height: 44px; min-width: 44px; }
+.pb-mobile-nav { padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 8px)); }
 
 .btn-conversion-primary {
   background-color: #00D27A;
@@ -103,37 +147,27 @@
   box-shadow: 0 4px 14px 0 rgba(0, 210, 122, 0.20);
   transition: all 0.15s ease-in-out;
 }
-
 .btn-conversion-primary:hover {
   background-color: #00E6A2;
   box-shadow: 0 6px 20px 0 rgba(0, 210, 122, 0.28);
   transform: translateY(-1px);
 }
-
 .btn-conversion-primary:active { transform: translateY(0); }
 
 .footer-link {
   display: inline-flex;
   align-items: center;
   min-height: 30px;
-  color: #AEBBC1;
+  color: var(--ui-text-secondary);
   transition: color 150ms ease, transform 150ms ease;
 }
-
-.footer-link:hover {
-  color: #63E6AE;
-  transform: translateX(2px);
-}
+.footer-link:hover { color: #0B8F58; transform: translateX(2px); }
 
 ::-webkit-scrollbar { width: 6px; height: 6px; }
-::-webkit-scrollbar-track { background: #EDF3F1; }
+::-webkit-scrollbar-track { background: var(--ui-bg); }
 ::-webkit-scrollbar-thumb { background: #AFC2BB; border-radius: 9999px; }
 ::-webkit-scrollbar-thumb:hover { background: #879E95; }
-
-.snap-x-mandatory {
-  scroll-snap-type: x mandatory;
-  -webkit-overflow-scrolling: touch;
-}
+.snap-x-mandatory { scroll-snap-type: x mandatory; -webkit-overflow-scrolling: touch; }
 .snap-start-card { scroll-snap-align: start; }
 
 @media (prefers-reduced-motion: reduce) {
