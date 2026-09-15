@@ -10,7 +10,7 @@ const plusJakartaSans = Plus_Jakarta_Sans({
 });
 
 export const viewport: Viewport = {
-  themeColor: '#071015',
+  themeColor: '#F4F7F6',
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
@@ -31,14 +31,24 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+const themeScript = `
+(function(){
+  try {
+    var saved = localStorage.getItem('ctp-theme');
+    var theme = saved === 'dark' ? 'dark' : 'light';
+    document.documentElement.dataset.theme = theme;
+    document.documentElement.style.colorScheme = theme;
+  } catch (e) {
+    document.documentElement.dataset.theme = 'light';
+    document.documentElement.style.colorScheme = 'light';
+  }
+})();`;
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`scroll-smooth ${plusJakartaSans.variable}`}>
-      <body className="bg-[#F4F7F6] text-[#102027] font-sans antialiased min-h-screen flex flex-col selection:bg-[#00D27A]/20 selection:text-[#083b28]">
+    <html lang="en" className={`scroll-smooth ${plusJakartaSans.variable}`} data-theme="light" suppressHydrationWarning>
+      <body className="font-sans antialiased min-h-screen flex flex-col selection:bg-[#00D27A]/20 selection:text-[#083b28]">
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         {children}
       </body>
     </html>
