@@ -7,120 +7,103 @@ import { BrandLogo } from '@/components/common/BrandLogo';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { CountrySwitcher } from './CountrySwitcher';
 import { SearchBar } from '@/components/search/SearchBar';
-import { Flame, TrendingDown, LayoutGrid, Bell, Bookmark, User, BookOpen } from 'lucide-react';
+import { Bell, Bookmark, User } from 'lucide-react';
 
 export function Header() {
   const { country, savedProductIds, alerts } = useCountry();
   const pathname = usePathname();
 
-  const desktopNav = [
-    { label: 'Deals', href: `/${country}/deals/all`, icon: Flame },
-    { label: 'Price Drops', href: `/${country}/price-drops/all`, icon: TrendingDown },
-    { label: 'Categories', href: `/${country}#categories`, icon: LayoutGrid },
-    { label: 'Blog', href: `/${country}/blog`, icon: BookOpen },
-    { label: 'Track Prices', href: `/${country}/account?tab=alerts`, icon: Bell },
+  const commerceNav = [
+    { label: 'Deals', href: `/${country}/deals/all` },
+    { label: 'Price Drops', href: `/${country}/price-drops/all` },
+    { label: 'Phones', href: `/${country}/deals/phones` },
+    { label: 'Laptops', href: `/${country}/deals/laptops` },
+    { label: 'Gaming', href: `/${country}/deals/gaming` },
+    { label: 'PC Components', href: `/${country}/deals/pc-components` },
+    { label: 'TVs', href: `/${country}/deals/tvs` },
+    { label: 'Compare', href: `/${country}/compare` },
+    { label: 'Buying Guides', href: `/${country}/blog` },
   ];
+
+  const iconButton = 'relative touch-target min-w-[44px] min-h-[44px] inline-flex items-center justify-center rounded-xl bg-[#0F1C24] border border-[#223743] text-[#D9E6E1] hover:text-white hover:border-[#355361] transition-colors';
 
   return (
     <>
-      <header className="hidden lg:block sticky top-0 z-40 w-full ui-header backdrop-blur-xl border-b transition-colors shadow-[0_4px_24px_rgba(24,52,43,0.05)]">
+      <header className="hidden lg:block sticky top-0 z-50 bg-[#071015] border-b border-[#162633] shadow-[0_8px_28px_rgba(0,0,0,.16)]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-[76px] gap-5">
-            <div className="shrink-0 flex items-center min-w-[190px]">
-              <BrandLogo size="lg" variant="full" />
+          <div className="h-[72px] flex items-center gap-5">
+            <div className="shrink-0 min-w-[190px]">
+              <BrandLogo size="lg" variant="full" onDark />
             </div>
 
-            <div className="flex-1 max-w-xl">
-              <SearchBar isHero={false} />
+            <div className="flex-1 max-w-2xl">
+              <SearchBar chrome />
             </div>
 
-            <nav className="flex items-center gap-1 text-xs font-semibold ui-secondary">
-              {desktopNav.map((item) => {
-                const isActive = pathname === item.href || (item.href.includes('/blog') && pathname?.startsWith(`/${country}/blog`)) || pathname?.startsWith(item.href);
-                return (
-                  <a
-                    key={item.label}
-                    href={item.href}
-                    className={`px-2.5 xl:px-3 py-2 rounded-xl transition-colors hover:text-[#0B8F58] hover:bg-[#EAF8F1] ${
-                      isActive ? 'text-[#0B8F58] font-bold bg-[#EAF8F1]' : ''
-                    }`}
-                  >
-                    {item.label}
-                  </a>
-                );
-              })}
-            </nav>
+            <div className="flex items-center gap-2 ml-auto">
+              <CountrySwitcher onDark />
+              <ThemeToggle compact onDark />
 
-            <div className="flex items-center gap-2">
-              <CountrySwitcher />
-              <ThemeToggle compact />
-
-              <a
-                href={`/${country}/account?tab=saved`}
-                className="p-2.5 rounded-xl ui-surface border hover:border-[#9CCFBA] ui-secondary hover:text-[#0B8F58] transition-colors relative touch-target flex items-center justify-center"
-                aria-label="Saved Products"
-                title="Saved Products"
-              >
+              <a href={`/${country}/account?tab=saved`} className={iconButton} aria-label="Saved products" title="Saved products">
                 <Bookmark className="w-4 h-4" />
                 {savedProductIds.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#00D27A] text-[#071015] font-extrabold text-[10px] flex items-center justify-center">
-                    {savedProductIds.length}
-                  </span>
+                  <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-[#00D27A] text-[#071015] font-extrabold text-[9px] flex items-center justify-center">{savedProductIds.length}</span>
                 )}
               </a>
 
-              <a
-                href={`/${country}/account?tab=alerts`}
-                className="p-2.5 rounded-xl ui-surface border hover:border-[#9CCFBA] ui-secondary hover:text-[#0B8F58] transition-colors relative touch-target flex items-center justify-center"
-                aria-label="Price Alerts"
-                title="Price Alerts"
-              >
+              <a href={`/${country}/account?tab=alerts`} className={iconButton} aria-label="Price alerts" title="Price alerts">
                 <Bell className="w-4 h-4" />
                 {alerts.length > 0 && (
-                  <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#00D27A] text-[#071015] font-extrabold text-[10px] flex items-center justify-center">
-                    {alerts.length}
-                  </span>
+                  <span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-[#00D27A] text-[#071015] font-extrabold text-[9px] flex items-center justify-center">{alerts.length}</span>
                 )}
               </a>
 
-              <a
-                href={`/${country}/account`}
-                className="flex items-center gap-2 px-3 py-2 rounded-xl ui-surface border hover:border-[#9CCFBA] text-xs font-semibold ui-text transition-colors touch-target"
-              >
-                <User className="w-4 h-4 text-[#0B8F58]" />
+              <a href={`/${country}/account`} className="min-h-[44px] px-3 inline-flex items-center gap-2 rounded-xl bg-[#0F1C24] border border-[#223743] text-xs font-bold text-[#E7F1ED] hover:text-white hover:border-[#355361] transition-colors">
+                <User className="w-4 h-4 text-[#00D27A]" />
                 <span>Account</span>
               </a>
             </div>
           </div>
+
+          <nav className="h-[38px] -mx-2 flex items-center gap-0.5 border-t border-[#13242D] overflow-x-auto scrollbar-none" aria-label="Shopping navigation">
+            {commerceNav.map((item) => {
+              const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+              return (
+                <a
+                  key={item.label}
+                  href={item.href}
+                  className={`h-full px-3 inline-flex items-center whitespace-nowrap text-[11px] font-bold transition-colors border-b-2 ${
+                    isActive
+                      ? 'text-[#4DE4A5] border-[#00D27A]'
+                      : 'text-[#B9CAC3] border-transparent hover:text-white hover:bg-white/[0.04]'
+                  }`}
+                >
+                  {item.label}
+                </a>
+              );
+            })}
+          </nav>
         </div>
       </header>
 
-      <div className="lg:hidden w-full">
-        <div className="ui-header border-b transition-colors">
-          <div className="max-w-7xl mx-auto px-4 py-2.5 flex items-center justify-between gap-2 min-w-0">
-            <div className="min-w-0 flex-1 overflow-hidden">
-              <BrandLogo variant="full" size="md" className="max-w-full" />
-            </div>
+      <div className="lg:hidden bg-[#071015] border-b border-[#162633] px-4 pt-[max(env(safe-area-inset-top),8px)] pb-2.5">
+        <div className="h-[48px] flex items-center justify-between gap-2">
+          <div className="min-w-0 flex-1 overflow-hidden">
+            <BrandLogo variant="full" size="md" onDark className="max-w-full" />
+          </div>
 
-            <div className="flex items-center gap-2 shrink-0">
-              <CountrySwitcher compact />
-              <ThemeToggle compact />
-              <a
-                href={`/${country}/account`}
-                className="p-2 rounded-xl ui-surface border ui-secondary hover:text-[#0B8F58] touch-target flex items-center justify-center"
-                aria-label="Account"
-              >
-                <User className="w-4 h-4 text-[#0B8F58]" />
-              </a>
-            </div>
+          <div className="flex items-center gap-1.5 shrink-0">
+            <CountrySwitcher compact onDark />
+            <ThemeToggle compact onDark />
+            <a href={`/${country}/account`} className={iconButton} aria-label="Account">
+              <User className="w-4 h-4 text-[#00D27A]" />
+            </a>
           </div>
         </div>
+      </div>
 
-        <div className="sticky top-0 z-40 ui-header backdrop-blur-xl border-b shadow-[0_4px_18px_rgba(24,52,43,0.06)]">
-          <div className="max-w-7xl mx-auto px-4 py-2">
-            <SearchBar isHero={false} />
-          </div>
-        </div>
+      <div className="lg:hidden sticky top-0 z-50 bg-[#071015] border-b border-[#162633] px-3.5 py-2 shadow-[0_8px_22px_rgba(0,0,0,.18)]">
+        <SearchBar chrome />
       </div>
     </>
   );
