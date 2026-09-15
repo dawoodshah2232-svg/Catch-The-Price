@@ -1,10 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { LogOut } from 'lucide-react';
 import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 
 export function AdminSignOut() {
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
   async function signOut() {
@@ -12,7 +14,8 @@ export function AdminSignOut() {
     if (!supabase) return;
     setLoading(true);
     await supabase.auth.signOut();
-    window.location.assign('/admin-access');
+    router.push('/admin-access');
+    router.refresh();
   }
 
   return (
