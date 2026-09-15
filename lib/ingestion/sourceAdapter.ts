@@ -49,7 +49,7 @@ function validateRawItem(item: RawMerchantItem, market: LaunchMarket): string | 
 
 /**
  * Fetch and normalize a source batch only after its persisted source-rights row is ACTIVE,
- * evidence-backed and permits price publishing + affiliate handoff. If the database is
+ * evidence-backed and permits price publishing + retailer handoff. If the database is
  * unavailable or the approval record is incomplete, ingestion fails closed.
  */
 export async function prepareApprovedSourceBatch(adapter: MerchantSourceAdapter): Promise<PreparedSourceBatch> {
@@ -78,7 +78,12 @@ export async function prepareApprovedSourceBatch(adapter: MerchantSourceAdapter)
       continue;
     }
 
-    accepted.push(normalizeMerchantItem(item));
+    const normalized = normalizeMerchantItem(item);
+
+    // Do not retain or stage merchant imagery unless the persisted rights record permits it.
+    if (!rights.imageRight) normalized.imageUrl = undefined;
+
+    accepted.push(normalized);
   }
 
   return {
