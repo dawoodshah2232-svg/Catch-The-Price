@@ -2,94 +2,105 @@
 
 import React, { useState } from 'react';
 import { useCountry } from '@/context/CountryContext';
-import { SearchBar } from '@/components/search/SearchBar';
-import { ShieldCheck, TrendingDown, Bell, Laptop, Smartphone, Gamepad2, Cpu } from 'lucide-react';
+import { ArrowRight, Scale, Laptop, Smartphone, Gamepad2, Cpu, TrendingDown, ShieldCheck } from 'lucide-react';
 
 export function Hero() {
   const { country } = useCountry();
   const [pointer, setPointer] = useState({ x: 0, y: 0 });
 
-  const searchExamples = ['iPhone', 'PS5', 'MacBook', 'Gaming Laptop'];
-
   const handleMouseMove = (event: React.MouseEvent<HTMLElement>) => {
     const rect = event.currentTarget.getBoundingClientRect();
-    const x = ((event.clientX - rect.left) / rect.width - 0.5) * 14;
-    const y = ((event.clientY - rect.top) / rect.height - 0.5) * 10;
+    const x = ((event.clientX - rect.left) / rect.width - 0.5) * 12;
+    const y = ((event.clientY - rect.top) / rect.height - 0.5) * 8;
     setPointer({ x, y });
   };
+
+  const quickLinks = [
+    ['Phones', `/${country}/deals/phones`],
+    ['Laptops', `/${country}/deals/laptops`],
+    ['Gaming', `/${country}/deals/gaming`],
+    ['PC Components', `/${country}/deals/pc-components`],
+  ];
 
   return (
     <section
       onMouseMove={handleMouseMove}
       onMouseLeave={() => setPointer({ x: 0, y: 0 })}
-      className="relative overflow-hidden pt-6 pb-8 sm:pt-14 sm:pb-16 ui-page border-b ui-border"
+      className="relative overflow-hidden bg-[linear-gradient(135deg,#F7FBF9_0%,#ECF7F1_55%,#E4F2EC_100%)] border-b border-[#DDE7E3]"
     >
       <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-[720px] h-[320px] rounded-full bg-[#00D27A]/10 blur-[100px]" />
-        <div className="absolute -bottom-28 right-[10%] w-[360px] h-[260px] rounded-full bg-[#00C996]/8 blur-[90px]" />
+        <div className="absolute -top-28 right-[8%] w-[460px] h-[330px] rounded-full bg-[#00D27A]/10 blur-[90px]" />
+        <div className="absolute -bottom-28 left-[12%] w-[380px] h-[260px] rounded-full bg-[#00C996]/8 blur-[90px]" />
       </div>
 
-      <div className="hidden lg:block pointer-events-none absolute inset-0 z-0">
-        {[
-          { Icon: Laptop, left: '8%', top: '22%', factorX: .5, factorY: .45, rotate: -7 },
-          { Icon: Cpu, left: '14%', top: '68%', factorX: -.35, factorY: -.3, rotate: 8 },
-          { Icon: Smartphone, left: '88%', top: '22%', factorX: -.45, factorY: .4, rotate: 7 },
-          { Icon: Gamepad2, left: '83%', top: '68%', factorX: .35, factorY: -.4, rotate: -6 },
-        ].map(({ Icon, left, top, factorX, factorY, rotate }, index) => (
-          <div
-            key={index}
-            className="absolute w-14 h-14 rounded-2xl ui-surface border flex items-center justify-center text-[#0B8F58] shadow-[0_14px_32px_rgba(24,52,43,0.10)] transition-transform duration-200"
-            style={{ left, top, transform: `translate3d(${pointer.x * factorX}px, ${pointer.y * factorY}px, 0) rotate(${rotate}deg)` }}
-          >
-            <Icon className="w-6 h-6" />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-7 sm:py-10 lg:py-12 relative z-10">
+        <div className="grid lg:grid-cols-[1.15fr_.85fr] gap-7 lg:gap-10 items-center">
+          <div className="max-w-2xl">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 border border-[#D6E8E0] text-[9px] sm:text-[11px] font-extrabold text-[#0B8F58] uppercase tracking-[0.14em] shadow-sm">
+              <span className="w-1.5 h-1.5 rounded-full bg-[#00D27A]" />
+              TRACK IT. CATCH THE DROP. PAY LESS.
+            </div>
+
+            <h1 className="mt-4 text-[30px] min-[390px]:text-[34px] sm:text-5xl lg:text-[54px] font-black tracking-[-0.04em] text-[#102027] leading-[1.03]">
+              Shop with the context to make a <span className="text-[#0B8F58]">better decision.</span>
+            </h1>
+
+            <p className="mt-4 text-[13px] sm:text-base text-[#52636B] max-w-xl leading-relaxed">
+              Compare eligible retailer listings, understand available price history and check structured product details before leaving for the retailer.
+            </p>
+
+            <div className="mt-5 flex flex-col min-[390px]:flex-row gap-2.5">
+              <a href={`/${country}/deals/all`} className="min-h-[46px] px-5 rounded-xl bg-[#0B8F58] hover:bg-[#08784B] text-white font-extrabold text-sm inline-flex items-center justify-center gap-2 shadow-sm">
+                Explore deals <ArrowRight className="w-4 h-4" />
+              </a>
+              <a href={`/${country}/compare`} className="min-h-[46px] px-5 rounded-xl bg-white border border-[#CFE0DA] text-[#20343C] hover:border-[#9FCBB9] font-extrabold text-sm inline-flex items-center justify-center gap-2">
+                <Scale className="w-4 h-4 text-[#0B8F58]" /> Compare products
+              </a>
+            </div>
+
+            <div className="mt-5 flex flex-wrap items-center gap-2">
+              {quickLinks.map(([label, href]) => (
+                <a key={label} href={href} className="min-h-[34px] px-3 rounded-lg bg-white/80 border border-[#D8E6E0] text-[10px] sm:text-[11px] font-bold text-[#455A52] hover:text-[#08784B] hover:border-[#B6D7C9] inline-flex items-center">
+                  {label}
+                </a>
+              ))}
+            </div>
           </div>
-        ))}
-      </div>
 
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center relative z-10">
-        <div className="inline-flex max-w-full items-center gap-2 px-3 py-1.5 rounded-full ui-surface border text-[9px] sm:text-[11px] font-extrabold text-[#0B8F58] uppercase tracking-[0.14em] mb-3 sm:mb-5 shadow-sm">
-          <span className="w-1.5 h-1.5 rounded-full bg-[#00D27A] shrink-0" />
-          <span className="truncate">TRACK IT. CATCH THE DROP. PAY LESS.</span>
-        </div>
+          <div className="hidden lg:block relative min-h-[300px]">
+            <div className="absolute inset-0 rounded-[34px] bg-[#071015] border border-[#17303A] shadow-[0_24px_60px_rgba(20,48,38,.16)] overflow-hidden">
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(0,210,122,.15),transparent_32%)]" />
+              <div className="relative p-6 h-full flex flex-col justify-between">
+                <div>
+                  <div className="text-[10px] uppercase tracking-[0.16em] font-extrabold text-[#67EFB8]">CatchThePrice shopping desk</div>
+                  <div className="mt-2 text-2xl font-extrabold text-white leading-tight">Compare. Track. Decide.</div>
+                  <p className="mt-2 text-xs text-[#AFC1BA] max-w-sm leading-relaxed">One place for prices, product context and retailer hand-off — without pretending unknown data is verified.</p>
+                </div>
 
-        <h1 className="text-[29px] min-[390px]:text-[32px] sm:text-5xl lg:text-[58px] font-extrabold tracking-[-0.035em] ui-text leading-[1.04] sm:leading-[1.07]">
-          Find the right product at a{' '}
-          <span className="text-[#0B8F58]">better price.</span>
-        </h1>
+                <div className="grid grid-cols-2 gap-3">
+                  {[
+                    { Icon: Smartphone, label: 'Phones', x: .45, y: .3 },
+                    { Icon: Laptop, label: 'Laptops', x: -.35, y: .25 },
+                    { Icon: Gamepad2, label: 'Gaming', x: .3, y: -.3 },
+                    { Icon: Cpu, label: 'PC hardware', x: -.4, y: -.25 },
+                  ].map(({ Icon, label, x, y }) => (
+                    <div
+                      key={label}
+                      className="rounded-2xl bg-[#0F1C24] border border-[#223743] p-4 min-h-[92px] flex flex-col justify-between transition-transform duration-200"
+                      style={{ transform: `translate3d(${pointer.x * x}px, ${pointer.y * y}px, 0)` }}
+                    >
+                      <Icon className="w-5 h-5 text-[#00D27A]" />
+                      <div className="text-xs font-bold text-[#E7F1ED]">{label}</div>
+                    </div>
+                  ))}
+                </div>
 
-        <p className="mt-4 text-[13px] sm:text-base ui-secondary max-w-2xl mx-auto leading-relaxed px-1">
-          Compare retailer offers, understand available price history and make smarter buying decisions without opening ten different tabs.
-        </p>
-
-        <div className="mt-6 sm:mt-8 max-w-2xl mx-auto">
-          <SearchBar isHero />
-        </div>
-
-        <div className="mt-3.5 flex flex-wrap items-center justify-center gap-1.5 sm:gap-2 text-xs">
-          <span className="ui-muted font-semibold text-[10px] sm:text-[11px] self-center">Try:</span>
-          {searchExamples.map((term) => (
-            <a
-              key={term}
-              href={`/${country}/search?q=${encodeURIComponent(term)}`}
-              className="px-2.5 sm:px-3 py-1.5 rounded-lg ui-surface border hover:border-[#9CCFBA] ui-secondary hover:text-[#0B8F58] text-[10px] sm:text-[11px] font-semibold transition-colors min-h-[36px] inline-flex items-center justify-center"
-            >
-              {term}
-            </a>
-          ))}
-        </div>
-
-        <div className="mt-6 pt-4 border-t ui-border grid grid-cols-3 gap-1.5 sm:gap-2 max-w-lg mx-auto text-[9px] sm:text-xs ui-secondary">
-          <div className="flex flex-col min-[390px]:flex-row items-center justify-center gap-1">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#0B8F58] shrink-0" />
-            <span>Retailer checkout</span>
-          </div>
-          <div className="flex flex-col min-[390px]:flex-row items-center justify-center gap-1">
-            <TrendingDown className="w-3.5 h-3.5 text-[#0B8F58] shrink-0" />
-            <span>Price history</span>
-          </div>
-          <div className="flex flex-col min-[390px]:flex-row items-center justify-center gap-1">
-            <Bell className="w-3.5 h-3.5 text-[#0B8F58] shrink-0" />
-            <span>Price alerts</span>
+                <div className="flex items-center justify-between gap-3 text-[10px] text-[#8FA39B] border-t border-[#1A2B35] pt-4 mt-4">
+                  <span className="flex items-center gap-1.5"><TrendingDown className="w-3.5 h-3.5 text-[#00D27A]" /> Genuine history when available</span>
+                  <span className="flex items-center gap-1.5"><ShieldCheck className="w-3.5 h-3.5 text-[#00D27A]" /> Retailer checkout</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
