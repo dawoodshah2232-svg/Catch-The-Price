@@ -1,7 +1,7 @@
-﻿'use client';
+'use client';
 
 import React from 'react';
-import { Sparkles, CheckCircle2, AlertCircle } from 'lucide-react';
+import { Sparkles, CheckCircle2, AlertCircle, Info } from 'lucide-react';
 
 interface AIBuyingSummaryProps {
   summary?: {
@@ -14,76 +14,72 @@ interface AIBuyingSummaryProps {
   dealScore: number;
 }
 
-export function AIBuyingSummary({ summary, productTitle, dealScore }: AIBuyingSummaryProps) {
+export function AIBuyingSummary({ summary }: AIBuyingSummaryProps) {
   if (!summary) return null;
 
   return (
-    <div className="rounded-3xl bg-[#091217] border border-[#162633] p-5 sm:p-7 space-y-5">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#162633]">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-[#00D27A]/10 text-[#00D27A] border border-[#00D27A]/25 flex items-center justify-center shrink-0">
-            <Sparkles className="w-5 h-5" />
+    <section className="rounded-[24px] bg-white border border-[#DDE7E3] p-4 sm:p-6 shadow-[0_10px_30px_rgba(25,55,45,0.05)]">
+      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 pb-4 border-b border-[#EDF2F0]">
+        <div className="flex items-start gap-3">
+          <div className="w-9 h-9 rounded-xl bg-[#EAF8F1] text-[#08784B] border border-[#CFE9DD] flex items-center justify-center shrink-0">
+            <Sparkles className="w-4 h-4" />
           </div>
           <div>
-            <h3 className="font-bold text-base sm:text-lg text-[#F8FAFC] flex items-center gap-2">
-              CatchThePrice AI Buying Analysis
-            </h3>
-            <p className="text-xs text-[#CBD5E1] mt-0.5">Synthesized from 90-day multi-store pricing intelligence</p>
+            <h3 className="font-extrabold text-sm sm:text-base text-[#173028]">Buying summary</h3>
+            <p className="text-[11px] sm:text-xs text-[#73837D] mt-0.5 leading-relaxed">
+              A short decision aid generated from the structured product information available to CatchThePrice. It is not a customer-review score or an independent lab test.
+            </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          <span
-            className={`px-3 py-1 rounded-full text-xs font-extrabold border ${
-              summary.bestTimeToBuy
-                ? 'bg-[#00D27A]/15 text-[#00D27A] border-[#00D27A]/30'
-                : 'bg-amber-500/15 text-amber-400 border-amber-500/30'
-            }`}
-          >
-            {summary.bestTimeToBuy ? 'Recommended Buy' : 'Wait for Promotion'}
-          </span>
-        </div>
+        <span className={`self-start px-2.5 py-1 rounded-lg text-[10px] font-extrabold border ${
+          summary.bestTimeToBuy
+            ? 'bg-[#EAF8F1] text-[#08784B] border-[#CFE9DD]'
+            : 'bg-amber-50 text-amber-800 border-amber-200'
+        }`}>
+          {summary.bestTimeToBuy ? 'Worth considering' : 'Compare before buying'}
+        </span>
       </div>
 
-      {/* Verdict Callout */}
-      <div className="p-4 rounded-2xl bg-[#071015] border border-[#162633] text-xs sm:text-sm text-[#CBD5E1] leading-relaxed">
-        <strong className="text-[#00D27A] font-bold block mb-1">Expert Consensus Verdict:</strong>
+      <div className="mt-4 rounded-2xl bg-[#F8FAF9] border border-[#E1E9E5] p-4 text-xs sm:text-sm text-[#40534B] leading-relaxed">
+        <strong className="text-[#173028] font-extrabold block mb-1">Summary</strong>
         {summary.verdict}
       </div>
 
-      {/* Pros & Cons Columns */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
-        {/* Pros */}
-        <div className="p-4 rounded-2xl bg-[#071015]/60 border border-[#162633] space-y-2.5">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-[#00D27A] flex items-center gap-1.5">
-            <CheckCircle2 className="w-4 h-4" /> Why Shoppers Love It
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+        <div className="rounded-2xl bg-[#F9FCFA] border border-[#E1E9E5] p-4">
+          <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-[#08784B] flex items-center gap-1.5">
+            <CheckCircle2 className="w-3.5 h-3.5" /> Potential strengths
           </h4>
-          <ul className="space-y-2">
+          <ul className="space-y-2 mt-3">
             {summary.pros.map((pro, idx) => (
-              <li key={idx} className="flex items-start gap-2 text-xs text-[#CBD5E1]">
-                <span className="text-[#00D27A] font-bold">•</span>
+              <li key={idx} className="flex items-start gap-2 text-xs text-[#52636B]">
+                <span className="text-[#0B8F58] font-bold">•</span>
                 <span>{pro}</span>
               </li>
             ))}
           </ul>
         </div>
 
-        {/* Cons */}
-        <div className="p-4 rounded-2xl bg-[#071015]/60 border border-[#162633] space-y-2.5">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center gap-1.5">
-            <AlertCircle className="w-4 h-4" /> Things to Keep in Mind
+        <div className="rounded-2xl bg-[#FFFCF5] border border-[#EEE4C8] p-4">
+          <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-amber-800 flex items-center gap-1.5">
+            <AlertCircle className="w-3.5 h-3.5" /> Things to check
           </h4>
-          <ul className="space-y-2">
+          <ul className="space-y-2 mt-3">
             {summary.cons.map((con, idx) => (
-              <li key={idx} className="flex items-start gap-2 text-xs text-[#CBD5E1]">
-                <span className="text-amber-400 font-bold">•</span>
+              <li key={idx} className="flex items-start gap-2 text-xs text-[#625C4D]">
+                <span className="text-amber-700 font-bold">•</span>
                 <span>{con}</span>
               </li>
             ))}
           </ul>
         </div>
       </div>
-    </div>
+
+      <div className="mt-4 flex items-start gap-2 text-[10px] sm:text-[11px] text-[#7A8983] leading-relaxed">
+        <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+        <span>Confirm specifications, warranty, stock and final price on the retailer or manufacturer website before purchasing.</span>
+      </div>
+    </section>
   );
 }
