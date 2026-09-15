@@ -31,18 +31,11 @@ export async function POST(request: NextRequest) {
     .eq('id', sourceId)
     .maybeSingle();
 
-  if (sourceError || !source) {
-    return NextResponse.json({ error: 'Ingestion source not found.' }, { status: 404 });
-  }
-
-  if (!source.is_active) {
-    return NextResponse.json({ error: 'This ingestion source is disabled.' }, { status: 409 });
-  }
-
+  if (sourceError || !source) return NextResponse.json({ error: 'Ingestion source not found.' }, { status: 404 });
+  if (!source.is_active) return NextResponse.json({ error: 'This ingestion source is disabled.' }, { status: 409 });
   if (!['ae', 'us'].includes(String(source.country_code).toLowerCase())) {
     return NextResponse.json({ error: 'Only UAE and US launch-market sources are supported.' }, { status: 400 });
   }
-
   if (source.source_type !== 'json_feed') {
     return NextResponse.json({ error: 'This runner currently supports json_feed sources only.' }, { status: 400 });
   }
@@ -97,17 +90,26 @@ export async function POST(request: NextRequest) {
       price: item.price,
       currency: item.currency,
       product_url: item.url,
+      image_url: item.imageUrl || null,
+      gtin: item.gtin || null,
+      mpn: item.mpn || null,
+      model: item.model || null,
       in_stock: item.inStock,
       shipping_info: item.shippingInfo,
       raw_payload: {
         merchantSlug: item.merchantSlug,
         merchantName: item.merchantName,
+        rightsId: config.rightsId,
       },
       match_status: 'pending',
+      review_status: 'pending',
+      updated_at: new Date().toISOString(),
     }));
 
     if (stagedRows.length > 0) {
-      const { error: stageError } = await supabase.from('ingestion_items').insert(stagedRows);
+      const { error: stageError } = await supabase
+        .from('ingestion_items')
+        .upsert(stagedRows, { onConflict: 'source_id,source_product_id', ignoreDuplicates: false });
       if (stageError) throw stageError;
     }
 
