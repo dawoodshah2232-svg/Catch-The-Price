@@ -320,7 +320,7 @@ export async function getHomepageCatalog(country: CountryCode) {
     return discountB - discountA;
   });
 
-  const topDeals = byDiscount.slice(0, 4);
+  const topDeals = byDiscount.slice(0, 6);
   const topDealIds = new Set(topDeals.map((item) => item.id));
   const biggestDrops = [...products]
     .filter((item) => latestObservedDropPercent(item) > 0 && !topDealIds.has(item.id))
