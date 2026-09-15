@@ -36,13 +36,15 @@ export async function GET(request: NextRequest) {
           id,
           product_id,
           merchant_id,
-          url,
+          country_code,
+          product_url,
           price,
           currency,
-          in_stock,
+          availability,
+          is_active,
           last_checked_at,
-          merchants!inner(id,name,domain,country,is_active),
-          products!inner(id,title,country)
+          merchants!inner(id,name,website_url,country_code,is_active),
+          products!inner(id,name,status)
         `
       )
       .eq('id', offerId)
@@ -65,7 +67,7 @@ export async function GET(request: NextRequest) {
 
     const merchant = Array.isArray(offer.merchants) ? offer.merchants[0] : offer.merchants;
     const product = Array.isArray(offer.products) ? offer.products[0] : offer.products;
-    const market = String(product?.country || merchant?.country || '').toLowerCase();
+    const market = String(offer.country_code || merchant?.country_code || '').toLowerCase();
 
     if (!VALID_MARKETS.has(market) || (requestedCountry && requestedCountry !== market)) {
       return NextResponse.json(
@@ -74,7 +76,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (!merchant?.is_active || !offer.in_stock) {
+    if (!offer.is_active || !merchant?.is_active || product?.status !== 'active' || offer.availability !== 'in_stock') {
       return NextResponse.json(
         { error: 'This retailer offer is currently unavailable.' },
         { status: 410, headers: { 'X-Robots-Tag': 'noindex, nofollow' } }
@@ -83,7 +85,7 @@ export async function GET(request: NextRequest) {
 
     let destination: URL;
     try {
-      destination = new URL(offer.url);
+      destination = new URL(offer.product_url);
     } catch {
       return NextResponse.json(
         { error: 'Retailer destination is invalid.' },
@@ -98,16 +100,22 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const expectedDomain = normalizeHost(String(merchant.domain || ''));
+    let merchantHost = '';
+    try {
+      merchantHost = normalizeHost(new URL(merchant.website_url).hostname);
+    } catch {
+      merchantHost = '';
+    }
+
     const destinationHost = normalizeHost(destination.hostname);
     const hostAllowed =
-      expectedDomain.length > 0 &&
-      (destinationHost === expectedDomain || destinationHost.endsWith(`.${expectedDomain}`));
+      merchantHost.length > 0 &&
+      (destinationHost === merchantHost || destinationHost.endsWith(`.${merchantHost}`));
 
     if (!hostAllowed) {
       console.error('Blocked outbound destination host mismatch', {
         offerId,
-        expectedDomain,
+        merchantHost,
         destinationHost,
       });
       return NextResponse.json(
@@ -116,26 +124,17 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Record only server-resolved commercial facts. Do not trust client-provided price,
-    // merchant, product, or destination values.
-    const referrer = request.headers.get('referer') || '';
-    const userAgent = request.headers.get('user-agent') || '';
-
-    const { error: clickError } = await supabase.from('outbound_clicks').insert({
-      offer_id: offer.id,
-      product_id: offer.product_id,
-      merchant_id: offer.merchant_id,
-      country: market,
+    // The production database does not yet contain the final outbound analytics table.
+    // Do not fabricate a successful analytics write or trust client-supplied commercial facts.
+    console.info('Validated retailer hand-off', {
+      offerId: offer.id,
+      productId: offer.product_id,
+      merchantId: offer.merchant_id,
+      market,
       price: offer.price,
       currency: offer.currency,
-      referrer: referrer.slice(0, 1000),
-      user_agent: userAgent.slice(0, 500),
+      lastCheckedAt: offer.last_checked_at,
     });
-
-    if (clickError) {
-      // Analytics failure must not trap the shopper when the validated destination is safe.
-      console.error('Failed to log outbound click:', clickError);
-    }
 
     return NextResponse.redirect(destination.toString(), {
       status: 307,
