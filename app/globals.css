@@ -2,8 +2,10 @@
 
 @layer base {
   :root {
-    color-scheme: dark;
+    color-scheme: light;
     --font-sans: var(--font-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+
+    /* Brand / dark chrome */
     --ctp-bg: #071015;
     --ctp-surface: #091217;
     --ctp-surface-elevated: #0f1c24;
@@ -17,81 +19,60 @@
     --ctp-text-secondary: #CBD5E1;
     --ctp-muted: #94A3B8;
     --ctp-subtle: #64748B;
+
+    /* Shopping canvas */
+    --shop-bg: #F4F7F6;
+    --shop-surface: #FFFFFF;
+    --shop-surface-soft: #F8FAF9;
+    --shop-border: #DDE7E3;
+    --shop-border-strong: #C9D8D2;
+    --shop-text: #102027;
+    --shop-text-secondary: #52636B;
+    --shop-muted: #73858D;
   }
 
   * {
-    border-color: var(--ctp-border);
     -webkit-tap-highlight-color: transparent;
   }
 
   html {
-    color-scheme: dark;
-    background-color: #071015;
+    color-scheme: light;
+    background-color: var(--shop-bg);
   }
 
   body {
-    background-color: #071015;
-    color: #F8FAFC;
+    background-color: var(--shop-bg);
+    color: var(--shop-text);
     font-family: var(--font-sans);
     overflow-x: hidden;
     min-height: 100vh;
   }
 }
 
-/* CatchThePrice Utility Classes */
-.bg-ctp-base {
-  background-color: #071015;
-}
+/* CatchThePrice dark brand utility classes */
+.bg-ctp-base { background-color: #071015; }
+.bg-ctp-surface { background-color: #091217; }
+.bg-ctp-surface-elevated { background-color: #0f1c24; }
+.bg-ctp-surface-hover { background-color: #152733; }
+.border-ctp { border-color: #162633; }
+.border-ctp-bright { border-color: #223a4d; }
+.border-ctp-accent { border-color: rgba(0, 210, 122, 0.35); }
+.text-ctp-emerald { color: #00D27A; }
+.text-ctp-teal { color: #00C996; }
+.text-ctp-bright { color: #00E6A2; }
+.text-ctp-secondary { color: #CBD5E1; }
+.text-ctp-muted { color: #94A3B8; }
+.text-ctp-subtle { color: #64748B; }
 
-.bg-ctp-surface {
-  background-color: #091217;
-}
+/* Light shopping utility classes */
+.bg-shop { background-color: var(--shop-bg); }
+.bg-shop-surface { background-color: var(--shop-surface); }
+.bg-shop-soft { background-color: var(--shop-surface-soft); }
+.border-shop { border-color: var(--shop-border); }
+.text-shop { color: var(--shop-text); }
+.text-shop-secondary { color: var(--shop-text-secondary); }
+.text-shop-muted { color: var(--shop-muted); }
 
-.bg-ctp-surface-elevated {
-  background-color: #0f1c24;
-}
-
-.bg-ctp-surface-hover {
-  background-color: #152733;
-}
-
-.border-ctp {
-  border-color: #162633;
-}
-
-.border-ctp-bright {
-  border-color: #223a4d;
-}
-
-.border-ctp-accent {
-  border-color: rgba(0, 210, 122, 0.35);
-}
-
-.text-ctp-emerald {
-  color: #00D27A;
-}
-
-.text-ctp-teal {
-  color: #00C996;
-}
-
-.text-ctp-bright {
-  color: #00E6A2;
-}
-
-.text-ctp-secondary {
-  color: #CBD5E1;
-}
-
-.text-ctp-muted {
-  color: #94A3B8;
-}
-
-.text-ctp-subtle {
-  color: #64748B;
-}
-
-/* Gradients */
 .gradient-ctp-accent {
   background: linear-gradient(135deg, #00D27A 0%, #00C996 50%, #00E6A2 100%);
 }
@@ -102,66 +83,64 @@
   -webkit-text-fill-color: transparent;
 }
 
-/* Subtle, restrained glow */
 .glow-accent-subtle {
   box-shadow: 0 0 20px -3px rgba(0, 210, 122, 0.18);
 }
 
-/* Mobile-First Touch Targets (44px x 44px minimum) */
 .touch-target {
   min-height: 44px;
   min-width: 44px;
 }
 
-/* Mobile bottom nav safe clearance */
 .pb-mobile-nav {
   padding-bottom: calc(4.5rem + env(safe-area-inset-bottom, 8px));
 }
 
-/* Strong Conversion Button Utility */
 .btn-conversion-primary {
   background-color: #00D27A;
   color: #071015;
   font-weight: 800;
-  box-shadow: 0 4px 14px 0 rgba(0, 210, 122, 0.25);
+  box-shadow: 0 4px 14px 0 rgba(0, 210, 122, 0.20);
   transition: all 0.15s ease-in-out;
 }
 
 .btn-conversion-primary:hover {
   background-color: #00E6A2;
-  box-shadow: 0 6px 20px 0 rgba(0, 210, 122, 0.35);
+  box-shadow: 0 6px 20px 0 rgba(0, 210, 122, 0.28);
   transform: translateY(-1px);
 }
 
-.btn-conversion-primary:active {
-  transform: translateY(0);
+.btn-conversion-primary:active { transform: translateY(0); }
+
+.footer-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  color: #AEBBC1;
+  transition: color 150ms ease, transform 150ms ease;
 }
 
-/* Sleek scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+.footer-link:hover {
+  color: #63E6AE;
+  transform: translateX(2px);
 }
 
-::-webkit-scrollbar-track {
-  background: #071015;
-}
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #EDF3F1; }
+::-webkit-scrollbar-thumb { background: #AFC2BB; border-radius: 9999px; }
+::-webkit-scrollbar-thumb:hover { background: #879E95; }
 
-::-webkit-scrollbar-thumb {
-  background: #162633;
-  border-radius: 9999px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #223a4d;
-}
-
-/* Horizontal swipe snap for mobile */
 .snap-x-mandatory {
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
 }
+.snap-start-card { scroll-snap-align: start; }
 
-.snap-start-card {
-  scroll-snap-align: start;
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

@@ -1,4 +1,6 @@
-'use client';
+import React from 'react';
+import { Database, FileText, AlertTriangle, CheckCircle2, Clock, ShieldCheck } from 'lucide-react';
+import { getServerSupabase } from '@/lib/supabase/server';
 
 import React, { useState, useEffect } from 'react';
 import { AlertTriangle, Play, Database, Key } from 'lucide-react';

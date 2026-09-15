@@ -3,16 +3,17 @@ import { Metadata } from 'next';
 import { AccountDashboard } from '@/components/account/AccountDashboard';
 
 export const metadata: Metadata = {
-  title: 'My Saved & Tracked Prices | CatchThePrice',
-  description: 'Manage your saved products, price drop alerts, and shopping notification preferences.',
+  title: 'Saved Products & Price Tracking | CatchThePrice',
+  description: 'View products saved on this device and CatchThePrice price-tracking preferences.',
+  robots: { index: false, follow: false },
 };
 
 export default function AccountPage() {
   return (
     <Suspense
       fallback={
-        <div className="p-12 text-center text-xs text-slate-400">
-          Loading your saved wishlist and price trackers...
+        <div className="min-h-[50vh] bg-[#F4F7F6] p-12 text-center text-xs text-[#73858D]">
+          Loading your shopping space…
         </div>
       }
     >

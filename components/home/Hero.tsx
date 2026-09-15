@@ -1,12 +1,13 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useCountry } from '@/context/CountryContext';
 import { SearchBar } from '@/components/search/SearchBar';
-import { ShieldCheck, TrendingDown, Bell } from 'lucide-react';
+import { ShieldCheck, TrendingDown, Bell, Laptop, Smartphone, Gamepad2, Cpu } from 'lucide-react';
 
 export function Hero() {
   const { country } = useCountry();
+  const [pointer, setPointer] = useState({ x: 0, y: 0 });
 
   const searchExamples = [
     'iPhone 17 Pro',
@@ -15,9 +16,48 @@ export function Hero() {
     'Gaming Laptop',
   ];
 
+  const handleMouseMove = (event: React.MouseEvent<HTMLElement>) => {
+    const rect = event.currentTarget.getBoundingClientRect();
+    const x = ((event.clientX - rect.left) / rect.width - 0.5) * 16;
+    const y = ((event.clientY - rect.top) / rect.height - 0.5) * 12;
+    setPointer({ x, y });
+  };
+
   return (
-    <section className="relative overflow-hidden pt-5 pb-7 sm:pt-12 sm:pb-14 bg-[#071015] border-b border-[#162633]">
+    <section
+      onMouseMove={handleMouseMove}
+      onMouseLeave={() => setPointer({ x: 0, y: 0 })}
+      className="relative overflow-hidden pt-5 pb-7 sm:pt-12 sm:pb-14 bg-[#071015] border-b border-[#162633]"
+    >
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 max-w-3xl h-44 bg-[#00D27A]/10 blur-[90px] pointer-events-none rounded-full" />
+
+      {/* Desktop-only ambient product cues. They follow the cursor subtly so the hero feels alive without becoming distracting. */}
+      <div className="hidden lg:block pointer-events-none absolute inset-0 z-0">
+        <div
+          className="absolute left-[8%] top-[20%] w-14 h-14 rounded-2xl border border-[#1a3039] bg-[#091217]/85 backdrop-blur-md flex items-center justify-center text-[#5ee9b1] shadow-2xl transition-transform duration-200"
+          style={{ transform: `translate3d(${pointer.x * 0.55}px, ${pointer.y * 0.55}px, 0) rotate(-7deg)` }}
+        >
+          <Laptop className="w-7 h-7" />
+        </div>
+        <div
+          className="absolute left-[14%] bottom-[16%] w-11 h-11 rounded-2xl border border-[#1a3039] bg-[#0a151a]/85 backdrop-blur-md flex items-center justify-center text-[#4edaa5] transition-transform duration-200"
+          style={{ transform: `translate3d(${pointer.x * -0.35}px, ${pointer.y * -0.35}px, 0) rotate(8deg)` }}
+        >
+          <Cpu className="w-5 h-5" />
+        </div>
+        <div
+          className="absolute right-[10%] top-[18%] w-12 h-12 rounded-2xl border border-[#1a3039] bg-[#091217]/85 backdrop-blur-md flex items-center justify-center text-[#5ee9b1] shadow-2xl transition-transform duration-200"
+          style={{ transform: `translate3d(${pointer.x * -0.5}px, ${pointer.y * 0.45}px, 0) rotate(7deg)` }}
+        >
+          <Smartphone className="w-6 h-6" />
+        </div>
+        <div
+          className="absolute right-[16%] bottom-[15%] w-14 h-14 rounded-2xl border border-[#1a3039] bg-[#0a151a]/85 backdrop-blur-md flex items-center justify-center text-[#4edaa5] transition-transform duration-200"
+          style={{ transform: `translate3d(${pointer.x * 0.4}px, ${pointer.y * -0.45}px, 0) rotate(-6deg)` }}
+        >
+          <Gamepad2 className="w-7 h-7" />
+        </div>
+      </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center relative z-10">
         <div className="inline-flex max-w-full items-center gap-2 px-3 py-1 rounded-full bg-[#091217] border border-[#162633] text-[9px] sm:text-[11px] font-bold text-[#CBD5E1] uppercase tracking-wider mb-3 sm:mb-4">

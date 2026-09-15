@@ -3,16 +3,13 @@ import { Metadata } from 'next';
 import { CountryCode } from '@/lib/types';
 import { COUNTRIES, DEFAULT_COUNTRY } from '@/lib/data/countries';
 import { CATEGORIES, getCategoryBySlug } from '@/lib/data/categories';
-import { getAllProducts, getProductsByCategory } from '@/lib/data/products';
+import { getCatalogProducts, isPreviewCatalogEnabled } from '@/lib/data/catalog.server';
 import { ProductCard } from '@/components/search/ProductCard';
 import { AdSlot } from '@/components/common/AdSlot';
 import { TrendingDown, ChevronRight } from 'lucide-react';
 
 interface PriceDropsPageProps {
-  params: Promise<{
-    country: string;
-    category: string;
-  }>;
+  params: Promise<{ country: string; category: string }>;
 }
 
 export async function generateMetadata({ params }: PriceDropsPageProps): Promise<Metadata> {
@@ -21,13 +18,13 @@ export async function generateMetadata({ params }: PriceDropsPageProps): Promise
   const info = COUNTRIES[country];
   const cat = getCategoryBySlug(catSlug);
   const catName = cat?.name || 'Electronics';
+  const isPreview = isPreviewCatalogEnabled();
 
   return {
-    title: `Biggest ${catName} Price Drops in ${info.name} — CatchThePrice`,
-    description: `Track major ${catName} price drops in ${info.name}. Save up to 25% or more across verified authorized retailers.`,
-    alternates: {
-      canonical: `https://catchtheprice.com/${country}/price-drops/${catSlug}`,
-    },
+    title: `${catName} Price Drops in ${info.name} — CatchThePrice`,
+    description: `See eligible ${catName} listings in ${info.name} where the current retailer price is below a recorded reference price.`,
+    robots: isPreview ? { index: false, follow: false } : undefined,
+    alternates: { canonical: `https://catchtheprice.com/${country}/price-drops/${catSlug}` },
   };
 }
 
@@ -35,119 +32,87 @@ export default async function PriceDropsCategoryPage({ params }: PriceDropsPageP
   const { country: rawCountry, category: catSlug } = await params;
   const country = (rawCountry?.toLowerCase() in COUNTRIES ? rawCountry.toLowerCase() : DEFAULT_COUNTRY) as CountryCode;
   const countryInfo = COUNTRIES[country];
-
   const isAll = catSlug === 'all';
   const category = getCategoryBySlug(catSlug);
-  const products = isAll ? getAllProducts(country) : getProductsByCategory(catSlug, country);
-
-  // Sort by price drop percentage descending
+  const { products: catalogProducts, isPreview } = await getCatalogProducts(country);
+  const products = (isAll ? catalogProducts : catalogProducts.filter((p) => p.categorySlug.toLowerCase() === catSlug.toLowerCase()))
+    .filter((p) => p.originalPrice > p.currentBestPrice && p.originalPrice > 0);
   const sorted = [...products].sort((a, b) => {
-    const dropA = (a.originalPrice - a.currentBestPrice) / a.originalPrice;
-    const dropB = (b.originalPrice - b.currentBestPrice) / b.originalPrice;
-    return dropB - dropA;
+    const aDrop = (a.originalPrice - a.currentBestPrice) / a.originalPrice;
+    const bDrop = (b.originalPrice - b.currentBestPrice) / b.originalPrice;
+    return bDrop - aDrop;
   });
 
-  const breadcrumbJsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'BreadcrumbList',
-    itemListElement: [
-      {
-        '@type': 'ListItem',
-        position: 1,
-        name: 'Home',
-        item: `https://catchtheprice.com/${country}`,
-      },
-      {
-        '@type': 'ListItem',
-        position: 2,
-        name: 'Price Drops',
-        item: `https://catchtheprice.com/${country}/price-drops/all`,
-      },
-      {
-        '@type': 'ListItem',
-        position: 3,
-        name: category?.name || 'All Drops',
-        item: `https://catchtheprice.com/${country}/price-drops/${catSlug}`,
-      },
+  const breadcrumbJsonLd = !isPreview ? {
+    '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: `https://catchtheprice.com/${country}` },
+      { '@type': 'ListItem', position: 2, name: 'Price Drops', item: `https://catchtheprice.com/${country}/price-drops/all` },
+      { '@type': 'ListItem', position: 3, name: category?.name || 'All Drops', item: `https://catchtheprice.com/${country}/price-drops/${catSlug}` },
     ],
-  };
+  } : null;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 space-y-6">
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
-      />
-      {/* Breadcrumbs */}
-      <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-xs text-slate-400">
-        <a href={`/${country}`} className="hover:text-white transition-colors">
-          Home
-        </a>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
-        <span className="text-slate-300 font-medium">Price Drops</span>
-        <ChevronRight className="w-3.5 h-3.5 text-slate-500" />
-        <span className="text-cyan-400 font-semibold">{category?.name || 'All Drops'}</span>
-      </nav>
+    <div className="min-h-screen bg-[#F4F7F6]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-5 sm:space-y-6">
+        {breadcrumbJsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />}
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-ctp">
-        <div>
-          <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-cyan-400">
-            <TrendingDown className="w-4 h-4" />
-            <span>Deep Price Reductions</span>
+        {isPreview && (
+          <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-xs text-amber-900">
+            Development preview: displayed reductions are sample data for interface testing only.
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-100 mt-1">
-            {category ? `Biggest ${category.name} Price Drops` : 'Biggest Electronics Price Drops'} in {countryInfo.name}
-          </h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl">
-            Sorted by greatest percentage drop from manufacturer list price. Verified against 90-day averages.
-          </p>
+        )}
+
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[11px] sm:text-xs text-[#73858D] overflow-x-auto whitespace-nowrap">
+          <a href={`/${country}`} className="hover:text-[#08784B]">Home</a>
+          <ChevronRight className="w-3.5 h-3.5 text-[#A0AEA9]" />
+          <span>Price Drops</span>
+          <ChevronRight className="w-3.5 h-3.5 text-[#A0AEA9]" />
+          <span className="text-[#08784B] font-bold">{category?.name || 'All Drops'}</span>
+        </nav>
+
+        <section className="rounded-[28px] bg-white border border-[#DDE7E3] p-5 sm:p-7 shadow-[0_12px_34px_rgba(24,52,43,0.06)]">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 text-[10px] sm:text-xs font-extrabold uppercase tracking-[0.16em] text-[#0B8F58]">
+                <TrendingDown className="w-4 h-4" /> Recorded reductions
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-[#102027] mt-2">
+                {category ? `${category.name} Price Drops` : 'Electronics Price Drops'} in {countryInfo.name}
+              </h1>
+              <p className="text-xs sm:text-sm text-[#65777F] mt-2 max-w-2xl leading-relaxed">
+                Products appear here only when an eligible current offer is below a source-backed reference price. Long-term averages appear only after genuine observations exist.
+              </p>
+            </div>
+            <span className="self-start sm:self-auto text-xs px-3 py-2 rounded-xl bg-[#EDF8F3] border border-[#D1EADD] text-[#08784B] font-extrabold">
+              {sorted.length} recorded drop{sorted.length === 1 ? '' : 's'}
+            </span>
+          </div>
+        </section>
+
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+          <a href={`/${country}/price-drops/all`} className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap border transition-all ${isAll ? 'bg-[#0B8F58] text-white border-[#0B8F58]' : 'bg-white border-[#DDE7E3] text-[#52636B] hover:border-[#BFD2CA]'}`}>All Drops</a>
+          {CATEGORIES.map((item) => {
+            const active = item.slug === catSlug;
+            return <a key={item.id} href={`/${country}/price-drops/${item.slug}`} className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap border transition-all ${active ? 'bg-[#0B8F58] text-white border-[#0B8F58]' : 'bg-white border-[#DDE7E3] text-[#52636B] hover:border-[#BFD2CA]'}`}>{item.name}</a>;
+          })}
         </div>
 
-        <span className="text-xs px-3 py-1 rounded-xl bg-slate-900 border border-ctp text-cyan-400 font-medium self-start sm:self-auto">
-          {sorted.length} Drops Detected
-        </span>
+        {sorted.length > 0 ? (
+          <>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-5 pt-1">
+              {sorted.map((product) => <ProductCard key={product.id} product={product} />)}
+            </div>
+            <AdSlot slotId="price-drops-bottom" format="banner" />
+          </>
+        ) : (
+          <div className="rounded-[26px] border border-[#DDE7E3] bg-white px-5 py-12 text-center shadow-[0_10px_28px_rgba(24,52,43,0.04)]">
+            <h2 className="text-lg font-extrabold text-[#102027]">No source-backed price drops are available yet.</h2>
+            <p className="mt-2 text-sm text-[#73858D] max-w-xl mx-auto leading-relaxed">
+              This section will populate only after eligible live offers and genuine reference observations are collected for this market.
+            </p>
+          </div>
+        )}
       </div>
-
-      {/* Category Pills */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-2">
-        <a
-          href={`/${country}/price-drops/all`}
-          className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-            isAll
-              ? 'bg-cyan-500 text-slate-950 font-bold shadow-md'
-              : 'bg-ctp-surface border border-ctp text-slate-300 hover:text-white'
-          }`}
-        >
-          All Drops
-        </a>
-        {CATEGORIES.map((c) => {
-          const isActive = c.slug === catSlug;
-          return (
-            <a
-              key={c.id}
-              href={`/${country}/price-drops/${c.slug}`}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
-                isActive
-                  ? 'bg-cyan-500 text-slate-950 font-bold shadow-md'
-                  : 'bg-ctp-surface border border-ctp text-slate-300 hover:text-white'
-              }`}
-            >
-              {c.name}
-            </a>
-          );
-        })}
-      </div>
-
-      {/* Products Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6 pt-2">
-        {sorted.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
-
-      {/* Ad Slot */}
-      <AdSlot slotId="price-drops-bottom" format="banner" />
     </div>
   );
 }

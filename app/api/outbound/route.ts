@@ -1,61 +1,172 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSupabase } from '@/lib/supabase/server';
 
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const VALID_MARKETS = new Set(['ae', 'us']);
+
+function normalizeHost(value: string): string {
+  return value.toLowerCase().replace(/^www\./, '');
+}
+
+function getDeviceType(userAgent: string): 'mobile' | 'tablet' | 'desktop' | 'unknown' {
+  const ua = userAgent.toLowerCase();
+  if (!ua) return 'unknown';
+  if (/ipad|tablet|kindle|silk/.test(ua)) return 'tablet';
+  if (/mobi|iphone|ipod|android/.test(ua)) return 'mobile';
+  if (/windows|macintosh|linux|cros/.test(ua)) return 'desktop';
+  return 'unknown';
+}
+
+function getReferrerHost(value: string | null): string | null {
+  if (!value) return null;
+  try {
+    return normalizeHost(new URL(value).hostname).slice(0, 255);
+  } catch {
+    return null;
+  }
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
-  const offerId = searchParams.get('offerId') || 'unknown';
-  const targetUrl = searchParams.get('targetUrl');
-  const country = searchParams.get('country') || 'ae';
-  const productTitle = searchParams.get('productTitle') || 'Unknown Product';
-  const merchantName = searchParams.get('merchantName') || 'Merchant';
-  const price = searchParams.get('price') || '0';
+  const offerId = searchParams.get('offerId')?.trim() || '';
+  const requestedCountry = (searchParams.get('country') || '').toLowerCase();
 
-  if (!targetUrl) {
-    return NextResponse.redirect(new URL(`/${country}`, request.url));
+  if (!UUID_RE.test(offerId)) {
+    return NextResponse.json(
+      { error: 'This offer is not available from a verified production source.' },
+      { status: 404, headers: { 'X-Robots-Tag': 'noindex, nofollow' } }
+    );
   }
 
-  // 1. Log outbound click analytics record (in-memory or Supabase)
+  const supabase = getServerSupabase();
+  if (!supabase) {
+    return NextResponse.json(
+      { error: 'Retailer links are temporarily unavailable.' },
+      { status: 503, headers: { 'X-Robots-Tag': 'noindex, nofollow' } }
+    );
+  }
+
   try {
-    const supabase = getServerSupabase();
-    if (supabase) {
-      await supabase.from('outbound_clicks').insert({
-        offer_id: offerId !== 'unknown' ? offerId : null,
-        country,
-        price: parseFloat(price) || 0,
-        referrer: request.headers.get('referer') || '',
-        user_agent: request.headers.get('user-agent') || '',
-      });
-    } else {
-      // In development / fallback mode: log to server console
-      console.log(`[OUTBOUND CLICK TRACKED] Product: "${productTitle}" | Store: "${merchantName}" | Price: ${price} | Country: ${country}`);
-    }
-  } catch (err) {
-    console.error('Failed to log outbound click:', err);
-  }
+    const { data: offer, error } = await supabase
+      .from('offers')
+      .select(
+        `
+          id,
+          product_id,
+          merchant_id,
+          country_code,
+          product_url,
+          price,
+          currency,
+          availability,
+          is_active,
+          last_checked_at,
+          merchants!inner(id,name,website_url,country_code,is_active),
+          products!inner(id,name,status)
+        `
+      )
+      .eq('id', offerId)
+      .maybeSingle();
 
-  // 2. Attach affiliate tracking parameters to target retailer URL if not already present
-  let destinationUrl = targetUrl;
-  try {
-    const parsed = new URL(targetUrl);
-    if (!parsed.searchParams.has('tag') && parsed.hostname.includes('amazon')) {
-      parsed.searchParams.set('tag', `catchtheprice-${country}-20`);
-      destinationUrl = parsed.toString();
-    } else if (!parsed.searchParams.has('utm_source')) {
-      parsed.searchParams.set('utm_source', 'catchtheprice');
-      parsed.searchParams.set('utm_medium', 'affiliate');
-      destinationUrl = parsed.toString();
+    if (error) {
+      console.error('Failed to resolve outbound offer:', error);
+      return NextResponse.json(
+        { error: 'Retailer link could not be resolved.' },
+        { status: 500, headers: { 'X-Robots-Tag': 'noindex, nofollow' } }
+      );
     }
-  } catch {
-    // If URL parsing fails, retain original target
-    destinationUrl = targetUrl;
-  }
 
-  // 3. Perform HTTP 307 temporary redirect to retailer product page
-  return NextResponse.redirect(destinationUrl, {
-    status: 307,
-    headers: {
-      'Cache-Control': 'no-store, max-age=0',
-      'X-Robots-Tag': 'noindex, nofollow',
-    },
-  });
+    if (!offer) {
+      return NextResponse.json(
+        { error: 'Offer not found or no longer available.' },
+        { status: 404, headers: { 'X-Robots-Tag': 'noindex, nofollow' } }
+      );
+    }
+
+    const merchant = Array.isArray(offer.merchants) ? offer.merchants[0] : offer.merchants;
+    const product = Array.isArray(offer.products) ? offer.products[0] : offer.products;
+    const market = String(offer.country_code || merchant?.country_code || '').toLowerCase();
+
+    if (!VALID_MARKETS.has(market) || (requestedCountry && requestedCountry !== market)) {
+      return NextResponse.json(
+        { error: 'This offer is not valid for the selected market.' },
+        { status: 409, headers: { 'X-Robots-Tag': 'noindex, nofollow' } }
+      );
+    }
+
+    if (!offer.is_active || !merchant?.is_active || product?.status !== 'active' || offer.availability !== 'in_stock') {
+      return NextResponse.json(
+        { error: 'This retailer offer is currently unavailable.' },
+        { status: 410, headers: { 'X-Robots-Tag': 'noindex, nofollow' } }
+      );
+    }
+
+    let destination: URL;
+    try {
+      destination = new URL(offer.product_url);
+    } catch {
+      return NextResponse.json(
+        { error: 'Retailer destination is invalid.' },
+        { status: 500, headers: { 'X-Robots-Tag': 'noindex, nofollow' } }
+      );
+    }
+
+    if (destination.protocol !== 'https:') {
+      return NextResponse.json(
+        { error: 'Retailer destination is not secure.' },
+        { status: 500, headers: { 'X-Robots-Tag': 'noindex, nofollow' } }
+      );
+    }
+
+    let merchantHost = '';
+    try {
+      merchantHost = normalizeHost(new URL(merchant.website_url).hostname);
+    } catch {
+      merchantHost = '';
+    }
+
+    const destinationHost = normalizeHost(destination.hostname);
+    const hostAllowed = merchantHost.length > 0 && (destinationHost === merchantHost || destinationHost.endsWith(`.${merchantHost}`));
+
+    if (!hostAllowed) {
+      console.error('Blocked outbound destination host mismatch', { offerId, merchantHost, destinationHost });
+      return NextResponse.json(
+        { error: 'Retailer destination failed validation.' },
+        { status: 500, headers: { 'X-Robots-Tag': 'noindex, nofollow' } }
+      );
+    }
+
+    const userAgent = request.headers.get('user-agent') || '';
+    const referrerHost = getReferrerHost(request.headers.get('referer'));
+
+    const { error: clickError } = await supabase.from('outbound_clicks').insert({
+      offer_id: offer.id,
+      product_id: offer.product_id,
+      merchant_id: offer.merchant_id,
+      country_code: market,
+      price: offer.price,
+      currency: offer.currency,
+      referrer_host: referrerHost,
+      device_type: getDeviceType(userAgent),
+    });
+
+    if (clickError) {
+      // Analytics must never block a valid retailer hand-off.
+      console.error('Outbound analytics write failed:', clickError);
+    }
+
+    return NextResponse.redirect(destination.toString(), {
+      status: 307,
+      headers: {
+        'Cache-Control': 'no-store, max-age=0',
+        'X-Robots-Tag': 'noindex, nofollow',
+      },
+    });
+  } catch (error) {
+    console.error('Unexpected outbound resolution failure:', error);
+    return NextResponse.json(
+      { error: 'Retailer link is temporarily unavailable.' },
+      { status: 500, headers: { 'X-Robots-Tag': 'noindex, nofollow' } }
+    );
+  }
 }

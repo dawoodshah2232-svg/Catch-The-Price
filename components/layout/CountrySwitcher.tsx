@@ -4,11 +4,13 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useCountry } from '@/context/CountryContext';
 import { COUNTRIES } from '@/lib/data/countries';
 import { CountryCode } from '@/lib/types';
-import { ChevronDown, Globe2, Check } from 'lucide-react';
+import { ChevronDown, Check } from 'lucide-react';
 
 interface CountrySwitcherProps {
   compact?: boolean;
 }
+
+const LIVE_MARKETS: CountryCode[] = ['ae', 'us'];
 
 export function CountrySwitcher({ compact = false }: CountrySwitcherProps) {
   const { country, countryInfo, setCountry } = useCountry();
@@ -17,9 +19,7 @@ export function CountrySwitcher({ compact = false }: CountrySwitcherProps) {
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsOpen(false);
-      }
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) setIsOpen(false);
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
@@ -35,44 +35,44 @@ export function CountrySwitcher({ compact = false }: CountrySwitcherProps) {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-ctp-surface border border-ctp hover:border-ctp-border-bright text-xs font-medium text-slate-200 transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500/40 touch-target"
+        className="h-11 flex items-center gap-2 px-3 rounded-xl bg-[#0A151A] border border-[#1A3039] hover:border-[#28434D] text-xs font-semibold text-white transition-colors focus:outline-none focus:ring-2 focus:ring-[#00D27A]/30"
         aria-expanded={isOpen}
-        aria-label="Select Market and Currency"
+        aria-label="Select market and currency"
       >
-        <span className="text-base leading-none">{countryInfo.flag}</span>
-        {!compact && <span className="font-semibold text-slate-100">{countryInfo.currency}</span>}
-        <ChevronDown className={`w-3.5 h-3.5 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        <span className="text-lg leading-none">{countryInfo.flag}</span>
+        {!compact && <span>{countryInfo.currency}</span>}
+        <ChevronDown className={`w-3.5 h-3.5 text-[#91A1A8] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-64 rounded-xl bg-ctp-surface-elevated border border-ctp-border-bright shadow-2xl p-2 z-50 animate-in fade-in zoom-in-95 duration-150">
-          <div className="px-3 py-2 border-b border-ctp mb-1">
-            <p className="text-xs font-semibold text-slate-300">Select Market & Currency</p>
-            <p className="text-[11px] text-slate-400">Prices and stores update instantly</p>
+        <div className="absolute right-0 mt-2 w-72 rounded-2xl bg-[#0B171D] border border-[#1D343E] shadow-2xl p-2.5 z-[70]">
+          <div className="px-2.5 py-2 border-b border-[#1A3039] mb-1.5">
+            <p className="text-xs font-extrabold text-white">Choose your market</p>
+            <p className="text-[10px] text-[#91A1A8] mt-0.5">Only live regions can be selected.</p>
           </div>
 
-          <div className="space-y-1">
-            {(Object.keys(COUNTRIES) as CountryCode[]).map((code) => {
+          <div className="space-y-1.5">
+            {LIVE_MARKETS.map((code) => {
               const c = COUNTRIES[code];
               const isSelected = code === country;
               return (
                 <button
                   key={code}
                   onClick={() => handleSelect(code)}
-                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left text-xs transition-colors ${
+                  className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-left transition-colors ${
                     isSelected
-                      ? 'bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/30'
-                      : 'text-slate-300 hover:bg-slate-800/60 hover:text-white'
+                      ? 'bg-[#0E2A22] border border-[#1D6E50]'
+                      : 'border border-transparent hover:bg-[#102128]'
                   }`}
                 >
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-lg leading-none">{c.flag}</span>
+                  <div className="flex items-center gap-3">
+                    <span className="text-xl leading-none">{c.flag}</span>
                     <div>
-                      <div className="font-medium text-slate-100">{c.name}</div>
-                      <div className="text-[11px] text-slate-400">{c.currency} ({c.symbol})</div>
+                      <div className="font-semibold text-xs text-white">{c.name}</div>
+                      <div className="text-[10px] text-[#91A1A8] mt-0.5">{c.currency} · {c.symbol}</div>
                     </div>
                   </div>
-                  {isSelected && <Check className="w-4 h-4 text-emerald-400" />}
+                  {isSelected && <Check className="w-4 h-4 text-[#63E6AE]" />}
                 </button>
               );
             })}

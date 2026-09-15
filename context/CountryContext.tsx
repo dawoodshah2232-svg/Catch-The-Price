@@ -33,36 +33,21 @@ export function CountryProvider({
   const router = useRouter();
   const pathname = usePathname();
 
-  // Sync saved products from localStorage on mount
+  // Load only state that the visitor actually created on this device.
+  // Production must never seed fake saved items or alerts.
   useEffect(() => {
     try {
       const saved = localStorage.getItem('ctp_saved_products');
       if (saved) {
         setSavedProductIds(JSON.parse(saved));
       }
+
       const savedAlerts = localStorage.getItem('ctp_alerts');
       if (savedAlerts) {
         setAlerts(JSON.parse(savedAlerts));
-      } else {
-        // Initial demo alert for realistic experience
-        const defaultAlert: WatchlistAlert = {
-          id: 'alert-initial-1',
-          productId: 'prod-iphone-16-pro-max',
-          productTitle: 'Apple iPhone 16 Pro Max (256GB, Desert Titanium)',
-          productImage: 'https://images.unsplash.com/photo-1695048133142-1a20484d2569?w=400&h=400&fit=crop&q=80',
-          currentPrice: 4033,
-          targetPrice: 3850,
-          alertType: 'below_amount',
-          currency: 'AED',
-          country: 'ae',
-          isActive: true,
-          createdAt: new Date().toISOString(),
-          lastTriggeredAt: 'Yesterday',
-        };
-        setAlerts([defaultAlert]);
       }
     } catch {
-      // ignore in SSR
+      // Storage may be unavailable in restricted browser contexts.
     }
   }, []);
 
@@ -111,7 +96,6 @@ export function CountryProvider({
       document.cookie = `ctp_country=${newCountry}; path=/; max-age=31536000`;
     } catch {}
 
-    // If on a country-prefixed route, navigate to the new country path
     if (pathname) {
       const segments = pathname.split('/').filter(Boolean);
       const countryList = ['ae', 'us', 'uk', 'ca', 'au'];
@@ -125,7 +109,6 @@ export function CountryProvider({
   };
 
   const countryInfo = COUNTRIES[country] || COUNTRIES.ae;
-
   const formatLocalPrice = (amount: number) => formatPrice(amount, country);
 
   return (
