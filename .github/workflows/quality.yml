@@ -49,11 +49,11 @@ jobs:
         run: npm run smoke
 
       - name: Install screenshot browser
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch'
         run: npx --yes playwright@1.57.0 install --with-deps chromium
 
       - name: Start preview server
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch'
         run: |
           nohup npm run start -- -H 127.0.0.1 -p 3101 > /tmp/catchtheprice-preview.log 2>&1 &
           echo $! > /tmp/catchtheprice-preview.pid
@@ -65,7 +65,7 @@ jobs:
           exit 1
 
       - name: Capture desktop and mobile screenshots
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch'
         run: |
           mkdir -p screenshots
           desktop() { npx --yes playwright@1.57.0 screenshot --browser chromium --viewport-size "1440,1000" --wait-for-timeout 1200 --full-page "$1" "$2"; }
@@ -84,7 +84,7 @@ jobs:
           mobile http://127.0.0.1:3101/ae/account screenshots/12-account-mobile.png
 
       - name: Upload screenshot pack
-        if: always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
         with:
           name: catchtheprice-screenshot-pack
