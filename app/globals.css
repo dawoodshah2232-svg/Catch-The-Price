@@ -134,6 +134,18 @@ html:not([data-theme='dark']) .public-shell [class*="shadow-2xl"] {
 /* Branded chrome always remains dark, including while the shopping canvas is light. */
 .ctp-header-dark { background: #071015 !important; border-color: #162633 !important; color: #F8FAFC !important; }
 .ctp-footer-dark { background: #091217 !important; border-color: #162633 !important; color: #CBD5E1 !important; }
+.ctp-header-dark [class*="bg-[#0F1C24]"],
+.ctp-footer-dark [class*="bg-[#0F1C24]"] { background-color: #0F1C24 !important; }
+.ctp-header-dark [class*="bg-[#0A151B]"],
+.ctp-footer-dark [class*="bg-[#0A151B]"] { background-color: #0A151B !important; }
+.ctp-header-dark [class*="border-[#223743]"],
+.ctp-footer-dark [class*="border-[#223743]"] { border-color: #223743 !important; }
+.ctp-header-dark [class*="text-white"],
+.ctp-footer-dark [class*="text-white"] { color: #FFFFFF !important; }
+.ctp-header-dark [class*="text-[#E7F1ED]"],
+.ctp-footer-dark [class*="text-[#E7F1ED]"] { color: #E7F1ED !important; }
+.ctp-header-dark [class*="text-[#D9E6E1]"],
+.ctp-footer-dark [class*="text-[#D9E6E1]"] { color: #D9E6E1 !important; }
 .ctp-header-dark .chrome-primary,
 .ctp-footer-dark .chrome-primary { color: #F8FAFC !important; }
 .ctp-header-dark .chrome-secondary,
@@ -142,6 +154,22 @@ html:not([data-theme='dark']) .public-shell [class*="shadow-2xl"] {
 .ctp-footer-dark .chrome-muted { color: #849991 !important; }
 .ctp-footer-dark .footer-link { color: #B8C8C1; }
 .ctp-footer-dark .footer-link:hover { color: #67EFB8; }
+
+/* Search and popovers stay deliberately light against dark chrome in either appearance mode. */
+.ctp-search-light,
+html[data-theme='dark'] .ctp-search-light { background: #FFFFFF !important; border-color: #CBD9D3 !important; color: #102027 !important; }
+.ctp-search-light input,
+html[data-theme='dark'] .ctp-search-light input { color: #102027 !important; }
+.ctp-popover-light,
+html[data-theme='dark'] .ctp-popover-light { background: #FFFFFF !important; border-color: #DDE7E3 !important; color: #102027 !important; }
+
+/* Optional dark promotional panel inside the light shopping canvas. */
+.ctp-dark-panel { background: #071015 !important; border-color: #17303A !important; color: #F8FAFC !important; }
+.ctp-dark-panel [class*="bg-[#0F1C24]"] { background-color: #0F1C24 !important; }
+.ctp-dark-panel [class*="text-white"] { color: #FFFFFF !important; }
+.ctp-dark-panel [class*="text-[#E7F1ED]"] { color: #E7F1ED !important; }
+.ctp-dark-panel [class*="text-[#AFC1BA]"] { color: #AFC1BA !important; }
+.ctp-dark-panel [class*="text-[#8FA39B]"] { color: #8FA39B !important; }
 
 /* Dark mode compatibility for public pages that use fixed light shopping tokens. */
 html[data-theme='dark'] [class~="bg-[#F4F7F6]"] { background-color: var(--ui-bg) !important; }
