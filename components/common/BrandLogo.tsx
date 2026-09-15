@@ -13,15 +13,15 @@ export function BrandLogo({ variant = 'full', size = 'md', className = '' }: Bra
   const { country } = useCountry();
 
   const symbolSizes = {
-    sm: 'w-7 h-7',
-    md: 'w-9 h-9',
-    lg: 'w-12 h-12',
+    sm: 'w-8 h-8',
+    md: 'w-10 h-10',
+    lg: 'w-13 h-13',
   };
 
   const fullSizes = {
-    sm: 'h-7 max-w-[142px]',
-    md: 'h-9 max-w-[190px]',
-    lg: 'h-12 max-w-[248px]',
+    sm: 'h-8 max-w-[168px]',
+    md: 'h-10 max-w-[222px]',
+    lg: 'h-[52px] max-w-[286px]',
   };
 
   const isSymbol = variant === 'symbol';
