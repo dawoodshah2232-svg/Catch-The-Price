@@ -16,7 +16,7 @@
     --ctp-accent-2: #00C996;
     --ctp-accent-3: #00E6A2;
 
-    /* Public UI — light is always the default */
+    /* Public UI — light shopping canvas is the default */
     --ui-bg: #F4F7F6;
     --ui-surface: #FFFFFF;
     --ui-soft: #F8FAF9;
@@ -26,8 +26,8 @@
     --ui-text: #102027;
     --ui-text-secondary: #52636B;
     --ui-muted: #73858D;
-    --ui-header: rgba(255,255,255,.96);
-    --ui-footer: #F8FAF9;
+    --ui-header: #071015;
+    --ui-footer: #091217;
     --ui-shadow: rgba(25,55,45,.08);
   }
 
@@ -42,7 +42,7 @@
     --ui-text: #F8FAFC;
     --ui-text-secondary: #CBD5E1;
     --ui-muted: #94A3B8;
-    --ui-header: rgba(7,16,21,.96);
+    --ui-header: #071015;
     --ui-footer: #091217;
     --ui-shadow: rgba(0,0,0,.30);
   }
@@ -68,8 +68,8 @@
 .ui-page { background-color: var(--ui-bg); color: var(--ui-text); }
 .ui-surface { background-color: var(--ui-surface); border-color: var(--ui-border); color: var(--ui-text); }
 .ui-soft { background-color: var(--ui-soft); border-color: var(--ui-border); }
-.ui-header { background-color: var(--ui-header); border-color: var(--ui-border); color: var(--ui-text); }
-.ui-footer { background-color: var(--ui-footer); border-color: var(--ui-border); color: var(--ui-text-secondary); }
+.ui-header { background-color: var(--ui-header); border-color: #162633; color: #F8FAFC; }
+.ui-footer { background-color: var(--ui-footer); border-color: #162633; color: #CBD5E1; }
 .ui-text { color: var(--ui-text); }
 .ui-secondary { color: var(--ui-text-secondary); }
 .ui-muted { color: var(--ui-muted); }
@@ -130,6 +130,18 @@ html:not([data-theme='dark']) .public-shell [class*="text-[#64748B]"] {
 html:not([data-theme='dark']) .public-shell [class*="shadow-2xl"] {
   box-shadow: 0 14px 36px rgba(25,55,45,.09) !important;
 }
+
+/* Branded chrome always remains dark, including while the shopping canvas is light. */
+.ctp-header-dark { background: #071015 !important; border-color: #162633 !important; color: #F8FAFC !important; }
+.ctp-footer-dark { background: #091217 !important; border-color: #162633 !important; color: #CBD5E1 !important; }
+.ctp-header-dark .chrome-primary,
+.ctp-footer-dark .chrome-primary { color: #F8FAFC !important; }
+.ctp-header-dark .chrome-secondary,
+.ctp-footer-dark .chrome-secondary { color: #B8C8C1 !important; }
+.ctp-header-dark .chrome-muted,
+.ctp-footer-dark .chrome-muted { color: #849991 !important; }
+.ctp-footer-dark .footer-link { color: #B8C8C1; }
+.ctp-footer-dark .footer-link:hover { color: #67EFB8; }
 
 /* Dark mode compatibility for public pages that use fixed light shopping tokens. */
 html[data-theme='dark'] [class~="bg-[#F4F7F6]"] { background-color: var(--ui-bg) !important; }
