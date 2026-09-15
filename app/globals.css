@@ -112,6 +112,19 @@
 
 .btn-conversion-primary:active { transform: translateY(0); }
 
+.footer-link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  color: #AEBBC1;
+  transition: color 150ms ease, transform 150ms ease;
+}
+
+.footer-link:hover {
+  color: #63E6AE;
+  transform: translateX(2px);
+}
+
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #EDF3F1; }
 ::-webkit-scrollbar-thumb { background: #AFC2BB; border-radius: 9999px; }
