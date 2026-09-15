@@ -12,31 +12,33 @@ interface TrendingSectionProps {
 
 export function TrendingSection({ products }: TrendingSectionProps) {
   const { country } = useCountry();
+  if (products.length === 0) return null;
 
   return (
-    <section className="py-8 sm:py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-[#162633]">
-      <div className="flex items-end justify-between mb-5">
+    <section className="py-8 sm:py-12 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 border-t border-[#E1E9E6]">
+      <div className="flex items-end justify-between gap-3 mb-5">
         <div>
-          <div className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-[#00E6A2]">
+          <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-extrabold uppercase tracking-[0.12em] text-[#08784B]">
             <Sparkles className="w-4 h-4" />
-            <span>High User Volume</span>
+            <span>Popular right now</span>
           </div>
-          <h2 className="text-xl sm:text-2xl font-bold text-[#F8FAFC] mt-1">Trending Now</h2>
-          <p className="text-xs text-[#CBD5E1] mt-0.5">
-            Products shoppers are actively price-tracking today
+          <h2 className="text-xl sm:text-2xl font-extrabold text-[#102027] mt-1">Trending products</h2>
+          <p className="text-[11px] sm:text-xs text-[#64767E] mt-0.5">
+            Products getting attention in the current catalog.
           </p>
         </div>
 
         <a
-          href={`/${country}/search?sort=trending`}
-          className="text-xs font-bold text-[#00E6A2] hover:text-[#00D27A] flex items-center gap-1 transition-colors"
+          href={`/${country}/search`}
+          className="text-[11px] sm:text-xs font-extrabold text-[#08784B] hover:text-[#045E3A] flex items-center gap-1 transition-colors"
         >
-          <span>Explore Trending</span>
+          <span className="hidden min-[390px]:inline">Explore more</span>
+          <span className="min-[390px]:hidden">More</span>
           <ArrowRight className="w-3.5 h-3.5" />
         </a>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5">
         {products.map((product) => (
           <ProductCard key={product.id} product={product} />
         ))}
