@@ -14,9 +14,7 @@ interface PriceAlertModalProps {
 export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalProps) {
   const { country, countryInfo, formatLocalPrice, addAlert } = useCountry();
   const [alertType, setAlertType] = useState<'any_drop' | 'below_amount' | 'major_deal'>('any_drop');
-  const [targetPrice, setTargetPrice] = useState<string>(
-    Math.round(product.currentBestPrice * 0.9).toString()
-  );
+  const [targetPrice, setTargetPrice] = useState<string>(Math.round(product.currentBestPrice * 0.9).toString());
   const [email, setEmail] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -31,7 +29,6 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
 
     try {
       const parsedTarget = alertType === 'below_amount' ? parseFloat(targetPrice) : undefined;
-
       const response = await fetch('/api/alerts', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -45,7 +42,6 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
       });
 
       const result = await response.json().catch(() => null);
-
       if (!response.ok || !result?.success) {
         throw new Error(result?.error || 'We could not save this price alert. Please try again.');
       }
@@ -64,9 +60,7 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
 
       setIsSuccess(true);
     } catch (error) {
-      setErrorMessage(
-        error instanceof Error ? error.message : 'We could not save this price alert. Please try again.'
-      );
+      setErrorMessage(error instanceof Error ? error.message : 'We could not save this price alert. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -78,22 +72,29 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
     onClose();
   };
 
+  const optionClass = (active: boolean) =>
+    `flex items-center justify-between p-3.5 rounded-2xl border cursor-pointer transition-all ${
+      active
+        ? 'bg-[#EAF8F1] border-[#0B8F58] text-[#173028] shadow-[0_8px_20px_rgba(11,143,88,0.08)]'
+        : 'bg-white border-[#DDE7E3] text-[#52636B] hover:border-[#BFD2CA] hover:bg-[#FBFDFC]'
+    }`;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-[#071015]/85 backdrop-blur-sm animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-[#102027]/35 backdrop-blur-sm animate-in fade-in duration-150">
       <div
-        className="relative w-full max-w-md rounded-t-3xl sm:rounded-3xl bg-[#091217] border border-[#162633] p-5 sm:p-6 shadow-2xl overflow-hidden animate-in slide-in-from-bottom duration-200"
+        className="relative w-full max-w-md rounded-t-[28px] sm:rounded-[28px] bg-white border border-[#DDE7E3] p-5 sm:p-6 shadow-[0_24px_80px_rgba(24,52,43,0.18)] overflow-hidden animate-in slide-in-from-bottom duration-200"
         role="dialog"
         aria-modal="true"
         aria-labelledby="price-alert-title"
       >
         <div className="sm:hidden -mt-2 pb-3 flex justify-center">
-          <div className="w-12 h-1.5 rounded-full bg-[#162633]" />
+          <div className="w-12 h-1.5 rounded-full bg-[#D9E4E0]" />
         </div>
 
         <button
           type="button"
           onClick={handleClose}
-          className="absolute top-4 right-4 p-2 rounded-xl bg-[#071015] text-[#CBD5E1] hover:text-white border border-[#162633] touch-target flex items-center justify-center"
+          className="absolute top-4 right-4 p-2 rounded-xl bg-[#F4F7F6] text-[#65777F] hover:text-[#102027] border border-[#DDE7E3] touch-target flex items-center justify-center"
           aria-label="Close"
         >
           <X className="w-4 h-4" />
@@ -101,19 +102,17 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
 
         {isSuccess ? (
           <div className="py-8 text-center space-y-3">
-            <div className="w-14 h-14 rounded-2xl bg-[#00D27A]/15 text-[#00D27A] border border-[#00D27A]/40 mx-auto flex items-center justify-center">
+            <div className="w-14 h-14 rounded-2xl bg-[#EAF8F1] text-[#0B8F58] border border-[#CFE9DD] mx-auto flex items-center justify-center">
               <Check className="w-8 h-8" />
             </div>
-            <h3 id="price-alert-title" className="text-xl font-bold text-[#F8FAFC]">
-              Price alert saved
-            </h3>
-            <p className="text-xs text-[#CBD5E1] max-w-xs mx-auto leading-relaxed">
-              Your alert was saved successfully. We will only claim email delivery after the verification and notification service is active.
+            <h3 id="price-alert-title" className="text-xl font-extrabold text-[#102027]">Price alert saved</h3>
+            <p className="text-xs text-[#65777F] max-w-xs mx-auto leading-relaxed">
+              This alert is saved to your account. Email delivery will only be shown as active after verification and notification delivery are configured.
             </p>
             <button
               type="button"
               onClick={handleClose}
-              className="mt-3 px-5 py-2.5 rounded-xl bg-[#0f1c24] border border-[#203648] text-sm font-bold text-[#F8FAFC]"
+              className="mt-3 px-5 py-2.5 rounded-xl bg-[#F3F8F6] border border-[#D5E2DD] text-sm font-extrabold text-[#20343C]"
             >
               Done
             </button>
@@ -121,99 +120,64 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
         ) : (
           <div>
             <div className="flex items-center gap-3 mb-4 pr-10">
-              <div className="w-10 h-10 rounded-2xl bg-[#00D27A]/10 text-[#00D27A] border border-[#00D27A]/25 flex items-center justify-center shrink-0">
+              <div className="w-10 h-10 rounded-2xl bg-[#EAF8F1] text-[#0B8F58] border border-[#CFE9DD] flex items-center justify-center shrink-0">
                 <Bell className="w-5 h-5" />
               </div>
               <div>
-                <h3 id="price-alert-title" className="font-bold text-base sm:text-lg text-[#F8FAFC] leading-tight">
-                  Track Price
-                </h3>
-                <p className="text-xs text-[#CBD5E1] mt-0.5">
-                  Save a target and check back when prices change
-                </p>
+                <h3 id="price-alert-title" className="font-extrabold text-base sm:text-lg text-[#102027] leading-tight">Track price</h3>
+                <p className="text-xs text-[#73858D] mt-0.5">Save a target for this exact product</p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3 p-3 rounded-2xl bg-[#071015] border border-[#162633] mb-5">
+            <div className="flex items-center gap-3 p-3 rounded-2xl bg-[#F8FAF9] border border-[#DDE7E3] mb-5">
               <img
                 src={product.imageUrl}
                 alt={product.title}
-                className="w-12 h-12 rounded-xl object-contain bg-[#091217] p-1 border border-[#162633] shrink-0"
+                className="w-12 h-12 rounded-xl object-contain bg-white p-1 border border-[#DDE7E3] shrink-0"
               />
               <div className="min-w-0 flex-1">
-                <p className="text-xs font-bold text-[#F8FAFC] truncate">{product.title}</p>
+                <p className="text-xs font-extrabold text-[#102027] truncate">{product.title}</p>
                 <div className="flex items-center gap-2 mt-0.5">
-                  <span className="text-sm font-extrabold text-[#00D27A]">
-                    {formatLocalPrice(product.currentBestPrice)}
-                  </span>
-                  <span className="text-[10px] text-[#94A3B8] font-semibold">Displayed price</span>
+                  <span className="text-sm font-extrabold text-[#0B8F58]">{formatLocalPrice(product.currentBestPrice)}</span>
+                  <span className="text-[10px] text-[#829198] font-semibold">Current listed price</span>
                 </div>
               </div>
             </div>
 
             {errorMessage && (
-              <div className="mb-4 p-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-200 text-xs flex items-start gap-2" role="alert">
-                <AlertCircle className="w-4 h-4 text-red-300 shrink-0 mt-0.5" />
+              <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-start gap-2" role="alert">
+                <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                 <span>{errorMessage}</span>
               </div>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#F8FAFC] mb-2">
-                  Alert Trigger Options
-                </label>
-
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-[#31474F] mb-2">Alert trigger</label>
                 <div className="space-y-2">
-                  <label
-                    className={`flex items-center justify-between p-3.5 rounded-2xl border cursor-pointer transition-all ${
-                      alertType === 'any_drop'
-                        ? 'bg-[#00D27A]/10 border-[#00D27A] text-[#F8FAFC]'
-                        : 'bg-[#071015] border-[#162633] text-[#CBD5E1] hover:border-[#203648]'
-                    }`}
-                  >
+                  <label className={optionClass(alertType === 'any_drop')}>
                     <div className="flex items-center gap-3">
-                      <input
-                        type="radio"
-                        name="alertType"
-                        checked={alertType === 'any_drop'}
-                        onChange={() => setAlertType('any_drop')}
-                        className="accent-[#00D27A] w-4 h-4"
-                      />
+                      <input type="radio" name="alertType" checked={alertType === 'any_drop'} onChange={() => setAlertType('any_drop')} className="accent-[#0B8F58] w-4 h-4" />
                       <span className="text-xs font-semibold">Notify me on any drop</span>
                     </div>
                   </label>
 
-                  <label
-                    className={`flex flex-col p-3.5 rounded-2xl border cursor-pointer transition-all ${
-                      alertType === 'below_amount'
-                        ? 'bg-[#00D27A]/10 border-[#00D27A] text-[#F8FAFC]'
-                        : 'bg-[#071015] border-[#162633] text-[#CBD5E1] hover:border-[#203648]'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <input
-                          type="radio"
-                          name="alertType"
-                          checked={alertType === 'below_amount'}
-                          onChange={() => setAlertType('below_amount')}
-                          className="accent-[#00D27A] w-4 h-4"
-                        />
-                        <span className="text-xs font-semibold">Notify below target price</span>
-                      </div>
+                  <label className={`flex flex-col ${optionClass(alertType === 'below_amount')}`}>
+                    <div className="flex items-center gap-3">
+                      <input type="radio" name="alertType" checked={alertType === 'below_amount'} onChange={() => setAlertType('below_amount')} className="accent-[#0B8F58] w-4 h-4" />
+                      <span className="text-xs font-semibold">Notify below target price</span>
                     </div>
 
                     {alertType === 'below_amount' && (
-                      <div className="mt-3 flex items-center gap-2 pl-7">
-                        <span className="text-xs font-bold text-[#CBD5E1]">{countryInfo.currency}</span>
+                      <div className="mt-3 flex items-center gap-2 pl-7 w-full">
+                        <span className="text-xs font-bold text-[#52636B]">{countryInfo.currency}</span>
                         <input
                           type="number"
                           min="1"
                           step="0.01"
                           value={targetPrice}
                           onChange={(e) => setTargetPrice(e.target.value)}
-                          className="w-full bg-[#091217] border border-[#203648] rounded-xl px-3.5 py-2 text-sm text-[#F8FAFC] focus:outline-none focus:border-[#00D27A]"
+                          className="w-full bg-white border border-[#CFE0DA] rounded-xl px-3.5 py-2 text-sm text-[#102027] focus:outline-none focus:border-[#0B8F58]"
                           placeholder="Enter your target price"
                           required
                         />
@@ -221,21 +185,9 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
                     )}
                   </label>
 
-                  <label
-                    className={`flex items-center justify-between p-3.5 rounded-2xl border cursor-pointer transition-all ${
-                      alertType === 'major_deal'
-                        ? 'bg-[#00D27A]/10 border-[#00D27A] text-[#F8FAFC]'
-                        : 'bg-[#071015] border-[#162633] text-[#CBD5E1] hover:border-[#203648]'
-                    }`}
-                  >
+                  <label className={optionClass(alertType === 'major_deal')}>
                     <div className="flex items-center gap-3">
-                      <input
-                        type="radio"
-                        name="alertType"
-                        checked={alertType === 'major_deal'}
-                        onChange={() => setAlertType('major_deal')}
-                        className="accent-[#00D27A] w-4 h-4"
-                      />
+                      <input type="radio" name="alertType" checked={alertType === 'major_deal'} onChange={() => setAlertType('major_deal')} className="accent-[#0B8F58] w-4 h-4" />
                       <span className="text-xs font-semibold">Notify only for major deals</span>
                     </div>
                   </label>
@@ -243,19 +195,17 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-[#F8FAFC] mb-1.5">
-                  Email for future notifications
-                </label>
+                <label className="block text-xs font-extrabold uppercase tracking-wider text-[#31474F] mb-1.5">Notification email</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="your.email@example.com"
-                  className="w-full bg-[#071015] border border-[#162633] rounded-2xl px-3.5 py-3 text-xs text-[#F8FAFC] placeholder:text-[#94A3B8] focus:outline-none focus:border-[#00D27A]"
+                  className="w-full bg-[#F8FAF9] border border-[#DDE7E3] rounded-2xl px-3.5 py-3 text-xs text-[#102027] placeholder:text-[#8A999F] focus:outline-none focus:border-[#0B8F58]"
                 />
-                <p className="text-[10px] text-[#94A3B8] mt-1.5 flex items-start gap-1">
-                  <ShieldCheck className="w-3 h-3 text-[#00D27A] shrink-0 mt-0.5" />
-                  <span>Email delivery will be activated only after verification is configured.</span>
+                <p className="text-[10px] text-[#829198] mt-1.5 flex items-start gap-1">
+                  <ShieldCheck className="w-3 h-3 text-[#0B8F58] shrink-0 mt-0.5" />
+                  <span>The alert can be saved now; email delivery will only activate after verification is configured.</span>
                 </p>
               </div>
 
@@ -263,9 +213,9 @@ export function PriceAlertModal({ product, isOpen, onClose }: PriceAlertModalPro
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-3.5 rounded-2xl btn-conversion-primary disabled:opacity-50 text-sm font-extrabold flex items-center justify-center gap-2 touch-target"
+                  className="w-full py-3.5 rounded-2xl bg-[#0B8F58] hover:bg-[#08784B] disabled:opacity-50 text-white text-sm font-extrabold flex items-center justify-center gap-2 touch-target transition-colors"
                 >
-                  <span>{isSubmitting ? 'Saving Alert...' : 'Save Price Alert'}</span>
+                  <span>{isSubmitting ? 'Saving alert…' : 'Save price alert'}</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
