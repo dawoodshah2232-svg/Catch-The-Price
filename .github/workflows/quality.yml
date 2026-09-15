@@ -68,22 +68,23 @@ jobs:
         if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: |
           mkdir -p screenshots
-          shot() { npx --yes playwright@1.57.0 screenshot --browser chromium --wait-for-timeout 1200 --full-page "$1" "$2"; }
-          shot http://127.0.0.1:3101/ae screenshots/01-home-desktop.png
-          shot http://127.0.0.1:3101/ae/search?q=Samsung screenshots/02-search-desktop.png
-          shot http://127.0.0.1:3101/ae/product/samsung-galaxy-s24-ultra-512gb screenshots/03-product-desktop.png
-          shot http://127.0.0.1:3101/ae/compare screenshots/04-compare-desktop.png
-          shot http://127.0.0.1:3101/ae/account screenshots/05-account-desktop.png
-          shot http://127.0.0.1:3101/ae/blog screenshots/06-guides-desktop.png
-          shot http://127.0.0.1:3101/admin-access screenshots/07-admin-access-desktop.png
-          npx --yes playwright@1.57.0 screenshot --browser chromium --device "iPhone 13" --wait-for-timeout 1200 --full-page http://127.0.0.1:3101/ae screenshots/08-home-mobile.png
-          npx --yes playwright@1.57.0 screenshot --browser chromium --device "iPhone 13" --wait-for-timeout 1200 --full-page "http://127.0.0.1:3101/ae/search?q=Samsung" screenshots/09-search-mobile.png
-          npx --yes playwright@1.57.0 screenshot --browser chromium --device "iPhone 13" --wait-for-timeout 1200 --full-page http://127.0.0.1:3101/ae/product/samsung-galaxy-s24-ultra-512gb screenshots/10-product-mobile.png
-          npx --yes playwright@1.57.0 screenshot --browser chromium --device "iPhone 13" --wait-for-timeout 1200 --full-page http://127.0.0.1:3101/ae/compare screenshots/11-compare-mobile.png
-          npx --yes playwright@1.57.0 screenshot --browser chromium --device "iPhone 13" --wait-for-timeout 1200 --full-page http://127.0.0.1:3101/ae/account screenshots/12-account-mobile.png
+          desktop() { npx --yes playwright@1.57.0 screenshot --browser chromium --viewport-size "1440,1000" --wait-for-timeout 1200 --full-page "$1" "$2"; }
+          mobile() { npx --yes playwright@1.57.0 screenshot --browser chromium --viewport-size "390,844" --wait-for-timeout 1200 --full-page "$1" "$2"; }
+          desktop http://127.0.0.1:3101/ae screenshots/01-home-desktop.png
+          desktop "http://127.0.0.1:3101/ae/search?q=Samsung" screenshots/02-search-desktop.png
+          desktop http://127.0.0.1:3101/ae/product/samsung-galaxy-s24-ultra-512gb screenshots/03-product-desktop.png
+          desktop http://127.0.0.1:3101/ae/compare screenshots/04-compare-desktop.png
+          desktop http://127.0.0.1:3101/ae/account screenshots/05-account-desktop.png
+          desktop http://127.0.0.1:3101/ae/blog screenshots/06-guides-desktop.png
+          desktop http://127.0.0.1:3101/admin-access screenshots/07-admin-access-desktop.png
+          mobile http://127.0.0.1:3101/ae screenshots/08-home-mobile.png
+          mobile "http://127.0.0.1:3101/ae/search?q=Samsung" screenshots/09-search-mobile.png
+          mobile http://127.0.0.1:3101/ae/product/samsung-galaxy-s24-ultra-512gb screenshots/10-product-mobile.png
+          mobile http://127.0.0.1:3101/ae/compare screenshots/11-compare-mobile.png
+          mobile http://127.0.0.1:3101/ae/account screenshots/12-account-mobile.png
 
       - name: Upload screenshot pack
-        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+        if: always() && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         uses: actions/upload-artifact@v4
         with:
           name: catchtheprice-screenshot-pack
