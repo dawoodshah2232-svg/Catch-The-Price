@@ -101,17 +101,20 @@ function SearchContent() {
     setSortBy('deal_score');
   };
 
+  const selectClass =
+    'h-11 w-full rounded-xl bg-white border border-[#D7E3DE] px-3 text-sm text-[#20343C] outline-none focus:border-[#0B8F58]';
+
   const filterPanel = (
     <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-3">
-      <select value={category} onChange={(e) => setCategory(e.target.value)} className="h-11 rounded-xl bg-[#091217] border border-[#162633] px-3 text-sm text-[#F8FAFC]">
+      <select value={category} onChange={(e) => setCategory(e.target.value)} className={selectClass}>
         <option value="">All categories</option>
         {categories.map(([slug, name]) => <option key={slug} value={slug}>{name}</option>)}
       </select>
-      <select value={brand} onChange={(e) => setBrand(e.target.value)} className="h-11 rounded-xl bg-[#091217] border border-[#162633] px-3 text-sm text-[#F8FAFC]">
+      <select value={brand} onChange={(e) => setBrand(e.target.value)} className={selectClass}>
         <option value="">All brands</option>
         {brands.map((item) => <option key={item} value={item}>{item}</option>)}
       </select>
-      <select value={merchant} onChange={(e) => setMerchant(e.target.value)} className="h-11 rounded-xl bg-[#091217] border border-[#162633] px-3 text-sm text-[#F8FAFC]">
+      <select value={merchant} onChange={(e) => setMerchant(e.target.value)} className={selectClass}>
         <option value="">All retailers</option>
         {merchants.map((item) => <option key={item} value={item}>{item}</option>)}
       </select>
@@ -119,75 +122,84 @@ function SearchContent() {
   );
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8">
-      <div className="flex flex-col gap-4 pb-5 border-b border-[#162633]">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-          <div>
-            <h1 className="text-xl sm:text-2xl font-extrabold text-[#F8FAFC]">Search &amp; compare</h1>
-            <p className="text-xs text-[#94A3B8] mt-1">
-              {loading ? 'Loading products…' : `${results.length} products in ${countryInfo.name}`}
-              {isPreview ? ' · Preview catalog' : ''}
-            </p>
-          </div>
-          <div className="flex items-center gap-2">
-            <button type="button" onClick={() => setFiltersOpen((v) => !v)} className="lg:hidden h-11 px-3 rounded-xl bg-[#091217] border border-[#162633] text-sm text-[#F8FAFC] flex items-center gap-2">
-              <SlidersHorizontal className="w-4 h-4 text-[#00D27A]" /> Filters
-            </button>
-            <div className="h-11 px-3 rounded-xl bg-[#091217] border border-[#162633] flex items-center gap-2">
-              <ArrowUpDown className="w-4 h-4 text-[#94A3B8]" />
-              <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)} className="bg-transparent text-sm text-[#F8FAFC] outline-none">
-                <option value="deal_score">Best match</option>
-                <option value="biggest_drop">Biggest drop</option>
-                <option value="price_asc">Price: low to high</option>
-                <option value="price_desc">Price: high to low</option>
-              </select>
+    <div className="min-h-screen bg-[#F4F7F6]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 sm:py-8">
+        <div className="flex flex-col gap-3 sm:gap-4 pb-5 border-b border-[#DDE7E3]">
+          <div className="flex flex-row items-end justify-between gap-3">
+            <div className="min-w-0">
+              <h1 className="text-lg sm:text-2xl font-extrabold text-[#102027] truncate">
+                {searchQuery ? `Results for “${searchQuery}”` : 'Search & compare'}
+              </h1>
+              <p className="text-[11px] sm:text-xs text-[#73858D] mt-1">
+                {loading ? 'Loading products…' : `${results.length} products in ${countryInfo.name}`}
+                {isPreview ? ' · Preview data' : ''}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={() => setFiltersOpen((value) => !value)}
+                className="lg:hidden h-10 px-3 rounded-xl bg-white border border-[#D7E3DE] text-xs font-bold text-[#31474F] flex items-center gap-1.5 shadow-sm"
+              >
+                <SlidersHorizontal className="w-4 h-4 text-[#08784B]" /> Filters
+              </button>
+              <div className="h-10 px-2.5 rounded-xl bg-white border border-[#D7E3DE] flex items-center gap-1.5 shadow-sm">
+                <ArrowUpDown className="w-3.5 h-3.5 text-[#73858D]" />
+                <select value={sortBy} onChange={(e) => setSortBy(e.target.value as SortBy)} className="bg-transparent text-xs font-semibold text-[#31474F] outline-none max-w-[116px] sm:max-w-none">
+                  <option value="deal_score">Best match</option>
+                  <option value="biggest_drop">Biggest drop</option>
+                  <option value="price_asc">Price: low</option>
+                  <option value="price_desc">Price: high</option>
+                </select>
+              </div>
             </div>
           </div>
+
+          <label className="hidden lg:flex h-12 rounded-2xl bg-white border border-[#D7E3DE] items-center gap-3 px-4 focus-within:border-[#0B8F58] focus-within:ring-2 focus-within:ring-[#00D27A]/10 shadow-sm">
+            <SearchIcon className="w-5 h-5 text-[#73858D] shrink-0" />
+            <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search products, brands or models…" className="w-full bg-transparent outline-none text-sm text-[#102027] placeholder:text-[#8A9A9F]" />
+          </label>
         </div>
 
-        <label className="h-12 rounded-2xl bg-[#091217] border border-[#162633] flex items-center gap-3 px-4 focus-within:border-[#00D27A]/60">
-          <SearchIcon className="w-5 h-5 text-[#94A3B8] shrink-0" />
-          <input value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search products, brands or models…" className="w-full bg-transparent outline-none text-sm text-[#F8FAFC] placeholder:text-[#64748B]" />
-        </label>
-      </div>
+        {filtersOpen && <div className="lg:hidden mt-3 p-3 rounded-2xl bg-[#EEF4F1] border border-[#D7E3DE]">{filterPanel}</div>}
 
-      {filtersOpen && <div className="lg:hidden mt-4 p-4 rounded-2xl bg-[#0b151b] border border-[#162633]">{filterPanel}</div>}
-
-      <div className="grid grid-cols-1 lg:grid-cols-[220px_minmax(0,1fr)] gap-6 mt-6">
-        <aside className="hidden lg:block sticky top-24 self-start p-4 rounded-2xl bg-[#0b151b] border border-[#162633] space-y-4">
-          <div className="flex items-center justify-between">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#CBD5E1]">Filters</span>
-            <button type="button" onClick={reset} className="text-xs text-[#94A3B8] hover:text-[#00D27A] flex items-center gap-1"><RotateCcw className="w-3 h-3" /> Reset</button>
-          </div>
-          {filterPanel}
-        </aside>
-
-        <section className="min-w-0">
-          {loading ? (
-            <div className="py-20 text-center text-sm text-[#94A3B8]">Loading catalog…</div>
-          ) : loadError ? (
-            <div className="py-16 px-6 text-center rounded-2xl bg-[#091217] border border-[#162633]">
-              <h2 className="font-bold text-[#F8FAFC]">Search is temporarily unavailable</h2>
-              <p className="text-sm text-[#94A3B8] mt-2">Please try again shortly.</p>
+        <div className="grid grid-cols-1 lg:grid-cols-[220px_minmax(0,1fr)] gap-6 mt-5 sm:mt-6">
+          <aside className="hidden lg:block sticky top-24 self-start p-4 rounded-2xl bg-white border border-[#DDE7E3] space-y-4 shadow-sm">
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-extrabold uppercase tracking-wider text-[#31474F]">Filters</span>
+              <button type="button" onClick={reset} className="text-xs text-[#73858D] hover:text-[#08784B] flex items-center gap-1"><RotateCcw className="w-3 h-3" /> Reset</button>
             </div>
-          ) : results.length === 0 ? (
-            <div className="py-16 px-6 text-center rounded-2xl bg-[#091217] border border-[#162633]">
-              <SearchIcon className="w-9 h-9 text-[#64748B] mx-auto" />
-              <h2 className="font-bold text-[#F8FAFC] mt-3">No matching products yet</h2>
-              <p className="text-sm text-[#94A3B8] mt-2">Try another search or clear the filters.</p>
-              <button type="button" onClick={reset} className="mt-4 h-11 px-4 rounded-xl bg-[#0d2a23] text-[#67efb8] border border-[#00D27A]/30 text-sm font-bold">Clear filters</button>
-            </div>
-          ) : (
-            <div className="space-y-8">
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-5">
-                {results.slice(0, 6).map((product) => <ProductCard key={product.id} product={product} />)}
-                {results.length > 6 && <div className="col-span-2 md:col-span-3"><AdSlot slotId="search-infeed-middle" format="banner" /></div>}
-                {results.slice(6).map((product) => <ProductCard key={product.id} product={product} />)}
+            {filterPanel}
+          </aside>
+
+          <section className="min-w-0">
+            {loading ? (
+              <div className="py-20 text-center text-sm text-[#73858D]">Loading catalog…</div>
+            ) : loadError ? (
+              <div className="py-16 px-6 text-center rounded-2xl bg-white border border-[#DDE7E3]">
+                <h2 className="font-bold text-[#102027]">Search is temporarily unavailable</h2>
+                <p className="text-sm text-[#73858D] mt-2">Please try again shortly.</p>
               </div>
-              <AdSlot slotId="search-bottom-feed" format="banner" />
-            </div>
-          )}
-        </section>
+            ) : results.length === 0 ? (
+              <div className="py-16 px-6 text-center rounded-2xl bg-white border border-[#DDE7E3]">
+                <SearchIcon className="w-9 h-9 text-[#9AABA4] mx-auto" />
+                <h2 className="font-bold text-[#102027] mt-3">No matching products yet</h2>
+                <p className="text-sm text-[#73858D] mt-2">Try another search or clear the filters.</p>
+                <button type="button" onClick={reset} className="mt-4 h-11 px-4 rounded-xl bg-[#EAF5F0] text-[#08784B] border border-[#CFE3DB] text-sm font-extrabold">Clear filters</button>
+              </div>
+            ) : (
+              <div className="space-y-8">
+                <div className="grid grid-cols-2 md:grid-cols-3 gap-2.5 sm:gap-5">
+                  {results.slice(0, 6).map((product) => <ProductCard key={product.id} product={product} />)}
+                  {results.length > 6 && <div className="col-span-2 md:col-span-3"><AdSlot slotId="search-infeed-middle" format="banner" /></div>}
+                  {results.slice(6).map((product) => <ProductCard key={product.id} product={product} />)}
+                </div>
+                <AdSlot slotId="search-bottom-feed" format="banner" />
+              </div>
+            )}
+          </section>
+        </div>
       </div>
     </div>
   );
@@ -195,5 +207,5 @@ function SearchContent() {
 
 export default function SearchPage({ params }: SearchPageProps) {
   use(params);
-  return <Suspense fallback={<div className="p-12 text-center text-sm text-[#94A3B8]">Loading search…</div>}><SearchContent /></Suspense>;
+  return <Suspense fallback={<div className="p-12 text-center text-sm text-[#73858D]">Loading search…</div>}><SearchContent /></Suspense>;
 }
