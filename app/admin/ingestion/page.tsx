@@ -1,309 +1,287 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { AlertTriangle, Play, Database, Key } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
+import { AlertTriangle, CheckCircle2, Database, Key, Loader2, Play, RefreshCw, ShieldCheck } from 'lucide-react';
 
-interface IngestionSourceUI {
+type Readiness = 'disabled' | 'pending_rights' | 'missing_credentials' | 'ready' | 'invalid_config';
+
+type SourceRow = {
   id: string;
   name: string;
-  adapter: string;
+  sourceType: string;
   country: string;
-  envKey: string;
-  endpointDescription: string;
-  requiresCredentials: boolean;
-  status: 'configured' | 'missing_credentials' | 'disabled';
+  baseUrl: string | null;
+  adapter: string;
+  rightsId: string;
+  rightsStatus: string;
+  rightsReady: boolean;
+  credentialReady: boolean;
+  credentialEnvKey: string | null;
+  isActive: boolean;
+  readiness: Readiness;
+  updatedAt: string | null;
+};
+
+type RunRow = {
+  id: string;
+  sourceId: string;
+  sourceName: string;
+  country: string;
+  status: string;
+  itemsSeen: number;
+  itemsStaged: number;
+  itemsRejected: number;
+  itemsCreated: number;
+  itemsUpdated: number;
+  error: string | null;
+  startedAt: string | null;
+  finishedAt: string | null;
+  createdAt: string;
+};
+
+function readinessLabel(value: Readiness) {
+  if (value === 'ready') return 'Ready';
+  if (value === 'pending_rights') return 'Rights pending';
+  if (value === 'missing_credentials') return 'Credential missing';
+  if (value === 'invalid_config') return 'Config incomplete';
+  return 'Disabled';
 }
 
-interface IngestionLog {
-  id: string;
-  source: string;
-  itemsFetched: number;
-  itemsMatched: number;
-  priceDropsDetected: number;
-  duration: string;
-  status: 'completed' | 'partial_credentials' | 'failed';
-  errors?: string[];
-  timestamp: string;
+function timeLabel(value?: string | null) {
+  if (!value) return '—';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat('en', {
+    month: 'short',
+    day: 'numeric',
+    hour: 'numeric',
+    minute: '2-digit',
+  }).format(date);
 }
 
 export default function AdminIngestionPage() {
-  const [sources, setSources] = useState<IngestionSourceUI[]>([]);
-  const [selectedSource, setSelectedSource] = useState<string>('all');
-  const [isRunning, setIsRunning] = useState(false);
-  const [lastError, setLastError] = useState<string | null>(null);
+  const [sources, setSources] = useState<SourceRow[]>([]);
+  const [runs, setRuns] = useState<RunRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [runningSource, setRunningSource] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
-  const [logs, setLogs] = useState<IngestionLog[]>([
-    {
-      id: 'run-902014',
-      source: 'Amazon UAE & Noon Feeds',
-      itemsFetched: 120,
-      itemsMatched: 118,
-      priceDropsDetected: 2,
-      duration: '184ms',
-      status: 'completed',
-      timestamp: '10 mins ago',
-    },
-    {
-      id: 'run-901842',
-      source: 'Jarir & Amazon Saudi Feeds',
-      itemsFetched: 95,
-      itemsMatched: 94,
-      priceDropsDetected: 1,
-      duration: '142ms',
-      status: 'completed',
-      timestamp: '1 hour ago',
-    },
-  ]);
-
-  useEffect(() => {
-    async function loadSources() {
-      try {
-        const res = await fetch('/api/admin/ingestion');
-        if (res.ok) {
-          const data = await res.json();
-          if (data.sources) {
-            setSources(data.sources);
-          }
-        }
-      } catch (err) {
-        console.error('Failed to load sources', err);
-      }
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('/api/admin/ingestion', { cache: 'no-store' });
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'Could not load ingestion data');
+      setSources(Array.isArray(payload.sources) ? payload.sources : []);
+      setRuns(Array.isArray(payload.runs) ? payload.runs : []);
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : 'Could not load ingestion data');
+    } finally {
+      setLoading(false);
     }
-    loadSources();
   }, []);
 
-  const handleRunPipeline = async () => {
-    setIsRunning(true);
-    setLastError(null);
+  useEffect(() => {
+    load();
+  }, [load]);
 
+  const runSource = async (sourceId: string) => {
+    setRunningSource(sourceId);
+    setNotice(null);
     try {
-      const payload: { sourceId?: string } = {};
-      if (selectedSource !== 'all') {
-        payload.sourceId = selectedSource;
-      }
-
-      const res = await fetch('/api/admin/ingestion', {
+      const response = await fetch('/api/admin/ingestion/run', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ sourceId }),
       });
-
-      const data = await res.json();
-
-      if (!res.ok || !data.success) {
-        throw new Error(data.error || 'Ingestion execution returned failure');
-      }
-
-      const r = data.result;
-      const targetName =
-        selectedSource === 'all'
-          ? 'All Verified Feeds & Catalogs'
-          : sources.find((s) => s.id === selectedSource)?.name || selectedSource;
-
-      const newLog: IngestionLog = {
-        id: r.runId,
-        source: targetName,
-        itemsFetched: r.itemsFetched,
-        itemsMatched: r.itemsMatched,
-        priceDropsDetected: r.priceDropsDetected,
-        duration: `${r.durationMs}ms`,
-        status: r.errors && r.errors.length > 0 && r.itemsFetched === 0 ? 'partial_credentials' : 'completed',
-        errors: r.errors,
-        timestamp: 'Just now',
-      };
-
-      setLogs((prev) => [newLog, ...prev]);
-    } catch (err: any) {
-      setLastError(err.message || 'Pipeline execution failed');
+      const payload = await response.json();
+      if (!response.ok) throw new Error(payload.error || 'Ingestion run failed');
+      setNotice(`Staged ${payload.staged} item${payload.staged === 1 ? '' : 's'} for review. Nothing was auto-published.`);
+      await load();
+    } catch (error) {
+      setNotice(error instanceof Error ? error.message : 'Ingestion run failed');
+      await load();
     } finally {
-      setIsRunning(false);
+      setRunningSource(null);
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#162633]">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-ctp">
         <div>
-          <h1 className="text-2xl font-extrabold text-[#F8FAFC]">Merchant Data Ingestion</h1>
-          <p className="text-xs text-[#CBD5E1] mt-1">
-            Permitted merchant API connectors, rights-gated feed normalization, and deterministic price matching.
+          <h1 className="text-2xl font-extrabold text-slate-100">Data Sources &amp; Ingestion</h1>
+          <p className="text-xs text-slate-400 mt-1 max-w-3xl">
+            Real source connectors only. Every run is rights-gated, staged for review, and kept separate from the public catalog until approved.
           </p>
         </div>
-
-        <div className="flex items-center gap-3">
-          <select
-            value={selectedSource}
-            onChange={(e) => setSelectedSource(e.target.value)}
-            className="px-3 py-2.5 rounded-xl bg-[#091217] border border-[#162633] text-xs font-semibold text-[#CBD5E1] focus:outline-none focus:border-[#00D27A]"
-          >
-            <option value="all">All Available Feeds</option>
-            {sources.map((s) => (
-              <option key={s.id} value={s.id}>
-                {s.name} ({s.country.toUpperCase()})
-              </option>
-            ))}
-          </select>
-
-          <button
-            type="button"
-            onClick={handleRunPipeline}
-            disabled={isRunning}
-            className="px-4 py-2.5 rounded-xl bg-[#00D27A] hover:bg-[#00E6A2] disabled:opacity-50 text-[#071015] font-extrabold text-xs transition-all shadow-lg flex items-center gap-2 touch-target"
-          >
-            <Play className={`w-4 h-4 ${isRunning ? 'animate-spin' : ''}`} />
-            <span>{isRunning ? 'Processing Pipeline...' : 'Run Pipeline Now'}</span>
-          </button>
-        </div>
+        <button
+          type="button"
+          onClick={load}
+          disabled={loading}
+          className="min-h-[42px] px-3.5 rounded-xl bg-slate-900 border border-ctp text-xs font-bold text-slate-200 hover:text-white flex items-center gap-2 disabled:opacity-50"
+        >
+          <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /> Refresh
+        </button>
       </div>
 
-      {lastError && (
-        <div className="p-4 rounded-2xl bg-red-500/10 border border-red-500/30 text-xs text-red-400 flex items-start gap-2.5">
-          <AlertTriangle className="w-4 h-4 shrink-0 mt-0.5" />
-          <div>
-            <strong className="block font-bold">Execution Notice:</strong>
-            <span>{lastError}</span>
-          </div>
+      {notice && (
+        <div className="rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-xs text-amber-200 flex items-start gap-2.5">
+          <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" />
+          <span>{notice}</span>
         </div>
       )}
 
-      {/* Verified Connectors Status Grid */}
-      <div>
-        <h3 className="font-bold text-sm text-[#F8FAFC] mb-3 flex items-center gap-2">
-          <Key className="w-4 h-4 text-[#00D27A]" />
-          <span>Configured Source Connectors &amp; Permission Gates</span>
-        </h3>
+      <section className="space-y-3">
+        <div className="flex items-center justify-between gap-3">
+          <h2 className="font-bold text-sm text-slate-100 flex items-center gap-2">
+            <Key className="w-4 h-4 text-emerald-400" /> Source readiness
+          </h2>
+          <span className="text-[11px] text-slate-500">{sources.length} configured source{sources.length === 1 ? '' : 's'}</span>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-          {sources.map((src) => {
-            const isConfigured = src.status === 'configured';
-
-            return (
-              <div
-                key={src.id}
-                className="p-4 rounded-2xl bg-[#091217] border border-[#162633] space-y-2.5 flex flex-col justify-between"
-              >
-                <div>
-                  <div className="flex items-center justify-between gap-2 mb-1.5">
-                    <span className="font-bold text-xs text-[#F8FAFC]">{src.name}</span>
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
-                        isConfigured
-                          ? 'bg-[#00D27A]/15 text-[#00D27A] border-[#00D27A]/30'
-                          : 'bg-amber-500/15 text-amber-400 border-amber-500/30'
-                      }`}
-                    >
-                      {isConfigured ? 'Connected' : 'Requires API Key'}
+        {loading ? (
+          <div className="rounded-2xl border border-ctp bg-ctp-surface p-8 text-center text-xs text-slate-400">
+            <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" /> Loading real source status…
+          </div>
+        ) : sources.length === 0 ? (
+          <div className="rounded-2xl border border-ctp bg-ctp-surface p-6">
+            <h3 className="font-bold text-sm text-slate-100">No live source connector is configured yet.</h3>
+            <p className="mt-1.5 text-xs text-slate-400 leading-relaxed">
+              This is intentional: CatchThePrice will not create fake retailer connections. Add an approved API/feed only after its usage rights and credentials are available.
+            </p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5">
+            {sources.map((source) => {
+              const ready = source.readiness === 'ready';
+              const isRunning = runningSource === source.id;
+              return (
+                <article key={source.id} className="rounded-2xl border border-ctp bg-ctp-surface p-4 space-y-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h3 className="font-bold text-sm text-slate-100">{source.name}</h3>
+                        <span className="px-2 py-0.5 rounded-md text-[9px] font-extrabold bg-slate-900 border border-ctp text-slate-400 uppercase">
+                          {source.country || '—'} · {source.adapter}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-[11px] text-slate-500 truncate">{source.baseUrl || 'No public merchant URL set'}</p>
+                    </div>
+                    <span className={`shrink-0 px-2 py-1 rounded-lg border text-[10px] font-extrabold ${
+                      ready
+                        ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                        : 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+                    }`}>
+                      {readinessLabel(source.readiness)}
                     </span>
                   </div>
 
-                  <p className="text-[11px] text-[#94A3B8] leading-relaxed">
-                    {src.endpointDescription}
-                  </p>
-                </div>
+                  <div className="grid grid-cols-2 gap-2 text-[11px]">
+                    <div className="rounded-xl bg-slate-950/60 border border-ctp p-3">
+                      <div className="text-slate-500">Source rights</div>
+                      <div className={`mt-1 font-bold ${source.rightsReady ? 'text-emerald-400' : 'text-amber-300'}`}>
+                        {source.rightsStatus}
+                      </div>
+                    </div>
+                    <div className="rounded-xl bg-slate-950/60 border border-ctp p-3">
+                      <div className="text-slate-500">Private credential</div>
+                      <div className={`mt-1 font-bold ${source.credentialReady ? 'text-emerald-400' : 'text-amber-300'}`}>
+                        {source.credentialReady ? 'Available' : source.credentialEnvKey || 'Missing'}
+                      </div>
+                    </div>
+                  </div>
 
-                <div className="pt-2 border-t border-[#162633] text-[10px] text-[#94A3B8] flex items-center justify-between font-mono">
-                  <span>Env: {src.envKey}</span>
-                  <span className="uppercase text-[#00D27A] font-bold">{src.country}</span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Ingestion Sequence Flow */}
-      <div className="p-5 rounded-2xl bg-[#091217] border border-[#162633] space-y-3">
-        <h3 className="font-bold text-sm text-[#F8FAFC] flex items-center gap-2">
-          <Database className="w-4 h-4 text-[#00D27A]" />
-          <span>Automated Ingestion Sequence</span>
-        </h3>
-        <p className="text-xs text-[#CBD5E1]">
-          CatchThePrice strictly ingests through authorized partner endpoints. Unauthorized web scraping is explicitly prohibited.
-        </p>
-
-        <div className="grid grid-cols-2 sm:grid-cols-6 gap-2 pt-2 text-center text-xs">
-          <div className="p-2.5 rounded-xl bg-[#071015] border border-[#162633]">
-            <span className="text-[10px] text-[#00D27A] font-bold block">1. GATE</span>
-            <span className="text-[#CBD5E1] font-medium">Verify Tokens</span>
-          </div>
-          <div className="p-2.5 rounded-xl bg-[#071015] border border-[#162633]">
-            <span className="text-[10px] text-[#00D27A] font-bold block">2. FETCH</span>
-            <span className="text-[#CBD5E1] font-medium">Partner APIs</span>
-          </div>
-          <div className="p-2.5 rounded-xl bg-[#071015] border border-[#162633]">
-            <span className="text-[10px] text-[#00D27A] font-bold block">3. NORMALIZE</span>
-            <span className="text-[#CBD5E1] font-medium">Titles &amp; Specs</span>
-          </div>
-          <div className="p-2.5 rounded-xl bg-[#071015] border border-[#162633]">
-            <span className="text-[10px] text-[#00D27A] font-bold block">4. MATCH</span>
-            <span className="text-[#CBD5E1] font-medium">Token Sim</span>
-          </div>
-          <div className="p-2.5 rounded-xl bg-[#071015] border border-[#162633]">
-            <span className="text-[10px] text-[#00D27A] font-bold block">5. DETECT</span>
-            <span className="text-[#CBD5E1] font-medium">Price Drops</span>
-          </div>
-          <div className="p-2.5 rounded-xl bg-[#071015] border border-[#162633]">
-            <span className="text-[10px] text-[#00D27A] font-bold block">6. NOTIFY</span>
-            <span className="text-[#CBD5E1] font-medium">Dispatch Alerts</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Execution History Table */}
-      <div className="rounded-2xl bg-[#091217] border border-[#162633] overflow-hidden">
-        <div className="p-4 border-b border-[#162633] flex items-center justify-between">
-          <h3 className="font-bold text-sm text-[#F8FAFC]">Execution History</h3>
-          <span className="text-xs text-[#94A3B8]">{logs.length} runs recorded</span>
-        </div>
-
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-[#CBD5E1]">
-            <thead className="bg-[#071015] text-[#94A3B8] uppercase tracking-wider text-[10px] border-b border-[#162633]">
-              <tr>
-                <th className="p-3.5">Run ID</th>
-                <th className="p-3.5">Source / Target</th>
-                <th className="p-3.5">Items Fetched</th>
-                <th className="p-3.5">Matched</th>
-                <th className="p-3.5">Drops Detected</th>
-                <th className="p-3.5">Duration</th>
-                <th className="p-3.5">Time</th>
-                <th className="p-3.5 text-right">Status</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#162633]">
-              {logs.map((log) => (
-                <tr key={log.id} className="hover:bg-[#0d1820] transition-colors">
-                  <td className="p-3.5 font-mono text-[#00D27A] font-semibold">{log.id}</td>
-                  <td className="p-3.5 font-semibold text-[#F8FAFC]">{log.source}</td>
-                  <td className="p-3.5">{log.itemsFetched}</td>
-                  <td className="p-3.5 text-[#00D27A] font-semibold">{log.itemsMatched}</td>
-                  <td className="p-3.5 font-bold text-[#F8FAFC]">
-                    {log.priceDropsDetected > 0 ? (
-                      <span className="text-[#00D27A] font-extrabold">+{log.priceDropsDetected} drops</span>
-                    ) : (
-                      '0'
-                    )}
-                  </td>
-                  <td className="p-3.5 text-[#94A3B8]">{log.duration}</td>
-                  <td className="p-3.5 text-[#94A3B8]">{log.timestamp}</td>
-                  <td className="p-3.5 text-right">
-                    <span
-                      className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
-                        log.status === 'completed'
-                          ? 'bg-[#00D27A]/15 text-[#00D27A] border-[#00D27A]/30'
-                          : 'bg-amber-500/15 text-amber-400 border-amber-500/30'
-                      }`}
+                  <div className="flex items-center justify-between gap-3 pt-3 border-t border-ctp">
+                    <div className="text-[10px] text-slate-500">
+                      <span className="font-mono">{source.rightsId || 'no-rights-id'}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => runSource(source.id)}
+                      disabled={!ready || Boolean(runningSource)}
+                      className="min-h-[40px] px-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-800 disabled:text-slate-500 text-slate-950 text-[11px] font-extrabold flex items-center gap-1.5 transition-colors"
                     >
-                      {log.status === 'completed' ? 'Success' : 'Credentials Gated'}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                      {isRunning ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Play className="w-3.5 h-3.5" />}
+                      {isRunning ? 'Running…' : 'Fetch & stage'}
+                    </button>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      <section className="rounded-2xl bg-ctp-surface border border-ctp p-5">
+        <h3 className="font-bold text-sm text-slate-100 flex items-center gap-2">
+          <Database className="w-4 h-4 text-emerald-400" /> Production flow
+        </h3>
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 mt-4 text-center text-[10px]">
+          {['Rights gate', 'Official API/feed', 'Normalize', 'Match & review', 'Publish offer'].map((label, index) => (
+            <div key={label} className="rounded-xl bg-slate-950/60 border border-ctp p-3">
+              <span className="block font-extrabold text-emerald-400">{index + 1}</span>
+              <span className="mt-1 block text-slate-300 font-semibold">{label}</span>
+            </div>
+          ))}
         </div>
-      </div>
+        <p className="mt-3 text-[11px] text-slate-500 flex items-start gap-2">
+          <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" /> No source can auto-publish from a fetch. Items first enter the matching/review queue.
+        </p>
+      </section>
+
+      <section className="rounded-2xl bg-ctp-surface border border-ctp overflow-hidden">
+        <div className="p-4 border-b border-ctp flex items-center justify-between">
+          <h3 className="font-bold text-sm text-slate-100">Real execution history</h3>
+          <span className="text-xs text-slate-500">{runs.length} run{runs.length === 1 ? '' : 's'}</span>
+        </div>
+
+        {runs.length === 0 ? (
+          <div className="p-8 text-center text-xs text-slate-500">No real ingestion run has been executed yet.</div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-300">
+              <thead className="bg-ctp-surface-elevated text-slate-500 uppercase tracking-wider text-[10px] border-b border-ctp">
+                <tr>
+                  <th className="p-3.5">Source</th>
+                  <th className="p-3.5">Seen</th>
+                  <th className="p-3.5">Staged</th>
+                  <th className="p-3.5">Rejected</th>
+                  <th className="p-3.5">Started</th>
+                  <th className="p-3.5 text-right">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-ctp">
+                {runs.map((run) => (
+                  <tr key={run.id} className="hover:bg-slate-800/30">
+                    <td className="p-3.5">
+                      <div className="font-semibold text-slate-100">{run.sourceName}</div>
+                      <div className="text-[10px] text-slate-500 uppercase">{run.country} · {run.id.slice(0, 8)}</div>
+                      {run.error && <div className="text-[10px] text-red-400 mt-1 max-w-xs">{run.error}</div>}
+                    </td>
+                    <td className="p-3.5">{run.itemsSeen}</td>
+                    <td className="p-3.5 text-emerald-400 font-bold">{run.itemsStaged}</td>
+                    <td className="p-3.5">{run.itemsRejected}</td>
+                    <td className="p-3.5 text-slate-500 whitespace-nowrap">{timeLabel(run.startedAt || run.createdAt)}</td>
+                    <td className="p-3.5 text-right">
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-lg border text-[10px] font-extrabold ${
+                        run.status === 'completed'
+                          ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                          : run.status === 'failed'
+                            ? 'bg-red-500/10 border-red-500/30 text-red-400'
+                            : 'bg-amber-500/10 border-amber-500/30 text-amber-300'
+                      }`}>
+                        {run.status === 'completed' && <CheckCircle2 className="w-3 h-3" />}
+                        {run.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
     </div>
   );
 }
