@@ -1,5 +1,5 @@
 import React from 'react';
-import { BarChart3, MousePointerClick, Smartphone, Globe2, Search, Eye, Users, PackageSearch } from 'lucide-react';
+import { BarChart3, Bell, Bookmark, MousePointerClick, Smartphone, Globe2, Search, Eye, Users, PackageSearch } from 'lucide-react';
 import { getServerSupabase } from '@/lib/supabase/server';
 
 type ClickRow = {
@@ -24,6 +24,7 @@ type EventRow = {
   session_id: string | null;
   search_query: string | null;
   product_slug: string | null;
+  metadata: Record<string, unknown> | null;
   created_at: string;
 };
 
@@ -63,6 +64,8 @@ export default async function AdminAnalyticsPage() {
   let totalPageViews = 0;
   let totalSearches = 0;
   let totalProductViews = 0;
+  let totalSaved = 0;
+  let totalAlerts = 0;
   let readError = false;
 
   if (supabase) {
@@ -73,6 +76,8 @@ export default async function AdminAnalyticsPage() {
       pageCountResult,
       searchCountResult,
       productCountResult,
+      savedCountResult,
+      alertCountResult,
     ] = await Promise.all([
       supabase
         .from('outbound_clicks')
@@ -82,12 +87,14 @@ export default async function AdminAnalyticsPage() {
       supabase.from('outbound_clicks').select('id', { count: 'exact', head: true }),
       supabase
         .from('analytics_events')
-        .select('id,event_type,country_code,path,referrer_host,device_type,session_id,search_query,product_slug,created_at')
+        .select('id,event_type,country_code,path,referrer_host,device_type,session_id,search_query,product_slug,metadata,created_at')
         .order('created_at', { ascending: false })
         .limit(2000),
       supabase.from('analytics_events').select('id', { count: 'exact', head: true }).eq('event_type', 'page_view'),
       supabase.from('analytics_events').select('id', { count: 'exact', head: true }).eq('event_type', 'search'),
       supabase.from('analytics_events').select('id', { count: 'exact', head: true }).eq('event_type', 'product_view'),
+      supabase.from('watchlists').select('id', { count: 'exact', head: true }).eq('is_active', true).eq('alert_type', 'saved'),
+      supabase.from('watchlists').select('id', { count: 'exact', head: true }).eq('is_active', true).neq('alert_type', 'saved'),
     ]);
 
     clicks = (clicksResult.data || []) as ClickRow[];
@@ -96,13 +103,17 @@ export default async function AdminAnalyticsPage() {
     totalPageViews = pageCountResult.count || 0;
     totalSearches = searchCountResult.count || 0;
     totalProductViews = productCountResult.count || 0;
+    totalSaved = savedCountResult.count || 0;
+    totalAlerts = alertCountResult.count || 0;
     readError = Boolean(
       clicksResult.error ||
         clickCountResult.error ||
         eventsResult.error ||
         pageCountResult.error ||
         searchCountResult.error ||
-        productCountResult.error
+        productCountResult.error ||
+        savedCountResult.error ||
+        alertCountResult.error
     );
   } else {
     readError = true;
@@ -116,9 +127,13 @@ export default async function AdminAnalyticsPage() {
   const mobileShare = recentPageViews.length > 0 ? Math.round((mobileEvents / recentPageViews.length) * 100) : 0;
   const aeViews = recentPageViews.filter((event) => event.country_code === 'ae').length;
   const usViews = recentPageViews.filter((event) => event.country_code === 'us').length;
+  const zeroResultSearches = recentSearches.filter((event) => event.metadata?.zero_result === true).length;
 
   const topPages = topCounts(recentPageViews.map((event) => event.path));
   const topSearches = topCounts(recentSearches.map((event) => event.search_query));
+  const zeroResultTerms = topCounts(
+    recentSearches.filter((event) => event.metadata?.zero_result === true).map((event) => event.search_query)
+  );
   const topProducts = topCounts(recentProductViews.map((event) => event.product_slug));
   const topReferrers = topCounts(recentPageViews.map((event) => event.referrer_host || 'Direct / unknown'));
 
@@ -128,7 +143,7 @@ export default async function AdminAnalyticsPage() {
         <span className="text-[10px] uppercase tracking-[0.18em] font-extrabold text-emerald-400">Real event data</span>
         <h1 className="text-2xl font-extrabold text-slate-100 mt-1">Traffic &amp; shopping analytics</h1>
         <p className="text-xs text-slate-400 mt-1 max-w-3xl">
-          Real page views, searches, product views and retailer hand-offs. The event system stores market, coarse device class, path, optional shopping query and referrer host — not full IP addresses or full user-agent strings.
+          Real page views, searches, product views, saves, alerts and retailer hand-offs. The event system stores market, coarse device class, path, shopping query and referrer host — not full IP addresses or full user-agent strings.
         </p>
       </div>
 
@@ -141,19 +156,28 @@ export default async function AdminAnalyticsPage() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
         <Metric title="Page views" value={totalPageViews} note="All recorded time" icon={<Eye className="w-4 h-4 text-emerald-400" />} />
         <Metric title="Recent sessions" value={uniqueSessions} note={`Unique session IDs in latest ${events.length} events`} icon={<Users className="w-4 h-4 text-cyan-300" />} />
-        <Metric title="Searches" value={totalSearches} note="Real submitted searches" icon={<Search className="w-4 h-4 text-amber-300" />} />
+        <Metric title="Searches" value={totalSearches} note={`${zeroResultSearches} zero-result in recent sample`} icon={<Search className="w-4 h-4 text-amber-300" />} />
         <Metric title="Product views" value={totalProductViews} note="Real product-page views" icon={<PackageSearch className="w-4 h-4 text-violet-300" />} />
+        <Metric title="Saved products" value={totalSaved} note="Active account watchlist saves" icon={<Bookmark className="w-4 h-4 text-cyan-300" />} />
+        <Metric title="Price alerts" value={totalAlerts} note="Active account price alerts" icon={<Bell className="w-4 h-4 text-amber-300" />} />
         <Metric title="Retailer clicks" value={totalClicks} note="Validated outbound hand-offs" icon={<MousePointerClick className="w-4 h-4 text-emerald-400" />} />
         <Metric title="Mobile share" value={`${mobileShare}%`} note={`Latest ${recentPageViews.length} page views`} icon={<Smartphone className="w-4 h-4 text-emerald-400" />} />
-        <Metric title="UAE page views" value={aeViews} note="Recent analytics sample" icon={<Globe2 className="w-4 h-4 text-emerald-400" />} />
-        <Metric title="US page views" value={usViews} note="Recent analytics sample" icon={<BarChart3 className="w-4 h-4 text-emerald-400" />} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <RankedCard title="Top pages" items={topPages} empty="No page-view data yet." />
         <RankedCard title="Top searches" items={topSearches} empty="No search data yet." />
+        <RankedCard title="Zero-result searches" items={zeroResultTerms} empty="No zero-result searches recorded yet." />
         <RankedCard title="Top viewed products" items={topProducts} empty="No product-view data yet." />
         <RankedCard title="Traffic sources" items={topReferrers} empty="No referrer data yet." />
+        <section className="rounded-2xl bg-ctp-surface border border-ctp p-4">
+          <h3 className="font-bold text-sm text-slate-200">Market snapshot</h3>
+          <div className="mt-4 grid grid-cols-2 gap-3">
+            <div className="rounded-xl bg-slate-950/60 border border-ctp p-3"><div className="text-[10px] uppercase text-slate-500 font-bold">UAE views</div><div className="text-xl font-extrabold text-slate-100 mt-1">{aeViews}</div></div>
+            <div className="rounded-xl bg-slate-950/60 border border-ctp p-3"><div className="text-[10px] uppercase text-slate-500 font-bold">US views</div><div className="text-xl font-extrabold text-slate-100 mt-1">{usViews}</div></div>
+          </div>
+          <p className="text-[10px] text-slate-500 mt-3 flex items-start gap-1.5"><Globe2 className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Market values use the selected CatchThePrice market, not precise visitor location.</p>
+        </section>
       </div>
 
       <div className="rounded-2xl bg-ctp-surface border border-ctp overflow-hidden">
