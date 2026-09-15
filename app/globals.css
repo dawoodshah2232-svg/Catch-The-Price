@@ -84,7 +84,54 @@
 .theme-toggle:hover { color: #0B8F58; border-color: #9CCFBA; }
 html[data-theme='dark'] .theme-toggle:hover { color: #67EFB8; border-color: #24543F; }
 
-/* Dark mode compatibility for public pages that still use fixed light shopping tokens. */
+/* Light-mode rescue layer for legacy public sections that still contain old dark tokens.
+   This is scoped to .public-shell, so the private admin UI is untouched. */
+html:not([data-theme='dark']) .public-shell { background: var(--ui-bg); color: var(--ui-text); }
+html:not([data-theme='dark']) .public-shell [class*="bg-[#071015]"],
+html:not([data-theme='dark']) .public-shell [class*="bg-[#06110d]"],
+html:not([data-theme='dark']) .public-shell [class*="bg-[#081217]"] {
+  background-color: var(--ui-bg) !important;
+}
+html:not([data-theme='dark']) .public-shell [class*="bg-[#091217]"],
+html:not([data-theme='dark']) .public-shell [class*="bg-[#0A151A]"],
+html:not([data-theme='dark']) .public-shell [class*="bg-[#0a151a]"],
+html:not([data-theme='dark']) .public-shell [class*="bg-[#0B161E]"],
+html:not([data-theme='dark']) .public-shell [class*="bg-[#0b161e]"] {
+  background-color: var(--ui-surface) !important;
+}
+html:not([data-theme='dark']) .public-shell [class*="bg-[#0f1c24]"],
+html:not([data-theme='dark']) .public-shell [class*="bg-[#0F1C24]"],
+html:not([data-theme='dark']) .public-shell [class*="bg-[#152733]"],
+html:not([data-theme='dark']) .public-shell [class*="bg-[#13232D]"] {
+  background-color: var(--ui-soft) !important;
+}
+html:not([data-theme='dark']) .public-shell [class*="border-[#162633]"],
+html:not([data-theme='dark']) .public-shell [class*="border-[#1a3039]"],
+html:not([data-theme='dark']) .public-shell [class*="border-[#1A3039]"],
+html:not([data-theme='dark']) .public-shell [class*="border-[#1b2d3c]"],
+html:not([data-theme='dark']) .public-shell [class*="border-[#203648]"],
+html:not([data-theme='dark']) .public-shell [class*="border-[#22384a]"] {
+  border-color: var(--ui-border) !important;
+}
+html:not([data-theme='dark']) .public-shell [class*="text-[#F8FAFC]"],
+html:not([data-theme='dark']) .public-shell [class*="text-white"] {
+  color: var(--ui-text) !important;
+}
+html:not([data-theme='dark']) .public-shell [class*="text-[#CBD5E1]"],
+html:not([data-theme='dark']) .public-shell [class*="text-[#AEBBC5]"],
+html:not([data-theme='dark']) .public-shell [class*="text-[#9FB0BA]"] {
+  color: var(--ui-text-secondary) !important;
+}
+html:not([data-theme='dark']) .public-shell [class*="text-[#94A3B8]"],
+html:not([data-theme='dark']) .public-shell [class*="text-[#8295A8]"],
+html:not([data-theme='dark']) .public-shell [class*="text-[#64748B]"] {
+  color: var(--ui-muted) !important;
+}
+html:not([data-theme='dark']) .public-shell [class*="shadow-2xl"] {
+  box-shadow: 0 14px 36px rgba(25,55,45,.09) !important;
+}
+
+/* Dark mode compatibility for public pages that use fixed light shopping tokens. */
 html[data-theme='dark'] [class~="bg-[#F4F7F6]"] { background-color: var(--ui-bg) !important; }
 html[data-theme='dark'] [class~="bg-white"] { background-color: var(--ui-surface) !important; }
 html[data-theme='dark'] [class~="bg-[#F3F8F6]"],
