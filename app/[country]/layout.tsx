@@ -1,4 +1,5 @@
 import React from 'react';
+import { notFound } from 'next/navigation';
 import { CountryProvider } from '@/context/CountryContext';
 import { CountryCode } from '@/lib/types';
 import { COUNTRIES, DEFAULT_COUNTRY } from '@/lib/data/countries';
@@ -13,14 +14,10 @@ interface CountryLayoutProps {
   }>;
 }
 
+const LIVE_COUNTRIES = ['ae', 'us'] as const;
+
 export function generateStaticParams() {
-  return [
-    { country: 'ae' },
-    { country: 'us' },
-    { country: 'uk' },
-    { country: 'ca' },
-    { country: 'au' },
-  ];
+  return LIVE_COUNTRIES.map((country) => ({ country }));
 }
 
 export default async function CountryLayout({
@@ -28,7 +25,13 @@ export default async function CountryLayout({
   params,
 }: CountryLayoutProps) {
   const { country: rawCountry } = await params;
-  const country = (rawCountry?.toLowerCase() in COUNTRIES ? rawCountry.toLowerCase() : DEFAULT_COUNTRY) as CountryCode;
+  const normalizedCountry = rawCountry?.toLowerCase();
+
+  if (!LIVE_COUNTRIES.includes(normalizedCountry as (typeof LIVE_COUNTRIES)[number])) {
+    notFound();
+  }
+
+  const country = (normalizedCountry in COUNTRIES ? normalizedCountry : DEFAULT_COUNTRY) as CountryCode;
 
   return (
     <CountryProvider initialCountry={country}>
