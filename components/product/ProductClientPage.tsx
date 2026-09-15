@@ -23,6 +23,9 @@ import {
   Store,
   ChevronRight,
   Info,
+  History,
+  SlidersHorizontal,
+  ArrowRightLeft,
 } from 'lucide-react';
 
 interface ProductClientPageProps {
@@ -47,19 +50,26 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
     ? `/api/outbound?offerId=${encodeURIComponent(bestOffer.id)}&country=${country}`
     : '#offers';
 
+  const mobileJumpLinks = [
+    { label: 'Prices', href: '#offers', Icon: Store },
+    { label: 'History', href: '#history', Icon: History },
+    { label: 'Specs', href: '#specs', Icon: SlidersHorizontal },
+    ...(relatedProducts.length > 0 ? [{ label: 'Compare', href: '#compare', Icon: ArrowRightLeft }] : []),
+  ];
+
   return (
-    <div className="bg-[#F4F7F6] min-h-screen">
+    <div className="bg-[#F4F7F6] min-h-screen pb-20 sm:pb-0">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 sm:py-8 space-y-6 sm:space-y-8">
         {isPreview && (
           <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-xs text-amber-900 flex items-start gap-2">
             <Info className="w-4 h-4 mt-0.5 shrink-0" />
             <span>
-              Development preview only. Prices, merchant offers, deal score and historical data on this page are sample content used to test the interface.
+              Development preview only. Prices, merchant offers and historical data on this page are sample content used to test the interface.
             </span>
           </div>
         )}
 
-        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[11px] sm:text-xs text-[#73858D] overflow-x-auto whitespace-nowrap">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[11px] sm:text-xs text-[#73858D] overflow-x-auto whitespace-nowrap scrollbar-none">
           <a href={`/${country}`} className="hover:text-[#08784B] transition-colors">Home</a>
           <ChevronRight className="w-3.5 h-3.5 text-[#9AABA4] shrink-0" />
           <a href={`/${country}/deals/${product.categorySlug}`} className="hover:text-[#08784B] transition-colors">{product.categoryName}</a>
@@ -98,7 +108,7 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
             </div>
 
             {product.gallery.length > 1 && (
-              <div className="flex items-center gap-2.5 overflow-x-auto pb-1">
+              <div className="flex items-center gap-2.5 overflow-x-auto pb-1 scrollbar-none">
                 {product.gallery.map((img, idx) => (
                   <button
                     key={idx}
@@ -170,8 +180,8 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
               <div className="pt-2 hidden sm:grid sm:grid-cols-2 gap-3">
                 <a
                   href={outboundBestDealHref}
-                  target="_blank"
-                  rel="sponsored noopener"
+                  target={bestOffer ? '_blank' : undefined}
+                  rel={bestOffer ? 'sponsored noopener' : undefined}
                   className="py-3.5 px-5 rounded-2xl bg-[#0B8F58] hover:bg-[#08784B] text-white text-sm flex items-center justify-center gap-2 touch-target font-extrabold transition-colors"
                 >
                   <span>{bestOffer ? `Visit ${product.bestMerchantName}` : 'View retailer offers'}</span>
@@ -193,38 +203,54 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
                 <span>Purchases are completed on the retailer&apos;s website under the retailer&apos;s terms.</span>
               </div>
             </div>
+
+            <nav className="sm:hidden flex items-center gap-2 overflow-x-auto scrollbar-none pb-1" aria-label="Product sections">
+              {mobileJumpLinks.map(({ label, href, Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  className="shrink-0 min-h-[40px] px-3.5 rounded-xl bg-white border border-[#DDE7E3] text-[11px] font-extrabold text-[#31474F] inline-flex items-center gap-1.5"
+                >
+                  <Icon className="w-3.5 h-3.5 text-[#0B8F58]" /> {label}
+                </a>
+              ))}
+            </nav>
           </div>
         </div>
 
-        <div id="offers">
+        <div id="offers" className="scroll-mt-24">
           <MerchantOffersList offers={product.offers} productTitle={product.title} />
         </div>
 
         <ProductDataConfidence product={product} isPreview={isPreview} />
 
-        {product.priceHistory.length > 1 ? (
-          <PriceHistoryChart history={product.priceHistory} stats={product.priceStats} productTitle={product.title} />
-        ) : (
-          <section className="rounded-2xl bg-white border border-[#DDE7E3] p-4 sm:p-5">
-            <h3 className="font-bold text-sm text-[#102027]">Price history</h3>
-            <p className="mt-1 text-xs text-[#73858D] leading-relaxed">
-              Historical pricing will appear after CatchThePrice has collected enough genuine observations for this exact product and market.
-            </p>
-          </section>
-        )}
+        <div id="history" className="scroll-mt-24">
+          {product.priceHistory.length > 1 ? (
+            <PriceHistoryChart history={product.priceHistory} stats={product.priceStats} productTitle={product.title} />
+          ) : (
+            <section className="rounded-2xl bg-white border border-[#DDE7E3] p-4 sm:p-5">
+              <h3 className="font-bold text-sm text-[#102027]">Price history</h3>
+              <p className="mt-1 text-xs text-[#73858D] leading-relaxed">
+                Historical pricing will appear after CatchThePrice has collected enough genuine observations for this exact product and market.
+              </p>
+            </section>
+          )}
+        </div>
 
         <AIBuyingSummary summary={product.aiSummary} productTitle={product.title} dealScore={product.dealScore} />
 
         <AdSlot slotId="product-lower-feed" format="banner" />
 
-        <ProductSpecs specs={product.specs} brand={product.brand} />
+        <div id="specs" className="scroll-mt-24">
+          <ProductSpecs specs={product.specs} brand={product.brand} />
+        </div>
         <ProductDecisionFAQ product={product} />
 
         {relatedProducts.length > 0 && (
-          <>
+          <div id="compare" className="scroll-mt-24">
             <QuickCompareSection current={product} alternatives={relatedProducts} />
 
-            <section className="pt-6 border-t border-[#DDE7E3]">
+            <section className="pt-6 mt-6 border-t border-[#DDE7E3]">
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="font-extrabold text-lg text-[#102027]">Explore alternative models</h3>
@@ -236,25 +262,29 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
                 {relatedProducts.map((item) => <ProductCard key={item.id} product={item} />)}
               </div>
             </section>
-          </>
+          </div>
         )}
 
         <PriceAlertModal product={product} isOpen={isAlertModalOpen} onClose={() => setIsAlertModalOpen(false)} />
       </div>
 
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-[60] bg-white/97 backdrop-blur-xl border-t border-[#DDE7E3] px-3 pt-2 pb-[calc(env(safe-area-inset-bottom,8px)+8px)] shadow-[0_-8px_26px_rgba(24,52,43,0.10)] grid grid-cols-[1fr_auto] gap-2">
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-[60] bg-[#071015] border-t border-[#1A2B35] px-3 pt-2 pb-[calc(env(safe-area-inset-bottom,8px)+8px)] shadow-[0_-10px_28px_rgba(0,0,0,.22)] grid grid-cols-[auto_1fr_auto] items-center gap-2">
+        <div className="min-w-0 pr-1">
+          <div className="text-[8px] uppercase tracking-wider font-bold text-[#7F968D]">Best listed</div>
+          <div className="text-[13px] font-extrabold text-white truncate">{formatLocalPrice(product.currentBestPrice)}</div>
+        </div>
         <a
           href={outboundBestDealHref}
-          target="_blank"
-          rel="sponsored noopener"
-          className="min-h-[46px] rounded-xl bg-[#0B8F58] text-white text-xs font-extrabold flex items-center justify-center gap-2 px-3"
+          target={bestOffer ? '_blank' : undefined}
+          rel={bestOffer ? 'sponsored noopener' : undefined}
+          className="min-h-[46px] rounded-xl bg-[#00D27A] hover:bg-[#00E6A2] text-[#071015] text-xs font-extrabold flex items-center justify-center gap-2 px-3"
         >
           {bestOffer ? `Visit ${product.bestMerchantName}` : 'View offers'} <ExternalLink className="w-3.5 h-3.5" />
         </a>
         <button
           type="button"
           onClick={() => setIsAlertModalOpen(true)}
-          className="min-w-[48px] min-h-[46px] rounded-xl bg-[#F0F7F4] border border-[#CFE0DA] text-[#08784B] flex items-center justify-center"
+          className="min-w-[48px] min-h-[46px] rounded-xl bg-[#0F1C24] border border-[#223743] text-[#67EFB8] flex items-center justify-center"
           aria-label="Track price"
         >
           <Bell className="w-4.5 h-4.5" />
