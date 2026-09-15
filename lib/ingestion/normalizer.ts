@@ -14,6 +14,11 @@ export function normalizeTitle(rawTitle: string): string {
   return cleaned;
 }
 
+function cleanIdentifier(value?: string): string | undefined {
+  const normalized = value?.trim().replace(/\s+/g, ' ');
+  return normalized || undefined;
+}
+
 export function normalizeMerchantItem(item: RawMerchantItem): NormalizedItem {
   const title = normalizeTitle(item.rawTitle);
 
@@ -57,6 +62,10 @@ export function normalizeMerchantItem(item: RawMerchantItem): NormalizedItem {
     price: Number(item.rawPrice),
     currency: item.rawCurrency.toUpperCase(),
     url: item.rawUrl,
+    imageUrl: cleanIdentifier(item.rawImageUrl),
+    gtin: cleanIdentifier(item.rawGtin),
+    mpn: cleanIdentifier(item.rawMpn),
+    model: cleanIdentifier(item.rawModel),
     inStock: item.inStock,
     shippingInfo: item.shippingText || 'See retailer for delivery details',
     merchantSlug: item.merchantSlug,
