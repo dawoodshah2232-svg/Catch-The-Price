@@ -2,125 +2,65 @@
 
 import React from 'react';
 import { useCountry } from '@/context/CountryContext';
-import {
-  Smartphone,
-  Watch,
-  Headphones,
-  Laptop,
-  Cpu,
-  Gamepad2,
-  Tv,
-  Scale,
-  TrendingDown,
-  Bookmark,
-  BookOpen,
-  ArrowRight,
-} from 'lucide-react';
-
-type Tile = {
-  label: string;
-  href: (country: string) => string;
-  Icon: React.ElementType;
-};
-
-type HubCard = {
-  title: string;
-  subtitle: string;
-  cta: string;
-  ctaHref: (country: string) => string;
-  tiles: Tile[];
-};
-
-const cards: HubCard[] = [
-  {
-    title: 'Phones & wearables',
-    subtitle: 'Start with the products people compare most.',
-    cta: 'Browse phones',
-    ctaHref: (country) => `/${country}/deals/phones`,
-    tiles: [
-      { label: 'Flagship phones', href: (country) => `/${country}/search?q=flagship%20phone`, Icon: Smartphone },
-      { label: 'Gaming phones', href: (country) => `/${country}/search?q=gaming%20phone`, Icon: Gamepad2 },
-      { label: 'Smartwatches', href: (country) => `/${country}/deals/smartwatches`, Icon: Watch },
-      { label: 'Headphones', href: (country) => `/${country}/deals/headphones`, Icon: Headphones },
-    ],
-  },
-  {
-    title: 'Gaming & PC',
-    subtitle: 'Compare complete setups without opening ten tabs.',
-    cta: 'Explore gaming',
-    ctaHref: (country) => `/${country}/deals/gaming`,
-    tiles: [
-      { label: 'Gaming laptops', href: (country) => `/${country}/search?q=gaming%20laptop`, Icon: Laptop },
-      { label: 'Graphics cards', href: (country) => `/${country}/search?q=graphics%20card`, Icon: Cpu },
-      { label: 'Processors', href: (country) => `/${country}/search?q=processor`, Icon: Cpu },
-      { label: 'Consoles', href: (country) => `/${country}/search?q=console`, Icon: Gamepad2 },
-    ],
-  },
-  {
-    title: 'Home entertainment',
-    subtitle: 'Find the right screen, sound and gaming gear.',
-    cta: 'Browse TVs',
-    ctaHref: (country) => `/${country}/deals/tvs`,
-    tiles: [
-      { label: 'OLED & 4K TVs', href: (country) => `/${country}/search?q=OLED%20TV`, Icon: Tv },
-      { label: 'Headphones', href: (country) => `/${country}/deals/headphones`, Icon: Headphones },
-      { label: 'Gaming', href: (country) => `/${country}/deals/gaming`, Icon: Gamepad2 },
-      { label: 'Laptops', href: (country) => `/${country}/deals/laptops`, Icon: Laptop },
-    ],
-  },
-  {
-    title: 'Shop smarter',
-    subtitle: 'Jump straight into the tools that help you decide.',
-    cta: 'See all deals',
-    ctaHref: (country) => `/${country}/deals/all`,
-    tiles: [
-      { label: 'Compare products', href: (country) => `/${country}/compare`, Icon: Scale },
-      { label: 'Price drops', href: (country) => `/${country}/price-drops/all`, Icon: TrendingDown },
-      { label: 'Saved products', href: (country) => `/${country}/account?tab=saved`, Icon: Bookmark },
-      { label: 'Buying guides', href: (country) => `/${country}/blog`, Icon: BookOpen },
-    ],
-  },
-];
+import { ArrowRight, Flame, TrendingDown, Scale, BadgePercent, ChartNoAxesCombined, SplitSquareHorizontal } from 'lucide-react';
 
 export function CommerceHubSection() {
   const { country } = useCountry();
 
+  const cards = [
+    {
+      title: "Today's Best Deals",
+      text: 'See the strongest current retailer listings in one place.',
+      href: `/${country}/deals/all`,
+      cta: 'Explore deals',
+      Icon: Flame,
+      secondaryIcon: BadgePercent,
+      className: 'bg-[linear-gradient(135deg,#EAF8F1_0%,#DDF4E9_100%)] border-[#CBE6D9]',
+      iconClass: 'bg-white text-[#0B8F58] border-[#CBE6D9]',
+      accent: 'text-[#08784B]',
+    },
+    {
+      title: 'Biggest Price Drops',
+      text: 'Spot real drops only when stored history proves the change.',
+      href: `/${country}/price-drops/all`,
+      cta: 'View price drops',
+      Icon: TrendingDown,
+      secondaryIcon: ChartNoAxesCombined,
+      className: 'bg-[linear-gradient(135deg,#0C2930_0%,#0A1920_100%)] border-[#153943] text-white',
+      iconClass: 'bg-white/10 text-[#67EFB8] border-white/10',
+      accent: 'text-[#67EFB8]',
+    },
+    {
+      title: 'Compare Products',
+      text: 'Put exact products side by side before you choose.',
+      href: `/${country}/compare`,
+      cta: 'Start comparing',
+      Icon: Scale,
+      secondaryIcon: SplitSquareHorizontal,
+      className: 'bg-[linear-gradient(135deg,#EEF3FF_0%,#E6ECFA_100%)] border-[#D3DDF2]',
+      iconClass: 'bg-white text-[#465C93] border-[#D3DDF2]',
+      accent: 'text-[#465C93]',
+    },
+  ];
+
   return (
-    <section className="relative z-10 -mt-2 sm:-mt-7 pb-2 sm:pb-5">
-      <div className="max-w-7xl mx-auto px-3.5 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 xl:grid-cols-4 gap-2.5 sm:gap-4">
-          {cards.map((card) => (
-            <article
-              key={card.title}
-              className="rounded-[20px] sm:rounded-[22px] bg-white border border-[#DDE7E3] shadow-[0_8px_24px_rgba(28,54,46,0.06)] p-3 sm:p-5 min-w-0"
-            >
-              <div className="min-h-[44px] sm:min-h-[58px]">
-                <h2 className="text-[13px] min-[390px]:text-sm sm:text-lg font-extrabold text-[#102027] tracking-[-0.02em] leading-tight">{card.title}</h2>
-                <p className="hidden min-[390px]:block mt-1 text-[10px] sm:text-xs text-[#6B7C75] leading-relaxed line-clamp-2">{card.subtitle}</p>
+    <section className="pb-3 sm:pb-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3.5 sm:gap-4">
+          {cards.map(({ title, text, href, cta, Icon, secondaryIcon: SecondaryIcon, className, iconClass, accent }) => (
+            <a key={title} href={href} className={`group rounded-[22px] sm:rounded-[24px] border p-4 sm:p-5 min-h-[164px] overflow-hidden relative shadow-[0_8px_24px_rgba(22,49,41,.05)] ${className}`}>
+              <div className="absolute -right-5 -bottom-7 opacity-10 group-hover:opacity-15 transition-opacity">
+                <SecondaryIcon className="w-28 h-28 sm:w-32 sm:h-32" />
               </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2.5 mt-2.5 sm:mt-4">
-                {card.tiles.map(({ label, href, Icon }, tileIndex) => (
-                  <a
-                    key={label}
-                    href={href(country)}
-                    className={`${tileIndex > 1 ? 'hidden sm:flex' : 'flex'} group min-h-[48px] sm:min-h-[94px] rounded-xl sm:rounded-2xl bg-[#F6F9F8] border border-[#E3ECE8] hover:border-[#B9D8CB] hover:bg-[#F0F8F4] transition-colors p-2 sm:p-3 flex-row sm:flex-col items-center sm:items-stretch gap-2 sm:gap-0 justify-start sm:justify-between`}
-                  >
-                    <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-lg sm:rounded-xl bg-white border border-[#DDE7E3] text-[#0B8F58] flex items-center justify-center shadow-sm shrink-0">
-                      <Icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    </div>
-                    <span className="text-[9px] min-[390px]:text-[10px] sm:text-[11px] font-extrabold text-[#2B4139] group-hover:text-[#08784B] leading-tight line-clamp-2">{label}</span>
-                  </a>
-                ))}
+              <div className="relative h-full flex flex-col justify-between">
+                <div>
+                  <div className={`w-10 h-10 rounded-2xl border flex items-center justify-center ${iconClass}`}><Icon className="w-5 h-5" /></div>
+                  <h3 className="mt-4 text-[18px] sm:text-xl font-extrabold tracking-[-0.02em]">{title}</h3>
+                  <p className="mt-1.5 text-[11px] sm:text-xs opacity-70 max-w-[90%] leading-relaxed">{text}</p>
+                </div>
+                <div className={`mt-4 inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-extrabold ${accent}`}>{cta}<ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" /></div>
               </div>
-
-              <a
-                href={card.ctaHref(country)}
-                className="mt-2.5 sm:mt-4 min-h-[34px] sm:min-h-[40px] inline-flex items-center gap-1 text-[10px] sm:text-xs font-extrabold text-[#08784B] hover:text-[#045E3A]"
-              >
-                <span className="truncate">{card.cta}</span> <ArrowRight className="w-3.5 h-3.5 shrink-0" />
-              </a>
-            </article>
+            </a>
           ))}
         </div>
       </div>
