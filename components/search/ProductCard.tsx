@@ -3,7 +3,7 @@
 import React from 'react';
 import { Product } from '@/lib/types';
 import { useCountry } from '@/context/CountryContext';
-import { Bookmark, Store } from 'lucide-react';
+import { Bookmark, Store, ArrowRightLeft } from 'lucide-react';
 
 interface ProductCardProps {
   product: Product;
@@ -99,12 +99,22 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
             )}
           </div>
 
-          <a
-            href={`/${country}/product/${product.slug}`}
-            className="w-full mt-2.5 min-h-[40px] sm:min-h-[42px] px-3 rounded-xl text-[10px] sm:text-xs text-center flex items-center justify-center font-extrabold bg-[#F0F7F4] text-[#086C45] border border-[#CFE3DB] hover:bg-[#E6F4EE] hover:border-[#AFD2C4] transition-colors"
-          >
-            Compare prices
-          </a>
+          <div className="mt-2.5 grid grid-cols-[1fr_42px] gap-2">
+            <a
+              href={`/${country}/product/${product.slug}`}
+              className="min-h-[40px] sm:min-h-[42px] px-3 rounded-xl text-[10px] sm:text-xs text-center flex items-center justify-center font-extrabold bg-[#F0F7F4] text-[#086C45] border border-[#CFE3DB] hover:bg-[#E6F4EE] hover:border-[#AFD2C4] transition-colors"
+            >
+              View prices
+            </a>
+            <a
+              href={`/${country}/compare?left=${encodeURIComponent(product.id)}`}
+              className="min-h-[40px] sm:min-h-[42px] rounded-xl flex items-center justify-center bg-white text-[#60727A] border border-[#DDE7E3] hover:text-[#08784B] hover:border-[#AFD2C4] transition-colors"
+              aria-label={`Compare ${product.title}`}
+              title="Compare product"
+            >
+              <ArrowRightLeft className="w-4 h-4" />
+            </a>
+          </div>
         </div>
       </div>
     </article>
