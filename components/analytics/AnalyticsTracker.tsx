@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { useCountry } from '@/context/CountryContext';
 import { sendAnalyticsEvent } from '@/lib/analytics/client';
+import { recordRecentlyViewed } from '@/lib/recentlyViewed/client';
 
 export function AnalyticsTracker() {
   const pathname = usePathname();
@@ -20,7 +21,10 @@ export function AnalyticsTracker() {
     const productPrefix = `/${country}/product/`;
     if (pathname.startsWith(productPrefix)) {
       const productSlug = pathname.slice(productPrefix.length).split('/')[0];
-      if (productSlug) void sendAnalyticsEvent({ eventType: 'product_view', ...base, productSlug });
+      if (productSlug) {
+        void sendAnalyticsEvent({ eventType: 'product_view', ...base, productSlug });
+        recordRecentlyViewed(country, productSlug);
+      }
     }
   }, [pathname, country]);
 
