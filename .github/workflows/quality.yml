@@ -1,0 +1,45 @@
+name: CatchThePrice Quality Gate
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_SITE_URL: https://catchtheprice.com
+      NEXT_PUBLIC_SUPABASE_URL: https://jghpyvawgdfhfqmtiexb.supabase.co
+      NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ci-placeholder-key
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ci-placeholder-key
+      NEXT_PUBLIC_DEFAULT_COUNTRY: ae
+      ENABLE_DEMO_CATALOG: 'true'
+      ADMIN_EMAILS: ci-admin@catchtheprice.com
+      NEXT_PUBLIC_ADSENSE_TEST_MODE: 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Release safety audit
+        run: npm run audit:release
+
+      - name: Production build
+        run: npm run build
