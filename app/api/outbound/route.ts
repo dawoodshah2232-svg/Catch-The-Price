@@ -8,6 +8,24 @@ function normalizeHost(value: string): string {
   return value.toLowerCase().replace(/^www\./, '');
 }
 
+function getDeviceType(userAgent: string): 'mobile' | 'tablet' | 'desktop' | 'unknown' {
+  const ua = userAgent.toLowerCase();
+  if (!ua) return 'unknown';
+  if (/ipad|tablet|kindle|silk/.test(ua)) return 'tablet';
+  if (/mobi|iphone|ipod|android/.test(ua)) return 'mobile';
+  if (/windows|macintosh|linux|cros/.test(ua)) return 'desktop';
+  return 'unknown';
+}
+
+function getReferrerHost(value: string | null): string | null {
+  if (!value) return null;
+  try {
+    return normalizeHost(new URL(value).hostname).slice(0, 255);
+  } catch {
+    return null;
+  }
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const offerId = searchParams.get('offerId')?.trim() || '';
@@ -108,33 +126,34 @@ export async function GET(request: NextRequest) {
     }
 
     const destinationHost = normalizeHost(destination.hostname);
-    const hostAllowed =
-      merchantHost.length > 0 &&
-      (destinationHost === merchantHost || destinationHost.endsWith(`.${merchantHost}`));
+    const hostAllowed = merchantHost.length > 0 && (destinationHost === merchantHost || destinationHost.endsWith(`.${merchantHost}`));
 
     if (!hostAllowed) {
-      console.error('Blocked outbound destination host mismatch', {
-        offerId,
-        merchantHost,
-        destinationHost,
-      });
+      console.error('Blocked outbound destination host mismatch', { offerId, merchantHost, destinationHost });
       return NextResponse.json(
         { error: 'Retailer destination failed validation.' },
         { status: 500, headers: { 'X-Robots-Tag': 'noindex, nofollow' } }
       );
     }
 
-    // The production database does not yet contain the final outbound analytics table.
-    // Do not fabricate a successful analytics write or trust client-supplied commercial facts.
-    console.info('Validated retailer hand-off', {
-      offerId: offer.id,
-      productId: offer.product_id,
-      merchantId: offer.merchant_id,
-      market,
+    const userAgent = request.headers.get('user-agent') || '';
+    const referrerHost = getReferrerHost(request.headers.get('referer'));
+
+    const { error: clickError } = await supabase.from('outbound_clicks').insert({
+      offer_id: offer.id,
+      product_id: offer.product_id,
+      merchant_id: offer.merchant_id,
+      country_code: market,
       price: offer.price,
       currency: offer.currency,
-      lastCheckedAt: offer.last_checked_at,
+      referrer_host: referrerHost,
+      device_type: getDeviceType(userAgent),
     });
+
+    if (clickError) {
+      // Analytics must never block a valid retailer hand-off.
+      console.error('Outbound analytics write failed:', clickError);
+    }
 
     return NextResponse.redirect(destination.toString(), {
       status: 307,
