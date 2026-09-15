@@ -14,11 +14,11 @@ Status values: `DONE`, `PARTIAL`, `MISSING`, `BLOCKED`, `DEFERRED`.
 | 04 | Replace arbitrary URL redirects | DONE | `/api/outbound` accepts only offer ID + market, resolves the destination server-side, validates HTTPS/merchant host/active state, and records privacy-safe outbound analytics. |
 | 05 | Apply and verify access model | PARTIAL | RLS is enabled on production tables and operational tables have no browser write path. New migrations are tracked under `supabase/migrations/`; the original monolithic `supabase/schema.sql` still needs formal reconciliation/deprecation. |
 | 06 | Prepare canonical production environment | PARTIAL | Vercel hosting works and the app is production-shaped. `catchtheprice.com` DNS/canonical cutover and rollback procedure remain. |
-| 07 | Canonical product/variant/offer identity | PARTIAL | Live catalog uses real products/offers/merchants/categories/history. Exact variant/evidence fields and final canonical publishing workflow remain. |
-| 08 | Prove one permitted source end-to-end | BLOCKED | Rights-gated JSON feed runner now works through FETCH → RIGHTS → NORMALIZE → STAGE. Completing the path requires one actually approved feed/API and source credentials. |
-| 09 | Conflict-first matching + review | PARTIAL | Real ingestion staging exists and admin queue shows staged items + recorded match evidence. Identifier-first exact-variant matcher and auditable approve/reject write action remain. |
+| 07 | Canonical product/variant/offer identity | PARTIAL | Ingestion now captures GTIN/EAN/UPC, MPN, model, source SKU and image evidence. Human-approved canonical product creation/assignment plus safe offer publishing is implemented; full variant schema and genuine-source validation remain. |
+| 08 | Prove one permitted source end-to-end | BLOCKED | Rights-gated JSON feed runner now works through FETCH → RIGHTS → NORMALIZE → STAGE → REVIEW → PUBLISH. Completing the proof requires one actually approved feed/API and source credentials. |
+| 09 | Conflict-first matching + review | PARTIAL | Admin now has an auditable human review desk: assign an existing exact product, create a new draft canonical product, reject, then publish only after rights/image/destination checks. Automatic identifier-first suggestions still need genuine source data for validation. |
 | 10 | Two overlapping sources + curated inventory | BLOCKED | Requires real source approvals. Target remains 80–120 curated variants with meaningful UAE/US coverage. |
-| 11 | Freshness + genuine history | PARTIAL | History is shown only from recorded observations; otherwise UI stays unavailable. Automated recurring observations begin after a permitted live source is connected. |
+| 11 | Freshness + genuine history | PARTIAL | History is shown only from recorded observations; approved publishing records an initial price observation only when history rights permit it. Recurring observations begin after a permitted live source is connected. |
 | 12 | Shared shopping UI foundation | DONE | Hybrid light shopping surfaces + dark branded header/footer implemented across primary shopping UI. |
 | 13 | Compact persistent mobile search | DONE | Mobile brand row scrolls away while search remains sticky. Header/search spacing and branding were reworked for mobile and desktop. |
 | 14 | Replace oversized/aggressive cards | DONE | Compact 4:3 product cards, calmer CTAs, explicit View Prices + Compare action, and no unvalidated Deal Score. |
@@ -27,7 +27,7 @@ Status values: `DONE`, `PARTIAL`, `MISSING`, `BLOCKED`, `DEFERRED`.
 | 17 | Minimum serious two-product compare | DONE | `/[country]/compare` now supports direct product-card entry, same-category selection, structured facts, prices and light shopping UI. Missing facts remain unknown. |
 | 18 | Genuine saved persistence | PARTIAL | Device saves exist and live owner-scoped watchlist table exists. Authenticated sync/merge remains. |
 | 19 | Verified alert delivery | PARTIAL | False success removed. Public alert flow remains intentionally unavailable until account-backed persistence and delivery are connected. |
-| 20 | Useful authored content | PARTIAL | Blog framework and initial content exist; launch set still needs reviewed, source-backed editorial depth and final quality audit. |
+| 20 | Useful authored content | PARTIAL | Blog index and article pages have been rebuilt into the new clean light-shopping UI with featured content, better mobile reading, source/transparency blocks, related guides and editorial-policy links. Launch editorial set still needs final factual/editorial QA. |
 | 21 | Controlled AI draft preparation | MISSING | Opportunity queue, evidence/quality gates, cost/model tracking and human review remain. |
 | 22 | Replace simulated back-office activity | DONE | Admin overview, products, merchants, ingestion, matching and analytics now read real persisted state instead of simulated numbers. |
 | 23 | Metric dictionary + real analytics | PARTIAL | Privacy-safe `analytics_events` + `outbound_clicks` now record page views, searches, product views and retailer hand-offs. Admin shows real totals/top pages/searches/products/referrers. Consent integration and metric dictionary remain. |
@@ -57,30 +57,31 @@ Status values: `DONE`, `PARTIAL`, `MISSING`, `BLOCKED`, `DEFERRED`.
 
 ## Current execution order
 
-1. Complete exact-variant identifier-first matching and auditable review/approval from `ingestion_items`.
-2. Build the publish transaction that converts an approved staged match into canonical product/merchant/offer rows and records price history without fabricating facts.
-3. Connect one actually permitted UAE or US feed/API and prove it end-to-end.
-4. Finish product-page FAQ/methodology and saved/alert account persistence.
-5. Complete launch editorial set and controlled AI draft queue.
-6. Run mobile/accessibility/performance/security QA at 360/390/412/430/768/1024/1440.
-7. Connect `catchtheprice.com`, business email, Search Console and production analytics/consent configuration.
-8. Pilot with real data, then affiliate/AdSense applications only after the launch gates pass.
+1. Connect one actually permitted UAE or US feed/API and prove the completed rights-gated staging → review → publish path with genuine products.
+2. Validate automatic exact-identifier suggestions against real GTIN/MPN/model data, while keeping ambiguous variants human-gated.
+3. Finish product-page FAQ/methodology and saved/alert account persistence.
+4. Complete launch editorial set and controlled AI draft queue.
+5. Run mobile/accessibility/performance/security QA at 360/390/412/430/768/1024/1440.
+6. Connect `catchtheprice.com`, business email, Search Console and production analytics/consent configuration.
+7. Pilot with real data, then affiliate/AdSense applications only after the launch gates pass.
 
 ## Verified production database state
 
 Production Supabase now includes the core catalog tables plus:
 
 - `source_rights` — persisted deny-by-default retailer permission/evidence registry.
-- `ingestion_items` — pre-publication feed staging queue.
+- `ingestion_items` — pre-publication feed staging queue with identity evidence, review state and publish state.
 - `outbound_clicks` — privacy-safe retailer hand-off events.
 - `analytics_events` — privacy-safe page/search/product interaction events.
 - `ingestion_runs.items_staged` / `items_rejected` — real staging metrics.
+
+`ingestion_items` now stores source SKU, GTIN/EAN/UPC when available, MPN, model, image URL, review decision, reviewer, published offer and timestamps. Re-running the same source item refreshes its staging row rather than creating duplicate queue items.
 
 RLS is enabled on operational tables. CatchThePrice does not need to store full IP addresses for the analytics implemented here.
 
 ## External blocker
 
-The software can now accept and stage a real approved partner JSON feed, but no retailer/feed may be activated until the corresponding commercial/data permission is actually obtained and recorded in `source_rights`.
+The software can accept, stage, review and publish a real approved partner JSON feed, but no retailer/feed may be activated until the corresponding commercial/data permission is actually obtained and recorded in `source_rights`.
 
 ## Launch rule
 
