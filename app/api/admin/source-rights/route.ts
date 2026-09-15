@@ -8,6 +8,27 @@ function asBoolean(value: unknown): boolean {
   return value === true;
 }
 
+export async function GET() {
+  const admin = await requireAdminUser();
+  if (!admin.ok) return NextResponse.json({ error: 'Unauthorized' }, { status: admin.status });
+
+  const supabase = getServerSupabase();
+  if (!supabase) return NextResponse.json({ error: 'Server database is not configured.' }, { status: 503 });
+
+  const { data, error } = await supabase
+    .from('source_rights')
+    .select('id,retailer,market,status,approval_reference,approved_at,pricing_right,image_right,history_right,affiliate_link_right,ai_processing_right,retention_notes,notes,updated_at')
+    .order('market')
+    .order('retailer');
+
+  if (error) {
+    console.error('Source-rights list failed:', error);
+    return NextResponse.json({ error: 'Could not load source-rights registry.' }, { status: 500 });
+  }
+
+  return NextResponse.json({ sources: data || [] });
+}
+
 export async function PATCH(request: NextRequest) {
   const admin = await requireAdminUser();
   if (!admin.ok) {
@@ -50,7 +71,7 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            'ACTIVE requires dated approval evidence plus pricing and affiliate-link permission. Keep the source PENDING until those are recorded.',
+            'ACTIVE requires dated approval evidence plus pricing and retailer-link permission. Keep the source PENDING until those are recorded.',
         },
         { status: 400 }
       );
