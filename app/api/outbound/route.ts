@@ -14,7 +14,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL(`/${country}`, request.url));
   }
 
-  // 1. Log outbound click analytics record (in-memory or Supabase)
   try {
     const supabase = getServerSupabase();
     if (supabase) {
@@ -26,31 +25,26 @@ export async function GET(request: NextRequest) {
         user_agent: request.headers.get('user-agent') || '',
       });
     } else {
-      // In development / fallback mode: log to server console
       console.log(`[OUTBOUND CLICK TRACKED] Product: "${productTitle}" | Store: "${merchantName}" | Price: ${price} | Country: ${country}`);
     }
   } catch (err) {
     console.error('Failed to log outbound click:', err);
   }
 
-  // 2. Attach affiliate tracking parameters to target retailer URL if not already present
+  // Do not invent affiliate IDs. Until a real merchant affiliate account is connected,
+  // preserve the retailer URL and only add neutral attribution parameters where safe.
   let destinationUrl = targetUrl;
   try {
     const parsed = new URL(targetUrl);
-    if (!parsed.searchParams.has('tag') && parsed.hostname.includes('amazon')) {
-      parsed.searchParams.set('tag', `catchtheprice-${country}-20`);
-      destinationUrl = parsed.toString();
-    } else if (!parsed.searchParams.has('utm_source')) {
+    if (!parsed.searchParams.has('utm_source')) {
       parsed.searchParams.set('utm_source', 'catchtheprice');
-      parsed.searchParams.set('utm_medium', 'affiliate');
-      destinationUrl = parsed.toString();
+      parsed.searchParams.set('utm_medium', 'referral');
     }
+    destinationUrl = parsed.toString();
   } catch {
-    // If URL parsing fails, retain original target
     destinationUrl = targetUrl;
   }
 
-  // 3. Perform HTTP 307 temporary redirect to retailer product page
   return NextResponse.redirect(destinationUrl, {
     status: 307,
     headers: {
