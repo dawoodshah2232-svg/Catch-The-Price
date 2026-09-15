@@ -9,6 +9,9 @@ export function MobileBottomNav() {
   const { country, savedProductIds } = useCountry();
   const pathname = usePathname();
 
+  // Product pages use their own purchase/track action bar instead of stacking two fixed nav bars.
+  if (pathname?.startsWith(`/${country}/product/`)) return null;
+
   const items = [
     {
       id: 'home',
@@ -67,9 +70,7 @@ export function MobileBottomNav() {
                 )}
               </div>
               <span className="text-[10px] mt-1 tracking-tight">{item.label}</span>
-              {item.isActive && (
-                <span className="absolute bottom-0 w-7 h-0.5 rounded-full bg-[#0B8F58]" />
-              )}
+              {item.isActive && <span className="absolute bottom-0 w-7 h-0.5 rounded-full bg-[#0B8F58]" />}
             </a>
           );
         })}
