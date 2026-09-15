@@ -25,9 +25,9 @@ export const metadata: Metadata = {
   description:
     'Global price comparison, price tracking, deals discovery and shopping intelligence platform. Smarter Shopping for a Brighter Tomorrow.',
   icons: {
-    icon: '/images/logo.png',
-    shortcut: '/images/logo.png',
-    apple: '/images/logo.png',
+    icon: '/images/emerald_growth_tag_icon.png',
+    shortcut: '/images/emerald_growth_tag_icon.png',
+    apple: '/images/emerald_growth_tag_icon.png',
   },
 };
 

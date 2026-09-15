@@ -9,76 +9,52 @@ interface BrandLogoProps {
   className?: string;
 }
 
-function ExactTagMark({ size, mono = false }: { size: 'sm' | 'md' | 'lg'; mono?: boolean }) {
-  const frame = {
-    sm: 'w-7 h-7',
-    md: 'w-9 h-9',
-    lg: 'w-12 h-12',
-  }[size];
-
-  const image = {
-    sm: 'h-[48px] left-[-4px] top-[-9px]',
-    md: 'h-[62px] left-[-5px] top-[-12px]',
-    lg: 'h-[82px] left-[-7px] top-[-16px]',
-  }[size];
-
-  return (
-    <span
-      className={`relative ${frame} shrink-0 overflow-hidden rounded-[22%] ${
-        mono ? 'grayscale opacity-80' : 'drop-shadow-[0_4px_14px_rgba(0,210,122,0.20)]'
-      }`}
-      aria-hidden="true"
-    >
-      <img
-        src="/images/logo.png"
-        alt=""
-        className={`absolute max-w-none w-auto ${image}`}
-      />
-    </span>
-  );
-}
-
 export function BrandLogo({ variant = 'full', size = 'md', className = '' }: BrandLogoProps) {
   const { country } = useCountry();
-  const isMono = variant === 'monochrome';
 
-  const textSizes = {
-    sm: 'text-[15px]',
-    md: 'text-[19px] sm:text-[21px]',
-    lg: 'text-[25px] sm:text-[29px]',
-  };
-
+  // 1. Finalized Emerald Growth Tag Icon
   if (variant === 'symbol') {
+    const symbolSizes = {
+      sm: 'w-7 h-7',
+      md: 'w-9 h-9',
+      lg: 'w-11 h-11',
+    };
+
     return (
       <a
         href={`/${country}`}
         className={`inline-flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-[#00D27A]/40 rounded-xl group ${className}`}
         aria-label="CatchThePrice Home"
       >
-        <span className="transition-transform duration-200 group-hover:scale-[1.03]">
-          <ExactTagMark size={size} />
-        </span>
+        <img
+          src="/images/emerald_growth_tag_icon.png"
+          alt="CatchThePrice"
+          className={`${symbolSizes[size]} object-contain drop-shadow-md transition-transform duration-200 group-hover:scale-105`}
+        />
       </a>
     );
   }
 
+  // 2. Finalized Main CatchThePrice Logo on Transparency
+  const heightClasses = {
+    sm: 'h-7 sm:h-8',
+    md: 'h-8 sm:h-9',
+    lg: 'h-10 sm:h-11',
+  };
+
   return (
     <a
       href={`/${country}`}
-      className={`inline-flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-[#00D27A]/40 rounded-xl group min-w-0 ${className}`}
+      className={`inline-flex items-center focus:outline-none focus:ring-2 focus:ring-[#00D27A]/40 rounded-lg group ${className}`}
       aria-label="CatchThePrice Home"
     >
-      <span className="transition-transform duration-200 group-hover:scale-[1.02]">
-        <ExactTagMark size={size} mono={isMono} />
-      </span>
-      <span
-        className={`${textSizes[size]} leading-none font-extrabold tracking-[-0.035em] whitespace-nowrap ${
-          isMono ? 'text-white/80' : ''
+      <img
+        src="/images/catchtheprice_logo_on_transparency.png"
+        alt="CatchThePrice — TRACK IT. CATCH THE DROP. PAY LESS."
+        className={`${heightClasses[size]} w-auto object-contain transition-transform duration-200 group-hover:scale-[1.01] ${
+          variant === 'monochrome' ? 'grayscale opacity-75 contrast-125' : ''
         }`}
-      >
-        <span className={isMono ? '' : 'text-[#F8FAFC]'}>CatchThe</span>
-        <span className={isMono ? '' : 'text-[#00D27A]'}>Price</span>
-      </span>
+      />
     </a>
   );
 }
