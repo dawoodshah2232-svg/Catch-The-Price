@@ -14,16 +14,17 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
   const { country, formatLocalPrice, toggleSaveProduct, isProductSaved } = useCountry();
   const saved = isProductSaved(product.id);
 
-  const discountPercent = Math.round(
-    ((product.originalPrice - product.currentBestPrice) / product.originalPrice) * 100
-  );
+  const discountPercent = product.originalPrice > product.currentBestPrice && product.originalPrice > 0
+    ? Math.round(((product.originalPrice - product.currentBestPrice) / product.originalPrice) * 100)
+    : 0;
 
   return (
-    <div className="group relative rounded-2xl bg-[#091217] border border-[#162633] hover:border-[#203648] transition-all duration-200 flex flex-col overflow-hidden min-w-0">
+    <article className="group relative rounded-2xl bg-[#091217] border border-[#162633] hover:border-[#203648] transition-all duration-200 flex flex-col overflow-hidden min-w-0 h-full">
       <div className="relative w-full aspect-[4/3] bg-[#071015] overflow-hidden">
         <a
           href={`/${country}/product/${product.slug}`}
           className="absolute inset-0 p-2.5 sm:p-4 flex items-center justify-center"
+          aria-label={`View ${product.title}`}
         >
           <img
             src={product.imageUrl}
@@ -34,16 +35,16 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
         </a>
 
         {discountPercent > 0 && (
-          <div className="absolute top-2 left-2 flex items-center px-2 py-0.5 rounded-lg text-[10px] sm:text-[11px] font-extrabold bg-[#00D27A] text-[#071015]">
+          <div className="absolute top-2 left-2 flex items-center px-2 py-0.5 rounded-lg text-[10px] sm:text-[11px] font-extrabold bg-[#00D27A]/95 text-[#071015]">
             ↓ {discountPercent}%
           </div>
         )}
 
         <button
           type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
             toggleSaveProduct(product.id);
           }}
           className={`absolute top-2 right-2 min-w-[40px] min-h-[40px] p-2 rounded-xl backdrop-blur-md transition-all flex items-center justify-center ${
@@ -58,7 +59,7 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
 
         <div className="absolute bottom-2 left-2 flex items-center gap-1 px-2 py-0.5 rounded-md bg-[#091217]/92 backdrop-blur-sm border border-[#162633] text-[9px] sm:text-[10px] text-[#CBD5E1]">
           <Store className="w-3 h-3 text-[#00D27A]" />
-          <span>{product.offersCount} stores</span>
+          <span>{product.offersCount} offer{product.offersCount === 1 ? '' : 's'}</span>
         </div>
       </div>
 
@@ -69,19 +70,19 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
           </div>
           <a
             href={`/${country}/product/${product.slug}`}
-            className="block font-bold text-[12px] sm:text-sm text-[#F8FAFC] group-hover:text-[#00E6A2] transition-colors line-clamp-2 leading-snug break-words"
+            className="block font-bold text-[13px] sm:text-sm text-[#F8FAFC] group-hover:text-[#00E6A2] transition-colors line-clamp-2 leading-snug break-words"
           >
             {product.title}
           </a>
         </div>
 
         <div className="mt-3 pt-3 border-t border-[#162633]">
-          <div className="flex items-end justify-between gap-2 mb-2 min-w-0">
+          <div className="flex items-end justify-between gap-2 min-w-0">
             <div className="min-w-0">
               <span className="text-[9px] sm:text-[10px] text-[#94A3B8] block uppercase tracking-wider font-semibold">
-                Best Price
+                Lowest listed price
               </span>
-              <div className="text-[15px] sm:text-lg font-extrabold text-[#00D27A] leading-tight mt-0.5 break-words">
+              <div className="text-[17px] sm:text-lg font-extrabold text-[#00D27A] leading-tight mt-0.5 break-words">
                 {formatLocalPrice(product.currentBestPrice)}
               </div>
               {product.originalPrice > product.currentBestPrice && (
@@ -91,19 +92,21 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
               )}
             </div>
 
-            <span className="shrink-0 inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-lg text-[9px] sm:text-[10px] font-extrabold bg-[#00D27A]/10 text-[#55e7aa] border border-[#00D27A]/25 whitespace-nowrap">
-              <span className="hidden sm:inline">Deal&nbsp;</span>Score: {product.dealScore}
-            </span>
+            {product.dealScore > 0 && (
+              <span className="shrink-0 inline-flex items-center px-1.5 sm:px-2 py-0.5 rounded-lg text-[9px] sm:text-[10px] font-extrabold bg-[#00D27A]/10 text-[#55e7aa] border border-[#00D27A]/25 whitespace-nowrap">
+                <span className="hidden sm:inline">Deal&nbsp;</span>Score: {product.dealScore}
+              </span>
+            )}
           </div>
 
           <a
             href={`/${country}/product/${product.slug}`}
-            className="w-full mt-2 min-h-[42px] sm:min-h-[44px] px-3 rounded-xl text-[11px] sm:text-xs text-center flex items-center justify-center font-extrabold tracking-wide bg-[#0d2a23] text-[#67efb8] border border-[#00D27A]/30 hover:bg-[#10372d] hover:border-[#00D27A]/55 transition-colors"
+            className="w-full mt-3 min-h-[44px] px-3 rounded-xl text-[11px] sm:text-xs text-center flex items-center justify-center font-bold tracking-wide bg-[#0d211d] text-[#9de7c5] border border-[#245044] hover:bg-[#103029] hover:border-[#00D27A]/50 transition-colors"
           >
-            View Prices
+            Compare prices
           </a>
         </div>
       </div>
-    </div>
+    </article>
   );
 }
