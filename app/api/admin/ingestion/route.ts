@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { requireAdminUser } from '@/lib/admin/requireAdmin';
 import { getServerSupabase } from '@/lib/supabase/server';
-import { listSourceRights } from '@/lib/config/sourceRights';
+import { getSourceRights, listSourceRights } from '@/lib/config/sourceRights';
 
 export async function GET() {
   const admin = await requireAdminUser();
@@ -95,9 +95,81 @@ export async function GET() {
   return NextResponse.json({ sources, runs });
 }
 
+export async function PATCH(request: NextRequest) {
+  const admin = await requireAdminUser();
+  if (!admin.ok) return NextResponse.json({ error: 'Unauthorized' }, { status: admin.status });
+
+  const supabase = getServerSupabase();
+  if (!supabase) return NextResponse.json({ error: 'Server database is not configured.' }, { status: 503 });
+
+  let body: { sourceId?: string; isActive?: boolean };
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON body.' }, { status: 400 });
+  }
+
+  const sourceId = typeof body.sourceId === 'string' ? body.sourceId.trim() : '';
+  if (!sourceId || typeof body.isActive !== 'boolean') {
+    return NextResponse.json({ error: 'sourceId and isActive are required.' }, { status: 400 });
+  }
+
+  const { data: source, error: sourceError } = await supabase
+    .from('ingestion_sources')
+    .select('id,name,config,is_active')
+    .eq('id', sourceId)
+    .maybeSingle();
+
+  if (sourceError || !source) return NextResponse.json({ error: 'Ingestion source not found.' }, { status: 404 });
+
+  if (body.isActive) {
+    const config = (source.config || {}) as Record<string, unknown>;
+    const rightsId = typeof config.rightsId === 'string' ? config.rightsId : '';
+    const apiEnvKey = typeof config.apiEnvKey === 'string' ? config.apiEnvKey : null;
+    const adapter = typeof config.adapter === 'string' ? config.adapter : '';
+
+    if (!rightsId || !adapter) {
+      return NextResponse.json({ error: 'Source configuration is incomplete.' }, { status: 409 });
+    }
+
+    const rights = await getSourceRights(rightsId);
+    const rightsReady = Boolean(
+      rights &&
+        rights.status === 'ACTIVE' &&
+        rights.pricingRight &&
+        rights.affiliateLinkRight &&
+        rights.approvalReference &&
+        rights.approvedAt
+    );
+
+    if (!rightsReady) {
+      return NextResponse.json({ error: 'Source rights must be ACTIVE with dated evidence before enabling this connector.' }, { status: 409 });
+    }
+
+    if (apiEnvKey && !process.env[apiEnvKey]?.trim()) {
+      return NextResponse.json({ error: `Private credential ${apiEnvKey} is not configured.` }, { status: 409 });
+    }
+  }
+
+  const { error: updateError } = await supabase
+    .from('ingestion_sources')
+    .update({ is_active: body.isActive, updated_at: new Date().toISOString() })
+    .eq('id', sourceId);
+
+  if (updateError) return NextResponse.json({ error: 'Could not update source state.' }, { status: 500 });
+
+  console.info('Ingestion source state changed', {
+    sourceId,
+    isActive: body.isActive,
+    adminUserId: admin.user.id,
+  });
+
+  return NextResponse.json({ ok: true, isActive: body.isActive });
+}
+
 export async function POST() {
   return NextResponse.json(
     { error: 'Use /api/admin/ingestion/run with a specific approved source.' },
-    { status: 405, headers: { Allow: 'GET' } }
+    { status: 405, headers: { Allow: 'GET, PATCH' } }
   );
 }
