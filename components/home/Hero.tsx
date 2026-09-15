@@ -68,7 +68,7 @@ export function Hero() {
           </div>
 
           <div className="hidden lg:block relative min-h-[300px]">
-            <div className="absolute inset-0 rounded-[34px] bg-[#071015] border border-[#17303A] shadow-[0_24px_60px_rgba(20,48,38,.16)] overflow-hidden">
+            <div className="ctp-dark-panel absolute inset-0 rounded-[34px] border shadow-[0_24px_60px_rgba(20,48,38,.16)] overflow-hidden">
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_20%,rgba(0,210,122,.15),transparent_32%)]" />
               <div className="relative p-6 h-full flex flex-col justify-between">
                 <div>
