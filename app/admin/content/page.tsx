@@ -1,6 +1,7 @@
 import React from 'react';
 import { AlertTriangle, FileText, Lightbulb, Sparkles, Workflow } from 'lucide-react';
 import { getServerSupabase } from '@/lib/supabase/server';
+import { ContentDemandButton } from '@/components/admin/ContentDemandButton';
 
 type Opportunity = {
   id: string;
@@ -93,12 +94,15 @@ export default async function AdminContentPage() {
 
   return (
     <div className="space-y-6">
-      <div className="pb-6 border-b border-ctp">
-        <span className="text-[10px] uppercase tracking-[0.18em] font-extrabold text-emerald-400">Controlled automation</span>
-        <h1 className="text-2xl font-extrabold text-slate-100 mt-1">Content &amp; AI operations</h1>
-        <p className="text-xs text-slate-400 mt-1 max-w-3xl">
-          Research and drafting can be automated, but publication is deliberately human-gated. This dashboard only shows persisted opportunities, drafts and AI jobs — never simulated activity.
-        </p>
+      <div className="pb-6 border-b border-ctp flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+        <div>
+          <span className="text-[10px] uppercase tracking-[0.18em] font-extrabold text-emerald-400">Controlled automation</span>
+          <h1 className="text-2xl font-extrabold text-slate-100 mt-1">Content &amp; AI operations</h1>
+          <p className="text-xs text-slate-400 mt-1 max-w-3xl">
+            Research and drafting can be automated, but publication is deliberately human-gated. This dashboard only shows persisted opportunities, drafts and AI jobs — never simulated activity.
+          </p>
+        </div>
+        <ContentDemandButton />
       </div>
 
       {readError && (
@@ -119,13 +123,13 @@ export default async function AdminContentPage() {
         <div className="p-4 border-b border-ctp flex items-center justify-between gap-3">
           <div>
             <h2 className="text-sm font-bold text-slate-100 flex items-center gap-2"><Lightbulb className="w-4 h-4 text-amber-300" /> Content opportunity queue</h2>
-            <p className="text-[10px] text-slate-500 mt-1">Trend/research discoveries waiting for evidence-based drafting.</p>
+            <p className="text-[10px] text-slate-500 mt-1">First-party search demand and future research discoveries waiting for evidence-based drafting.</p>
           </div>
           <span className="text-xs text-slate-400">{opportunities.length}</span>
         </div>
 
         {opportunities.length === 0 ? (
-          <EmptyState icon={Lightbulb} title="No opportunities queued yet" body="The future trend-monitoring job will add source-backed opportunities here. Nothing is auto-published." />
+          <EmptyState icon={Lightbulb} title="No opportunities queued yet" body="Run search-demand discovery after visitors begin searching. It uses zero-result demand and never auto-publishes content." />
         ) : (
           <div className="divide-y divide-ctp">
             {opportunities.map((item) => (
@@ -181,7 +185,7 @@ export default async function AdminContentPage() {
             <span className="text-xs text-slate-400">{jobs.length}</span>
           </div>
           {jobs.length === 0 ? (
-            <EmptyState icon={Sparkles} title="No AI jobs have run yet" body="This is expected until a controlled research/drafting worker is connected." />
+            <EmptyState icon={Sparkles} title="No AI jobs have run yet" body="Search-demand discovery and future controlled research/drafting jobs will be recorded here." />
           ) : (
             <div className="divide-y divide-ctp">
               {jobs.map((job) => (
