@@ -47,6 +47,8 @@ export default async function HomePage({ params }: HomePageProps) {
   const { country: rawCountry } = await params;
   const country = (rawCountry?.toLowerCase() in COUNTRIES ? rawCountry.toLowerCase() : DEFAULT_COUNTRY) as CountryCode;
   const { products, topDeals, biggestDrops, trending, isPreview } = await getHomepageCatalog(country);
+  const earlyProductIds = new Set([...topDeals, ...biggestDrops].map((item) => item.id));
+  const uniqueTrending = trending.filter((item) => !earlyProductIds.has(item.id)).slice(0, 4);
 
   return (
     <div className="min-h-screen ui-page">
@@ -71,7 +73,7 @@ export default async function HomePage({ params }: HomePageProps) {
       <SmartComparisonBlock products={products} />
       <BiggestPriceDropsSection products={biggestDrops} />
       <BuyingInsightBlock />
-      <TrendingSection products={trending} />
+      <TrendingSection products={uniqueTrending} />
       <RecentlyDroppedSection products={products} />
       <PriceIntelligenceSection />
       <TrustPillarsBlock />
