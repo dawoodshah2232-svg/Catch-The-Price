@@ -8,15 +8,30 @@ import { Bookmark, Store, ArrowRight } from 'lucide-react';
 interface ProductCardProps {
   product: Product;
   priority?: boolean;
+  priceContext?: 'reference' | 'previous_observation';
 }
 
-export function ProductCard({ product, priority = false }: ProductCardProps) {
+function previousObservedPrice(product: Product): number | null {
+  const history = [...(product.priceHistory || [])]
+    .filter((point) => Number.isFinite(point.price) && point.price > 0)
+    .sort((a, b) => a.date.localeCompare(b.date));
+  if (history.length < 2) return null;
+  const previous = history[history.length - 2].price;
+  const latest = history[history.length - 1].price;
+  return latest < previous ? previous : null;
+}
+
+export function ProductCard({ product, priority = false, priceContext = 'reference' }: ProductCardProps) {
   const { country, formatLocalPrice, toggleSaveProduct, isProductSaved } = useCountry();
   const saved = isProductSaved(product.id);
 
-  const discountPercent = product.originalPrice > product.currentBestPrice
-    ? Math.round(((product.originalPrice - product.currentBestPrice) / product.originalPrice) * 100)
+  const historicalPrevious = priceContext === 'previous_observation' ? previousObservedPrice(product) : null;
+  const comparisonBase = historicalPrevious || product.originalPrice;
+  const discountPercent = comparisonBase > product.currentBestPrice
+    ? Math.round(((comparisonBase - product.currentBestPrice) / comparisonBase) * 100)
     : 0;
+  const comparisonLabel = historicalPrevious ? 'Previous' : 'Ref.';
+  const badgeLabel = historicalPrevious ? `${discountPercent}% observed drop` : `${discountPercent}% vs ref.`;
 
   return (
     <div className="group relative rounded-2xl bg-white border border-[#DDE7E3] hover:border-[#A9CBBE] hover:shadow-[0_14px_34px_rgba(29,71,57,.10)] transition-all duration-200 flex flex-col overflow-hidden">
@@ -31,8 +46,8 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
         </a>
 
         {discountPercent > 0 && (
-          <div className="absolute top-2.5 left-2.5 flex items-center px-2 py-1 rounded-lg text-[10px] sm:text-[11px] font-extrabold bg-[#DDF8EB] text-[#08784B] border border-[#B9E7D2]">
-            {discountPercent}% vs ref.
+          <div className="absolute top-2.5 left-2.5 flex items-center px-2 py-1 rounded-lg text-[9px] sm:text-[10px] font-extrabold bg-[#DDF8EB] text-[#08784B] border border-[#B9E7D2]">
+            {badgeLabel}
           </div>
         )}
 
@@ -77,9 +92,9 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
               <div className="text-base sm:text-lg font-extrabold text-[#08784B] leading-none mt-0.5">
                 {formatLocalPrice(product.currentBestPrice)}
               </div>
-              {product.originalPrice > product.currentBestPrice && (
+              {comparisonBase > product.currentBestPrice && (
                 <div className="text-[10px] sm:text-[11px] text-[#8A999F] mt-1 font-medium">
-                  Ref. <span className="line-through">{formatLocalPrice(product.originalPrice)}</span>
+                  {comparisonLabel} <span className="line-through">{formatLocalPrice(comparisonBase)}</span>
                 </div>
               )}
             </div>
