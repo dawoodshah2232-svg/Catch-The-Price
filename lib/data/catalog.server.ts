@@ -108,6 +108,18 @@ function toPriceStats(currentPrice: number, history: PricePoint[]) {
   };
 }
 
+function latestObservedDropPercent(product: Product): number {
+  const history = [...(product.priceHistory || [])]
+    .filter((point) => Number.isFinite(point.price) && point.price > 0)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  if (history.length < 2) return 0;
+  const previous = history[history.length - 2].price;
+  const latest = history[history.length - 1].price;
+  if (previous <= 0 || latest >= previous) return 0;
+  return (previous - latest) / previous;
+}
+
 async function loadLiveCatalog(country: CountryCode): Promise<Product[]> {
   if (!LIVE_MARKETS.has(country)) return [];
 
@@ -307,11 +319,18 @@ export async function getHomepageCatalog(country: CountryCode) {
     return discountB - discountA;
   });
 
+  const topDeals = byDiscount.slice(0, 4);
+  const topDealIds = new Set(topDeals.map((item) => item.id));
+  const biggestDrops = [...products]
+    .filter((item) => latestObservedDropPercent(item) > 0 && !topDealIds.has(item.id))
+    .sort((a, b) => latestObservedDropPercent(b) - latestObservedDropPercent(a))
+    .slice(0, 4);
+
   return {
     isPreview,
     products,
-    topDeals: byDiscount.slice(0, 4),
-    biggestDrops: byDiscount.filter((item) => item.originalPrice > item.currentBestPrice).slice(0, 4),
+    topDeals,
+    biggestDrops,
     trending: isPreview ? products.filter((item) => item.isTrending).slice(0, 4) : [],
   };
 }
