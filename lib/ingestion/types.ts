@@ -6,6 +6,10 @@ export interface RawMerchantItem {
   rawPrice: number;
   rawCurrency: string;
   rawUrl: string;
+  rawImageUrl?: string;
+  rawGtin?: string;
+  rawMpn?: string;
+  rawModel?: string;
   inStock: boolean;
   shippingText?: string;
   merchantSlug: string;
@@ -20,6 +24,10 @@ export interface NormalizedItem {
   price: number;
   currency: string;
   url: string;
+  imageUrl?: string;
+  gtin?: string;
+  mpn?: string;
+  model?: string;
   inStock: boolean;
   shippingInfo: string;
   merchantSlug: string;
@@ -30,7 +38,7 @@ export interface MatchResult {
   rawSku: string;
   matchedProductId: string | null;
   confidence: number;
-  method: 'exact_sku' | 'fuzzy_token' | 'ai_disambiguation';
+  method: 'exact_gtin' | 'exact_mpn' | 'exact_model' | 'exact_sku' | 'fuzzy_token' | 'ai_disambiguation';
 }
 
 export interface IngestionPipelineResult {
