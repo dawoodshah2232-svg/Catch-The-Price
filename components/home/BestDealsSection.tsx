@@ -42,7 +42,7 @@ export function BestDealsSection({ products }: BestDealsSectionProps) {
           <a href={`/${country}/blog`} className="min-h-[42px] px-4 rounded-xl bg-[#F0FAF5] hover:bg-[#DDF8EB] border border-[#CFE6DC] text-[#08784B] text-xs font-extrabold inline-flex items-center justify-center gap-1.5 shrink-0">Read buying guides <ArrowRight className="w-3.5 h-3.5" /></a>
         </div>
       ) : (
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-5 w-full">
+        <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-2.5 sm:gap-4 w-full">
           {products.map((product) => <div key={product.id} className="min-w-0 w-full"><ProductCard product={product} priority /></div>)}
         </div>
       )}
