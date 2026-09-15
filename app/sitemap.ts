@@ -1,6 +1,7 @@
 import { MetadataRoute } from 'next';
 import { CATEGORIES } from '@/lib/data/categories';
 import { getAllProducts } from '@/lib/data/products';
+import { BLOG_POSTS } from '@/lib/data/blog';
 import { CountryCode } from '@/lib/types';
 
 const LIVE_COUNTRIES: CountryCode[] = ['ae', 'us'];
@@ -29,6 +30,22 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: new Date(),
       changeFrequency: 'daily',
       priority: 0.9,
+    });
+
+    entries.push({
+      url: `${baseUrl}/${c}/blog`,
+      lastModified: new Date(),
+      changeFrequency: 'daily',
+      priority: 0.85,
+    });
+
+    BLOG_POSTS.forEach((post) => {
+      entries.push({
+        url: `${baseUrl}/${c}/blog/${post.slug}`,
+        lastModified: new Date(post.updatedAt),
+        changeFrequency: 'weekly',
+        priority: 0.82,
+      });
     });
 
     CATEGORIES.forEach((cat) => {
