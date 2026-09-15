@@ -13,6 +13,7 @@ import {
   Bell,
   Bookmark,
   User,
+  BookOpen,
 } from 'lucide-react';
 
 export function Header() {
@@ -23,36 +24,30 @@ export function Header() {
     { label: 'Deals', href: `/${country}/deals/all`, icon: Flame },
     { label: 'Price Drops', href: `/${country}/price-drops/all`, icon: TrendingDown },
     { label: 'Categories', href: `/${country}#categories`, icon: LayoutGrid },
+    { label: 'Blog', href: `/${country}/blog`, icon: BookOpen },
     { label: 'Track Prices', href: `/${country}/account?tab=alerts`, icon: Bell },
   ];
 
   return (
     <header className="sticky top-0 z-40 w-full bg-[#071015]/95 backdrop-blur-md border-b border-[#162633] transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* =========================================================================
-            DESKTOP HEADER LAYOUT
-            Left: Logo | Center: Search | Nav: Deals, Drops, Categories, Track | Right: Country, Saved, Alerts, Account
-            ========================================================================= */}
-        <div className="hidden lg:flex items-center justify-between h-16 gap-6">
-          {/* Left: Logo */}
+        <div className="hidden lg:flex items-center justify-between h-16 gap-5">
           <div className="shrink-0 flex items-center">
             <BrandLogo size="md" variant="full" />
           </div>
 
-          {/* Center: Search */}
           <div className="flex-1 max-w-md xl:max-w-lg">
             <SearchBar isHero={false} />
           </div>
 
-          {/* Navigation Links */}
           <nav className="flex items-center gap-1 text-xs font-semibold text-[#CBD5E1]">
             {desktopNav.map((item) => {
-              const isActive = pathname?.startsWith(item.href);
+              const isActive = pathname === item.href || (item.href.includes('/blog') && pathname?.startsWith(`/${country}/blog`)) || pathname?.startsWith(item.href);
               return (
                 <a
                   key={item.label}
                   href={item.href}
-                  className={`px-3 py-2 rounded-xl transition-colors hover:text-white hover:bg-[#0f1c24] ${
+                  className={`px-2.5 xl:px-3 py-2 rounded-xl transition-colors hover:text-white hover:bg-[#0f1c24] ${
                     isActive ? 'text-[#00D27A] font-bold bg-[#00D27A]/10' : ''
                   }`}
                 >
@@ -62,7 +57,6 @@ export function Header() {
             })}
           </nav>
 
-          {/* Right: Country, Saved, Alerts, Account */}
           <div className="flex items-center gap-2">
             <CountrySwitcher />
 
@@ -104,19 +98,21 @@ export function Header() {
           </div>
         </div>
 
-        {/* =========================================================================
-            MOBILE HEADER LAYOUT (CRITICAL REQUIREMENT)
-            Top: approved compact logo | country selector | profile/account
-            Below: large product search.
-            ========================================================================= */}
         <div className="lg:hidden py-2.5 space-y-2.5">
-          {/* Top row */}
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0 shrink">
               <BrandLogo variant="full" size="sm" />
             </div>
 
             <div className="flex items-center gap-2 shrink-0">
+              <a
+                href={`/${country}/blog`}
+                className="p-2 rounded-xl bg-[#091217] border border-[#162633] text-[#CBD5E1] hover:text-white touch-target flex items-center justify-center"
+                aria-label="Blog"
+                title="Blog"
+              >
+                <BookOpen className="w-4 h-4 text-[#00D27A]" />
+              </a>
               <CountrySwitcher compact={true} />
               <a
                 href={`/${country}/account`}
@@ -128,7 +124,6 @@ export function Header() {
             </div>
           </div>
 
-          {/* Below top row: Large Product Search */}
           <div className="w-full">
             <SearchBar isHero={false} />
           </div>
