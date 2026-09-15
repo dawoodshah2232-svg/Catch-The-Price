@@ -1,5 +1,4 @@
 import React from 'react';
-import { BrandLogo } from '@/components/common/BrandLogo';
 
 export type TrustSection = {
   title: string;
@@ -23,7 +22,13 @@ export function TrustPage({
     <main className="min-h-screen bg-[#F4F7F6] text-[#102027]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 sm:py-14">
         <div className="mb-8">
-          <BrandLogo size="md" variant="full" />
+          <a href="/ae" aria-label="CatchThePrice home" className="inline-flex">
+            <img
+              src="/images/catchtheprice_logo_on_transparency.png"
+              alt="CatchThePrice"
+              className="h-10 sm:h-12 w-auto max-w-[260px] object-contain"
+            />
+          </a>
         </div>
 
         <div className="rounded-[28px] bg-white border border-[#DDE7E3] p-5 sm:p-8 shadow-[0_12px_34px_rgba(25,55,45,0.06)]">
