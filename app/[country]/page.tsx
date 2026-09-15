@@ -2,7 +2,7 @@ import React from 'react';
 import { Metadata } from 'next';
 import { CountryCode } from '@/lib/types';
 import { COUNTRIES, DEFAULT_COUNTRY } from '@/lib/data/countries';
-import { getTopDeals, getBiggestDrops, getTrendingProducts } from '@/lib/data/products';
+import { getHomepageCatalog } from '@/lib/data/catalog.server';
 import { Hero } from '@/components/home/Hero';
 import { BestDealsSection } from '@/components/home/BestDealsSection';
 import { SmartComparisonBlock } from '@/components/home/SmartComparisonBlock';
@@ -48,52 +48,34 @@ export async function generateMetadata({ params }: HomePageProps): Promise<Metad
 export default async function HomePage({ params }: HomePageProps) {
   const { country: rawCountry } = await params;
   const country = (rawCountry?.toLowerCase() in COUNTRIES ? rawCountry.toLowerCase() : DEFAULT_COUNTRY) as CountryCode;
-
-  const topDeals = getTopDeals(country, 4);
-  const biggestDrops = getBiggestDrops(country, 4);
-  const trending = getTrendingProducts(country, 4);
+  const { topDeals, biggestDrops, trending, isPreview } = await getHomepageCatalog(country);
 
   return (
-    <div className="min-h-screen bg-[#071015]">
-      {/* Homepage Hero */}
+    <div className="min-h-screen ui-page">
+      {isPreview && (
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-3">
+          <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-2.5 text-xs text-amber-900">
+            Development preview: sample catalog content is shown for interface testing only.
+          </div>
+        </div>
+      )}
+
       <Hero />
-
-      {/* 1. Today's Best Deals (Swipe on mobile, Grid on desktop) */}
       <BestDealsSection products={topDeals} />
-
-      {/* 2. Flagship Smart Comparison Block (Breaks repetitive card grid) */}
       <SmartComparisonBlock />
-
-      {/* 3. Biggest Price Drops */}
       <BiggestPriceDropsSection products={biggestDrops} />
 
-      {/* Reserved Ad Slot between primary sections */}
       <div className="max-w-5xl mx-auto px-4">
         <AdSlot slotId="home-after-deals" format="banner" />
       </div>
 
-      {/* 4. Browse Categories */}
       <CategoryGrid />
-
-      {/* 5. Buying Insight: How Deal Score Cuts Fake Discounts */}
       <BuyingInsightBlock />
-
-      {/* 6. Trending Now */}
       <TrendingSection products={trending} />
-
-      {/* 7. Price Intelligence (Compare -> Track -> Catch) */}
       <PriceIntelligenceSection />
-
-      {/* 8. The CatchThePrice Trust Pillars */}
       <TrustPillarsBlock />
-
-      {/* 9. Global Market Coverage */}
       <CountrySection />
-
-      {/* 10. Recently Dropped Prices */}
       <RecentlyDroppedSection />
-
-      {/* 11. Price Alert CTA */}
       <PriceAlertCTASection />
     </div>
   );
