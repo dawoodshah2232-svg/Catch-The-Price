@@ -1,6 +1,6 @@
 import React from 'react';
 import { Metadata } from 'next';
-import { CountryCode } from '@/lib/types';
+import { CountryCode, Product } from '@/lib/types';
 import { COUNTRIES, DEFAULT_COUNTRY } from '@/lib/data/countries';
 import { CATEGORIES, getCategoryBySlug } from '@/lib/data/categories';
 import { getCatalogProducts, isPreviewCatalogEnabled } from '@/lib/data/catalog.server';
@@ -10,6 +10,18 @@ import { TrendingDown, ChevronRight } from 'lucide-react';
 
 interface PriceDropsPageProps {
   params: Promise<{ country: string; category: string }>;
+}
+
+function observedDropPercent(product: Product): number {
+  const history = [...(product.priceHistory || [])]
+    .filter((point) => Number.isFinite(point.price) && point.price > 0)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  if (history.length < 2) return 0;
+  const previous = history[history.length - 2].price;
+  const current = history[history.length - 1].price;
+  if (previous <= 0 || current >= previous) return 0;
+  return (previous - current) / previous;
 }
 
 export async function generateMetadata({ params }: PriceDropsPageProps): Promise<Metadata> {
@@ -22,7 +34,7 @@ export async function generateMetadata({ params }: PriceDropsPageProps): Promise
 
   return {
     title: `${catName} Price Drops in ${info.name} — CatchThePrice`,
-    description: `See eligible ${catName} listings in ${info.name} where the current retailer price is below a recorded reference price.`,
+    description: `See ${catName} products in ${info.name} where a newer stored price observation is lower than the previous observation for the same market.`,
     robots: isPreview ? { index: false, follow: false } : undefined,
     alternates: { canonical: `https://catchtheprice.com/${country}/price-drops/${catSlug}` },
   };
@@ -36,12 +48,8 @@ export default async function PriceDropsCategoryPage({ params }: PriceDropsPageP
   const category = getCategoryBySlug(catSlug);
   const { products: catalogProducts, isPreview } = await getCatalogProducts(country);
   const products = (isAll ? catalogProducts : catalogProducts.filter((p) => p.categorySlug.toLowerCase() === catSlug.toLowerCase()))
-    .filter((p) => p.originalPrice > p.currentBestPrice && p.originalPrice > 0);
-  const sorted = [...products].sort((a, b) => {
-    const aDrop = (a.originalPrice - a.currentBestPrice) / a.originalPrice;
-    const bDrop = (b.originalPrice - b.currentBestPrice) / b.originalPrice;
-    return bDrop - aDrop;
-  });
+    .filter((p) => observedDropPercent(p) > 0);
+  const sorted = [...products].sort((a, b) => observedDropPercent(b) - observedDropPercent(a));
 
   const breadcrumbJsonLd = !isPreview ? {
     '@context': 'https://schema.org', '@type': 'BreadcrumbList', itemListElement: [
@@ -74,17 +82,17 @@ export default async function PriceDropsCategoryPage({ params }: PriceDropsPageP
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 text-[10px] sm:text-xs font-extrabold uppercase tracking-[0.16em] text-[#0B8F58]">
-                <TrendingDown className="w-4 h-4" /> Recorded reductions
+                <TrendingDown className="w-4 h-4" /> Observed reductions
               </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold text-[#102027] mt-2">
                 {category ? `${category.name} Price Drops` : 'Electronics Price Drops'} in {countryInfo.name}
               </h1>
               <p className="text-xs sm:text-sm text-[#65777F] mt-2 max-w-2xl leading-relaxed">
-                Products appear here only when an eligible current offer is below a source-backed reference price. Long-term averages appear only after genuine observations exist.
+                Products appear here only when the latest stored observation is lower than the previous stored observation for that product and market. A retailer reference price alone does not qualify as a historical drop.
               </p>
             </div>
             <span className="self-start sm:self-auto text-xs px-3 py-2 rounded-xl bg-[#EDF8F3] border border-[#D1EADD] text-[#08784B] font-extrabold">
-              {sorted.length} recorded drop{sorted.length === 1 ? '' : 's'}
+              {sorted.length} observed drop{sorted.length === 1 ? '' : 's'}
             </span>
           </div>
         </section>
@@ -100,15 +108,15 @@ export default async function PriceDropsCategoryPage({ params }: PriceDropsPageP
         {sorted.length > 0 ? (
           <>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2.5 sm:gap-5 pt-1">
-              {sorted.map((product) => <ProductCard key={product.id} product={product} />)}
+              {sorted.map((product) => <ProductCard key={product.id} product={product} priceContext="previous_observation" />)}
             </div>
             <AdSlot slotId="price-drops-bottom" format="banner" />
           </>
         ) : (
           <div className="rounded-[26px] border border-[#DDE7E3] bg-white px-5 py-12 text-center shadow-[0_10px_28px_rgba(24,52,43,0.04)]">
-            <h2 className="text-lg font-extrabold text-[#102027]">No source-backed price drops are available yet.</h2>
+            <h2 className="text-lg font-extrabold text-[#102027]">No observed price drops are available yet.</h2>
             <p className="mt-2 text-sm text-[#73858D] max-w-xl mx-auto leading-relaxed">
-              This section will populate only after eligible live offers and genuine reference observations are collected for this market.
+              This section will populate after CatchThePrice has at least two genuine price observations for an eligible product in this market and the newer observation is lower.
             </p>
           </div>
         )}
