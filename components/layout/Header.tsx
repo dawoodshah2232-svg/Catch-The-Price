@@ -106,21 +106,17 @@ export function Header() {
 
         {/* =========================================================================
             MOBILE HEADER LAYOUT (CRITICAL REQUIREMENT)
-            Top: logo symbol / compact logo | country selector | profile/account
+            Top: approved compact logo | country selector | profile/account
             Below: large product search.
             ========================================================================= */}
         <div className="lg:hidden py-2.5 space-y-2.5">
           {/* Top row */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <BrandLogo variant="symbol" size="md" />
-              <div className="font-extrabold text-sm tracking-tight text-white flex items-center">
-                <span>Catch</span>
-                <span className="text-[#00D27A]">ThePrice</span>
-              </div>
+          <div className="flex items-center justify-between gap-3">
+            <div className="min-w-0 shrink">
+              <BrandLogo variant="full" size="sm" />
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0">
               <CountrySwitcher compact={true} />
               <a
                 href={`/${country}/account`}
