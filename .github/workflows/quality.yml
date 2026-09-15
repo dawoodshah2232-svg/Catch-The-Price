@@ -49,11 +49,11 @@ jobs:
         run: npm run smoke
 
       - name: Install screenshot browser
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: npx --yes playwright@1.57.0 install --with-deps chromium
 
       - name: Start preview server
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: |
           nohup npm run start -- -H 127.0.0.1 -p 3101 > /tmp/catchtheprice-preview.log 2>&1 &
           echo $! > /tmp/catchtheprice-preview.pid
@@ -65,26 +65,39 @@ jobs:
           exit 1
 
       - name: Capture desktop and mobile screenshots
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         run: |
           mkdir -p screenshots
-          desktop() { npx --yes playwright@1.57.0 screenshot --browser chromium --viewport-size "1440,1000" --wait-for-timeout 1200 --full-page "$1" "$2"; }
-          mobile() { npx --yes playwright@1.57.0 screenshot --browser chromium --viewport-size "390,844" --wait-for-timeout 1200 --full-page "$1" "$2"; }
-          desktop http://127.0.0.1:3101/ae screenshots/01-home-desktop.png
-          desktop "http://127.0.0.1:3101/ae/search?q=Samsung" screenshots/02-search-desktop.png
-          desktop http://127.0.0.1:3101/ae/product/samsung-galaxy-s24-ultra-512gb screenshots/03-product-desktop.png
-          desktop http://127.0.0.1:3101/ae/compare screenshots/04-compare-desktop.png
-          desktop http://127.0.0.1:3101/ae/account screenshots/05-account-desktop.png
-          desktop http://127.0.0.1:3101/ae/blog screenshots/06-guides-desktop.png
-          desktop http://127.0.0.1:3101/admin-access screenshots/07-admin-access-desktop.png
-          mobile http://127.0.0.1:3101/ae screenshots/08-home-mobile.png
-          mobile "http://127.0.0.1:3101/ae/search?q=Samsung" screenshots/09-search-mobile.png
-          mobile http://127.0.0.1:3101/ae/product/samsung-galaxy-s24-ultra-512gb screenshots/10-product-mobile.png
-          mobile http://127.0.0.1:3101/ae/compare screenshots/11-compare-mobile.png
-          mobile http://127.0.0.1:3101/ae/account screenshots/12-account-mobile.png
+          shot() { npx --yes playwright@1.57.0 screenshot --browser chromium --viewport-size "$1" --wait-for-timeout 1200 --full-page "$2" "$3"; }
+
+          # Core handoff pack
+          shot "1440,1000" http://127.0.0.1:3101/ae screenshots/01-home-desktop.png
+          shot "1440,1000" "http://127.0.0.1:3101/ae/search?q=Samsung" screenshots/02-search-desktop.png
+          shot "1440,1000" http://127.0.0.1:3101/ae/product/samsung-galaxy-s24-ultra-512gb screenshots/03-product-desktop.png
+          shot "1440,1000" http://127.0.0.1:3101/ae/compare screenshots/04-compare-desktop.png
+          shot "1440,1000" http://127.0.0.1:3101/ae/account screenshots/05-account-desktop.png
+          shot "1440,1000" http://127.0.0.1:3101/ae/blog screenshots/06-guides-desktop.png
+          shot "1440,1000" http://127.0.0.1:3101/admin-access screenshots/07-admin-access-desktop.png
+          shot "390,844" http://127.0.0.1:3101/ae screenshots/08-home-mobile.png
+          shot "390,844" "http://127.0.0.1:3101/ae/search?q=Samsung" screenshots/09-search-mobile.png
+          shot "390,844" http://127.0.0.1:3101/ae/product/samsung-galaxy-s24-ultra-512gb screenshots/10-product-mobile.png
+          shot "390,844" http://127.0.0.1:3101/ae/compare screenshots/11-compare-mobile.png
+          shot "390,844" http://127.0.0.1:3101/ae/account screenshots/12-account-mobile.png
+
+          # Responsive matrix for the launch-critical surfaces
+          shot "360,800" http://127.0.0.1:3101/ae screenshots/13-home-360.png
+          shot "412,915" http://127.0.0.1:3101/ae screenshots/14-home-412.png
+          shot "430,932" http://127.0.0.1:3101/ae screenshots/15-home-430.png
+          shot "768,1024" http://127.0.0.1:3101/ae screenshots/16-home-768.png
+          shot "1024,900" http://127.0.0.1:3101/ae screenshots/17-home-1024.png
+          shot "360,800" "http://127.0.0.1:3101/ae/search?q=Samsung" screenshots/18-search-360.png
+          shot "430,932" "http://127.0.0.1:3101/ae/search?q=Samsung" screenshots/19-search-430.png
+          shot "360,800" http://127.0.0.1:3101/ae/product/samsung-galaxy-s24-ultra-512gb screenshots/20-product-360.png
+          shot "430,932" http://127.0.0.1:3101/ae/product/samsung-galaxy-s24-ultra-512gb screenshots/21-product-430.png
+          shot "768,1024" http://127.0.0.1:3101/ae/product/samsung-galaxy-s24-ultra-512gb screenshots/22-product-768.png
 
       - name: Upload screenshot pack
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
         with:
           name: catchtheprice-screenshot-pack
