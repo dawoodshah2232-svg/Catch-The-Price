@@ -1,147 +1,118 @@
-'use client';
+import React from 'react';
+import { GitMerge, ShieldAlert, CheckCircle2, SearchX } from 'lucide-react';
+import { getServerSupabase } from '@/lib/supabase/server';
 
-import React, { useState } from 'react';
-import { GitMerge, Check, Flag, Sparkles, CheckCircle2 } from 'lucide-react';
-
-interface MatchItem {
+type MatchRow = {
   id: string;
-  rawTitle: string;
-  merchant: string;
-  rawPrice: string;
-  matchedTitle: string;
-  confidence: number;
-  status: 'pending' | 'verified' | 'flagged';
+  source_name: string;
+  source_product_id: string;
+  product_id: string | null;
+  confidence: number | string;
+  match_method: string;
+  raw_title: string | null;
+  created_at: string;
+  products: { name: string; slug: string } | { name: string; slug: string }[] | null;
+};
+
+function relation<T>(value: T | T[] | null): T | null {
+  if (!value) return null;
+  return Array.isArray(value) ? value[0] || null : value;
 }
 
-export default function AdminMatchingPage() {
-  const [matches, setMatches] = useState<MatchItem[]>([
-    {
-      id: 'match-1',
-      rawTitle: 'Apple iPhone 16 Pro Max 256 GB Titane Désert 5G Dual SIM',
-      merchant: 'Amazon UAE',
-      rawPrice: 'AED 4,033',
-      matchedTitle: 'Apple iPhone 16 Pro Max (256GB, Desert Titanium)',
-      confidence: 99.4,
-      status: 'pending',
-    },
-    {
-      id: 'match-2',
-      rawTitle: 'Samsung S24 Ultra 5G Grey 512GB with Stylus Bundle',
-      merchant: 'Noon UAE',
-      rawPrice: 'AED 4,217',
-      matchedTitle: 'Samsung Galaxy S24 Ultra (512GB, Titanium Gray, AI Enabled)',
-      confidence: 98.2,
-      status: 'pending',
-    },
-    {
-      id: 'match-3',
-      rawTitle: 'Playstation 5 Pro 2000GB SSD Ed. White Black',
-      merchant: 'Sharaf DG',
-      rawPrice: 'AED 2,492',
-      matchedTitle: 'Sony PlayStation 5 Pro Console (2TB SSD, PSSR AI Upscaling)',
-      confidence: 97.6,
-      status: 'pending',
-    },
-    {
-      id: 'match-4',
-      rawTitle: 'WH1000XM5B Sony Noise Cancelling Over-Ear Headset',
-      merchant: 'Amazon UAE',
-      rawPrice: 'AED 1,204',
-      matchedTitle: 'Sony WH-1000XM5 Wireless Active Noise Canceling Headphones (Black)',
-      confidence: 99.1,
-      status: 'pending',
-    },
-  ]);
+function confidenceBand(value: number) {
+  if (value >= 95) return { label: 'Auto-safe', className: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' };
+  if (value >= 80) return { label: 'Review', className: 'bg-amber-500/10 text-amber-300 border-amber-500/30' };
+  return { label: 'Manual', className: 'bg-rose-500/10 text-rose-300 border-rose-500/30' };
+}
 
-  const handleVerify = (id: string) => {
-    setMatches((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, status: 'verified' } : m))
-    );
-  };
+export default async function AdminMatchingPage() {
+  const supabase = getServerSupabase();
+  let matches: MatchRow[] = [];
+  let readError = false;
 
-  const handleFlag = (id: string) => {
-    setMatches((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, status: 'flagged' } : m))
-    );
-  };
+  if (supabase) {
+    const { data, error } = await supabase
+      .from('product_matches')
+      .select('id,source_name,source_product_id,product_id,confidence,match_method,raw_title,created_at,products(name,slug)')
+      .order('created_at', { ascending: false })
+      .limit(200);
+    matches = (data || []) as MatchRow[];
+    readError = Boolean(error);
+  } else {
+    readError = true;
+  }
+
+  const reviewCount = matches.filter((m) => Number(m.confidence) >= 80 && Number(m.confidence) < 95).length;
+  const manualCount = matches.filter((m) => Number(m.confidence) < 80).length;
+  const autoSafeCount = matches.filter((m) => Number(m.confidence) >= 95).length;
 
   return (
     <div className="space-y-6">
       <div className="pb-6 border-b border-ctp">
-        <h1 className="text-2xl font-extrabold text-slate-100">Product Matching Queue</h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Review automated title normalization and multi-merchant SKU grouping
+        <span className="text-[10px] uppercase tracking-[0.18em] font-extrabold text-emerald-400">Real matching records</span>
+        <h1 className="text-2xl font-extrabold text-slate-100 mt-1">Product matching queue</h1>
+        <p className="text-xs text-slate-400 mt-1 max-w-2xl">
+          Confidence rules: 95–100% can be auto-accepted by the future pipeline, 80–94% requires review, and below 80% stays manual. This screen does not simulate approvals.
         </p>
       </div>
 
-      <div className="space-y-3">
-        {matches.map((item) => (
-          <div
-            key={item.id}
-            className="p-4 rounded-2xl bg-ctp-surface border border-ctp flex flex-col md:flex-row md:items-center justify-between gap-4"
-          >
-            <div className="space-y-1.5 flex-1">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-semibold px-2 py-0.5 rounded bg-slate-900 border border-ctp text-slate-300">
-                  {item.merchant}
-                </span>
-                <span className="text-xs font-extrabold text-emerald-400">{item.rawPrice}</span>
-                <span className="text-[11px] text-slate-400 flex items-center gap-1 ml-2">
-                  <Sparkles className="w-3 h-3 text-emerald-400" />
-                  {item.confidence}% match confidence
-                </span>
-              </div>
+      {readError && <div className="rounded-2xl border border-rose-500/30 bg-rose-500/10 p-4 text-xs text-rose-100">Could not read product_matches from Supabase.</div>}
 
-              <div>
-                <span className="text-[10px] text-slate-400 uppercase font-semibold block">
-                  Raw Retailer Listing:
-                </span>
-                <p className="text-xs text-slate-300 font-mono">{item.rawTitle}</p>
-              </div>
+      <div className="grid grid-cols-3 gap-3">
+        <div className="rounded-2xl bg-ctp-surface border border-ctp p-4"><div className="text-[10px] uppercase tracking-wider font-bold text-slate-500">Auto-safe</div><div className="text-2xl font-extrabold text-emerald-400 mt-1">{autoSafeCount}</div></div>
+        <div className="rounded-2xl bg-ctp-surface border border-ctp p-4"><div className="text-[10px] uppercase tracking-wider font-bold text-slate-500">Review</div><div className="text-2xl font-extrabold text-amber-300 mt-1">{reviewCount}</div></div>
+        <div className="rounded-2xl bg-ctp-surface border border-ctp p-4"><div className="text-[10px] uppercase tracking-wider font-bold text-slate-500">Manual</div><div className="text-2xl font-extrabold text-rose-300 mt-1">{manualCount}</div></div>
+      </div>
 
-              <div className="pt-1">
-                <span className="text-[10px] text-slate-400 uppercase font-semibold block">
-                  Matched Platform Catalog Item:
-                </span>
-                <p className="text-xs font-bold text-slate-100">{item.matchedTitle}</p>
-              </div>
-            </div>
+      {matches.length === 0 ? (
+        <div className="rounded-2xl bg-ctp-surface border border-ctp p-10 text-center">
+          <SearchX className="w-8 h-8 text-slate-600 mx-auto" />
+          <h3 className="text-sm font-bold text-slate-200 mt-3">No real matching records yet</h3>
+          <p className="text-xs text-slate-400 mt-1">The queue will populate after the first approved source feed is ingested.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {matches.map((item) => {
+            const confidence = Number(item.confidence) || 0;
+            const band = confidenceBand(confidence);
+            const product = relation(item.products);
+            return (
+              <div key={item.id} className="p-4 rounded-2xl bg-ctp-surface border border-ctp flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="space-y-2 flex-1 min-w-0">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-xs font-semibold px-2 py-0.5 rounded bg-slate-900 border border-ctp text-slate-300">{item.source_name}</span>
+                    <span className="text-[10px] text-slate-500 font-mono">{item.source_product_id}</span>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-extrabold border ${band.className}`}>{confidence.toFixed(1)}% · {band.label}</span>
+                  </div>
 
-            {/* Action buttons */}
-            <div className="flex items-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-ctp shrink-0">
-              {item.status === 'verified' ? (
-                <span className="px-3 py-1.5 rounded-xl bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-xs font-bold flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4" />
-                  Verified
-                </span>
-              ) : item.status === 'flagged' ? (
-                <span className="px-3 py-1.5 rounded-xl bg-red-500/15 text-red-400 border border-red-500/30 text-xs font-bold flex items-center gap-1.5">
-                  <Flag className="w-4 h-4" />
-                  Flagged for Review
-                </span>
-              ) : (
-                <>
-                  <button
-                    type="button"
-                    onClick={() => handleVerify(item.id)}
-                    className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition-all shadow-sm flex items-center gap-1"
-                  >
-                    <Check className="w-3.5 h-3.5" />
-                    Approve Match
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handleFlag(item.id)}
-                    className="px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-red-500/10 text-slate-400 hover:text-red-400 border border-ctp text-xs transition-all flex items-center gap-1"
-                  >
-                    <Flag className="w-3.5 h-3.5" />
-                    Flag
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        ))}
+                  <div>
+                    <span className="text-[10px] text-slate-500 uppercase font-semibold block">Raw source title</span>
+                    <p className="text-xs text-slate-300 font-mono break-words">{item.raw_title || 'Not recorded'}</p>
+                  </div>
+
+                  <div>
+                    <span className="text-[10px] text-slate-500 uppercase font-semibold block">Candidate canonical product</span>
+                    <p className="text-xs font-bold text-slate-100">{product?.name || 'No product assigned'}</p>
+                    <p className="text-[10px] text-slate-500 mt-0.5">Method: {item.match_method}</p>
+                  </div>
+                </div>
+
+                <div className="shrink-0">
+                  {confidence >= 95 ? (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs font-bold"><CheckCircle2 className="w-4 h-4" /> Auto-safe band</span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-300 border border-amber-500/30 text-xs font-bold"><ShieldAlert className="w-4 h-4" /> Human review needed</span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="rounded-2xl border border-ctp bg-slate-900/50 p-4 text-[11px] text-slate-400 flex items-start gap-2">
+        <GitMerge className="w-4 h-4 text-emerald-400 shrink-0" />
+        Review/approve write controls will only be enabled after we add an auditable decision field and server-side admin action. Until then this page is read-only by design.
       </div>
     </div>
   );
