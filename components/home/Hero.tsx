@@ -4,50 +4,44 @@ import React from 'react';
 import { useCountry } from '@/context/CountryContext';
 import { ArrowRight, BellRing, Scale, ShieldCheck, Store, TrendingDown } from 'lucide-react';
 
+const heroProducts = [
+  { src: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=320&h=420&fit=crop&q=85', cls: 'right-[27%] bottom-[10%] w-[118px] h-[180px] rotate-[-3deg] z-30' },
+  { src: 'https://images.unsplash.com/photo-1496181133206-80ce9b88a853?w=560&h=360&fit=crop&q=85', cls: 'right-[8%] top-[16%] w-[270px] h-[180px] rotate-[1deg] z-10' },
+  { src: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=300&h=300&fit=crop&q=85', cls: 'right-[5%] bottom-[5%] w-[118px] h-[118px] rotate-[4deg] z-40' },
+  { src: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?w=320&h=320&fit=crop&q=85', cls: 'right-[37%] top-[12%] w-[125px] h-[125px] rotate-[-5deg] z-20' },
+];
+
 export function Hero() {
   const { country } = useCountry();
   const benefits = [
-    { Icon: Store, title: 'Compare stores', text: 'See available retailer prices together.' },
-    { Icon: TrendingDown, title: 'Catch real drops', text: 'Price history helps expose genuine savings.' },
-    { Icon: BellRing, title: 'Track prices', text: 'Save products and set your target price.' },
-    { Icon: ShieldCheck, title: 'Shop with context', text: 'Check the deal before retailer checkout.' },
+    { Icon: BellRing, title: 'Track Prices', text: 'Get notified when prices drop' },
+    { Icon: Scale, title: 'Compare Products', text: 'Find the best deal' },
+    { Icon: ShieldCheck, title: 'Shop Smarter', text: 'Real prices. Real savings.' },
+    { Icon: Store, title: 'UAE & USA', text: 'More markets coming soon' },
   ];
 
   return (
-    <section className="bg-[#f5f6f7] border-b border-[#e3e6e8] py-4 sm:py-5">
-      <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="grid lg:grid-cols-[1fr_300px] gap-3 sm:gap-4">
-          <div className="relative min-h-[270px] sm:min-h-[330px] lg:min-h-[360px] overflow-hidden rounded-[10px] bg-[#dff7ed] border border-[#cdeadd]">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_45%,rgba(0,210,122,.24),transparent_28%),linear-gradient(110deg,#eafaf3_0%,#d8f5e8_55%,#c9efdf_100%)]" />
-            <div className="relative z-10 h-full min-h-[270px] sm:min-h-[330px] lg:min-h-[360px] flex items-center">
-              <div className="w-[60%] sm:w-[54%] pl-5 sm:pl-9 lg:pl-12 py-8">
-                <div className="text-[10px] sm:text-xs font-black tracking-[.16em] uppercase text-[#08784b]">Track it. Catch the drop. Pay less.</div>
-                <h1 className="mt-3 text-[31px] sm:text-[44px] lg:text-[50px] leading-[.98] tracking-[-.045em] font-black text-[#101b20]">Compare prices.<br/><span className="text-[#078f57]">Catch the best deal.</span></h1>
-                <p className="mt-4 max-w-[510px] text-[12px] sm:text-[14px] leading-relaxed text-[#52646a]">Search products, compare retailer prices and check price history before you buy.</p>
-                <div className="mt-5 flex flex-wrap gap-2">
-                  <a href={`/${country}/deals/all`} className="h-10 sm:h-11 px-5 rounded-md bg-[#087f4e] hover:bg-[#066b41] text-white text-xs sm:text-sm font-extrabold inline-flex items-center gap-2">Shop deals <ArrowRight className="w-4 h-4"/></a>
-                  <a href={`/${country}/compare`} className="h-10 sm:h-11 px-5 rounded-md bg-white border border-[#bcd9cc] text-[#17322a] text-xs sm:text-sm font-extrabold inline-flex items-center gap-2"><Scale className="w-4 h-4 text-[#087f4e]"/>Compare</a>
-                </div>
+    <section className="bg-white py-4 sm:py-5">
+      <div className="max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8">
+        <div className="grid lg:grid-cols-[1fr_300px] xl:grid-cols-[1fr_330px] gap-4">
+          <div className="relative min-h-[300px] sm:min-h-[350px] lg:min-h-[390px] overflow-hidden rounded-[10px] border border-[#dce6e1] bg-[linear-gradient(100deg,#edf9f3_0%,#dbf5e8_58%,#d4efe5_100%)]">
+            <div className="absolute inset-y-0 right-0 w-[48%] bg-[radial-gradient(circle_at_55%_48%,rgba(34,134,90,.18),transparent_52%)]" />
+            <div className="relative z-10 h-full min-h-[300px] sm:min-h-[350px] lg:min-h-[390px] flex items-center">
+              <div className="w-[62%] sm:w-[57%] lg:w-[52%] pl-5 sm:pl-9 lg:pl-12 py-8">
+                <h1 className="text-[38px] sm:text-[50px] lg:text-[58px] leading-[.98] tracking-[-.05em] font-black text-[#111a1e]">Better Prices.<br/>Smarter Choices.</h1>
+                <p className="mt-4 max-w-[520px] text-[13px] sm:text-[15px] leading-relaxed text-[#52646a]">Compare prices from top retailers in the UAE and USA and save on everything you love.</p>
+                <a href={`/${country}/deals/all`} className="mt-6 h-11 sm:h-12 px-6 rounded-md bg-[#0a8753] hover:bg-[#076c43] text-white text-xs sm:text-sm font-extrabold inline-flex items-center gap-2">Shop Top Deals <ArrowRight className="w-4 h-4"/></a>
               </div>
-              <div className="absolute right-[-4%] sm:right-[2%] top-[12%] w-[43%] h-[76%]">
-                <div className="absolute right-[4%] top-[5%] w-[62%] h-[84%] rounded-[24px] border-[7px] border-[#13272d] bg-white shadow-[0_18px_36px_rgba(7,45,31,.2)] rotate-[5deg] overflow-hidden">
-                  <div className="h-full p-3 bg-[#f7fbf9]">
-                    <div className="h-2 w-9 mx-auto rounded-full bg-[#d1ddd8]"/>
-                    <div className="mt-6 aspect-square rounded-xl bg-white border border-[#dce9e3] flex items-center justify-center"><div className="w-[55%] h-[70%] rounded-xl bg-[linear-gradient(145deg,#172a32,#4b6860)] shadow-lg"/></div>
-                    <div className="mt-3 h-2 rounded bg-[#d7e1dd]"/><div className="mt-2 h-2 w-2/3 rounded bg-[#d7e1dd]"/><div className="mt-4 text-[#087f4e] font-black text-[10px]">AED 2,799</div>
-                  </div>
-                </div>
-                <div className="absolute left-0 bottom-[3%] w-[58%] rounded-lg bg-white border border-[#cde2d8] shadow-[0_14px_28px_rgba(7,45,31,.14)] p-3 rotate-[-5deg]">
-                  <div className="text-[8px] uppercase tracking-wider font-bold text-[#788984]">Price dropped</div><div className="mt-1 text-lg sm:text-xl font-black text-[#087f4e]">-18%</div><div className="mt-1 h-1.5 rounded bg-[#e3eee9]"><div className="w-[68%] h-full rounded bg-[#00c978]"/></div>
-                </div>
+              <div className="absolute inset-y-0 right-0 w-[50%] hidden sm:block">
+                {heroProducts.map((item, index) => <div key={index} className={`absolute ${item.cls} rounded-[14px] overflow-hidden bg-white shadow-[0_16px_34px_rgba(31,77,58,.18)] border border-white/80`}><img src={item.src} alt="" className="w-full h-full object-cover"/></div>)}
               </div>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-1 gap-2.5">
-            {benefits.map(({Icon,title,text}) => <a key={title} href={title === 'Track prices' ? `/${country}/account?tab=alerts` : title === 'Compare stores' ? `/${country}/compare` : `/${country}/deals/all`} className="bg-white border border-[#dfe5e2] rounded-[8px] px-3.5 py-3 flex items-center gap-3 hover:border-[#9fcbb9] transition-colors">
-              <div className="w-9 h-9 rounded-full bg-[#e8f8f0] text-[#087f4e] flex items-center justify-center shrink-0"><Icon className="w-4 h-4"/></div>
-              <div><div className="text-[11px] sm:text-xs font-extrabold text-[#15262d]">{title}</div><div className="mt-0.5 text-[9px] sm:text-[10px] leading-snug text-[#718079]">{text}</div></div>
+          <div className="grid grid-cols-2 lg:grid-cols-1 gap-3">
+            {benefits.map(({Icon,title,text}) => <a key={title} href={title === 'Track Prices' ? `/${country}/account?tab=alerts` : title === 'Compare Products' ? `/${country}/compare` : `/${country}/deals/all`} className="bg-white border border-[#dfe5e2] rounded-[9px] px-4 py-4 flex items-center gap-3 hover:border-[#9fcbb9] hover:shadow-sm transition-all">
+              <div className="w-10 h-10 rounded-full bg-[#dcf6e8] text-[#087f4e] flex items-center justify-center shrink-0"><Icon className="w-4.5 h-4.5"/></div>
+              <div><div className="text-[12px] sm:text-[13px] font-black text-[#17252b]">{title}</div><div className="mt-0.5 text-[10px] sm:text-[11px] leading-snug text-[#6f7f79]">{text}</div></div>
             </a>)}
           </div>
         </div>
