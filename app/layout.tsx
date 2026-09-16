@@ -28,6 +28,9 @@ export const metadata: Metadata = {
   },
   description:
     'Price comparison, price tracking, deals discovery and shopping intelligence for shoppers in the UAE and United States. Smarter Shopping for a Brighter Tomorrow.',
+  other: {
+    'mitgo-verification': 'c767fde4-f8bb-429c-836f-f215bd3f8d97',
+  },
   robots: isPreviewDeployment
     ? {
         index: false,
