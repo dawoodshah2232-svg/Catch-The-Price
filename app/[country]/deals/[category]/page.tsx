@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import { CountryCode } from '@/lib/types';
 import { COUNTRIES, DEFAULT_COUNTRY } from '@/lib/data/countries';
 import { CATEGORIES, getCategoryBySlug } from '@/lib/data/categories';
-import { getCatalogProducts, isPreviewCatalogEnabled } from '@/lib/data/catalog.server';
+import { getCatalogProducts } from '@/lib/data/catalog.server';
 import { ProductCard } from '@/components/search/ProductCard';
 import { AdSlot } from '@/components/common/AdSlot';
 import { Flame, ChevronRight, SlidersHorizontal } from 'lucide-react';
@@ -18,7 +18,6 @@ export async function generateMetadata({ params }: DealsCategoryPageProps): Prom
   const info = COUNTRIES[country];
   const cat = getCategoryBySlug(catSlug);
   const catName = cat?.name || 'Electronics';
-  const isPreview = isPreviewCatalogEnabled();
 
   return {
     title: `Best ${catName} Deals in ${info.name} — CatchThePrice`,
@@ -55,11 +54,6 @@ export default async function DealsCategoryPage({ params }: DealsCategoryPagePro
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-5 sm:space-y-6">
         {breadcrumbJsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />}
 
-        {isPreview && (
-          <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-xs text-amber-900">
-            Development preview: sample products and prices on this build are for UI testing only.
-          </div>
-        )}
 
         <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[11px] sm:text-xs text-[#73858D] overflow-x-auto whitespace-nowrap">
           <a href={`/${country}`} className="hover:text-[#08784B]">Home</a>
