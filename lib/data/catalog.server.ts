@@ -2,20 +2,9 @@ import 'server-only';
 
 import { getServerSupabase } from '@/lib/supabase/server';
 import { CountryCode, Offer, PricePoint, Product } from '@/lib/types';
-import {
-  getAllProducts as getFixtureProducts,
-  getProductBySlug as getFixtureProductBySlug,
-} from '@/lib/data/products';
+import { getLaunchCatalog } from '@/lib/data/launchCatalog';
 
 const LIVE_MARKETS = new Set<CountryCode>(['ae', 'us']);
-
-export function isPreviewCatalogEnabled(): boolean {
-  if (process.env.ENABLE_DEMO_CATALOG === 'true') return true;
-  if (process.env.VERCEL_ENV === 'preview') return true;
-
-  const configuredSite = (process.env.NEXT_PUBLIC_SITE_URL || '').toLowerCase();
-  return configuredSite.includes('vercel.app') || configuredSite.includes('preview.catchtheprice.com');
-}
 
 type ProductRow = {
   id: string;
@@ -25,7 +14,6 @@ type ProductRow = {
   slug: string;
   image_url: string | null;
   description: string | null;
-  ai_summary: string | null;
   specs: Record<string, unknown> | null;
   status: string;
 };
@@ -48,64 +36,35 @@ type OfferRow = {
 type MerchantRow = {
   id: string;
   name: string;
-  slug: string;
-  country_code: string;
-  website_url: string;
   logo_url: string | null;
   is_active: boolean;
 };
 
-type CategoryRow = {
-  id: string;
-  name: string;
-  slug: string;
-};
+type CategoryRow = { id: string; name: string; slug: string };
+type HistoryRow = { offer_id: string; price: number | string; captured_at: string };
 
-type HistoryRow = {
-  offer_id: string;
-  price: number | string;
-  captured_at: string;
-};
-
-function numeric(value: number | string | null | undefined): number {
+function numeric(value: number | string | null | undefined) {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
 }
 
 function stringSpecs(value: Record<string, unknown> | null): Record<string, string> {
   if (!value) return {};
-
   return Object.fromEntries(
     Object.entries(value)
-      .filter(([, item]) => typeof item === 'string' || typeof item === 'number' || typeof item === 'boolean')
+      .filter(([, item]) => ['string', 'number', 'boolean'].includes(typeof item))
       .map(([key, item]) => [key, String(item)])
   );
 }
 
-function toPriceStats(currentPrice: number, history: PricePoint[]) {
-  if (history.length === 0) {
-    return {
-      currentPrice,
-      lowestPrice: currentPrice,
-      highestPrice: currentPrice,
-      average30Days: currentPrice,
-      average90Days: currentPrice,
-    };
-  }
-
-  const prices = history.map((point) => point.price);
-  const newest = [...history].sort((a, b) => a.date.localeCompare(b.date));
-  const last30 = newest.slice(-30).map((point) => point.price);
-  const last90 = newest.slice(-90).map((point) => point.price);
-  const average = (values: number[]) =>
-    Math.round(values.reduce((sum, value) => sum + value, 0) / Math.max(values.length, 1));
-
+function priceStats(currentPrice: number, history: PricePoint[]) {
+  const prices = history.length ? history.map((point) => point.price) : [currentPrice];
   return {
     currentPrice,
     lowestPrice: Math.min(...prices, currentPrice),
     highestPrice: Math.max(...prices, currentPrice),
-    average30Days: average(last30.length ? last30 : prices),
-    average90Days: average(last90.length ? last90 : prices),
+    average30Days: Math.round(prices.slice(-3).reduce((sum, value) => sum + value, 0) / Math.max(prices.slice(-3).length, 1)),
+    average90Days: Math.round(prices.reduce((sum, value) => sum + value, 0) / Math.max(prices.length, 1)),
   };
 }
 
@@ -113,120 +72,81 @@ function latestObservedDropPercent(product: Product): number {
   const history = [...(product.priceHistory || [])]
     .filter((point) => Number.isFinite(point.price) && point.price > 0)
     .sort((a, b) => a.date.localeCompare(b.date));
-
   if (history.length < 2) return 0;
   const previous = history[history.length - 2].price;
   const latest = history[history.length - 1].price;
-  if (previous <= 0 || latest >= previous) return 0;
-  return (previous - latest) / previous;
+  return previous > latest ? (previous - latest) / previous : 0;
 }
 
 async function loadLiveCatalog(country: CountryCode): Promise<Product[]> {
   if (!LIVE_MARKETS.has(country)) return [];
-
   const supabase = getServerSupabase();
   if (!supabase) return [];
 
-  const { data: productsData, error: productsError } = await supabase
+  const { data: productData, error: productError } = await supabase
     .from('products')
-    .select('id,category_id,brand,name,slug,image_url,description,ai_summary,specs,status')
+    .select('id,category_id,brand,name,slug,image_url,description,specs,status')
     .eq('status', 'active')
-    .limit(200);
+    .limit(250);
 
-  if (productsError) {
-    console.error('Catalog product read failed:', productsError);
-    return [];
-  }
-
-  const productRows = (productsData || []) as ProductRow[];
-  if (productRows.length === 0) return [];
-
+  if (productError || !productData?.length) return [];
+  const productRows = productData as ProductRow[];
   const productIds = productRows.map((row) => row.id);
   const categoryIds = [...new Set(productRows.map((row) => row.category_id).filter(Boolean))] as string[];
 
-  const [{ data: offersData, error: offersError }, { data: categoriesData, error: categoriesError }] =
-    await Promise.all([
-      supabase
-        .from('offers')
-        .select(
-          'id,product_id,merchant_id,country_code,currency,price,original_price,availability,product_url,affiliate_url,last_checked_at,is_active'
-        )
-        .in('product_id', productIds)
-        .eq('country_code', country)
-        .eq('is_active', true),
-      categoryIds.length
-        ? supabase.from('categories').select('id,name,slug').in('id', categoryIds)
-        : Promise.resolve({ data: [], error: null }),
-    ]);
+  const [{ data: offerData, error: offerError }, { data: categoryData }] = await Promise.all([
+    supabase
+      .from('offers')
+      .select('id,product_id,merchant_id,country_code,currency,price,original_price,availability,product_url,affiliate_url,last_checked_at,is_active')
+      .in('product_id', productIds)
+      .eq('country_code', country)
+      .eq('is_active', true),
+    categoryIds.length
+      ? supabase.from('categories').select('id,name,slug').in('id', categoryIds)
+      : Promise.resolve({ data: [] }),
+  ]);
 
-  if (offersError) {
-    console.error('Catalog offer read failed:', offersError);
-    return [];
-  }
-  if (categoriesError) console.error('Catalog category read failed:', categoriesError);
-
-  const offers = ((offersData || []) as OfferRow[]).filter(
-    (offer) => offer.availability === 'in_stock' && numeric(offer.price) > 0
-  );
-  if (offers.length === 0) return [];
+  if (offerError || !offerData?.length) return [];
+  const offers = (offerData as OfferRow[]).filter((offer) => offer.availability === 'in_stock' && numeric(offer.price) > 0);
+  if (!offers.length) return [];
 
   const merchantIds = [...new Set(offers.map((offer) => offer.merchant_id))];
   const offerIds = offers.map((offer) => offer.id);
+  const [{ data: merchantData, error: merchantError }, { data: historyData }] = await Promise.all([
+    supabase.from('merchants').select('id,name,logo_url,is_active').in('id', merchantIds).eq('is_active', true),
+    offerIds.length
+      ? supabase.from('price_history').select('offer_id,price,captured_at').in('offer_id', offerIds).order('captured_at', { ascending: true })
+      : Promise.resolve({ data: [] }),
+  ]);
 
-  const [{ data: merchantsData, error: merchantsError }, { data: historyData, error: historyError }] =
-    await Promise.all([
-      supabase
-        .from('merchants')
-        .select('id,name,slug,country_code,website_url,logo_url,is_active')
-        .in('id', merchantIds)
-        .eq('is_active', true),
-      offerIds.length
-        ? supabase
-            .from('price_history')
-            .select('offer_id,price,captured_at')
-            .in('offer_id', offerIds)
-            .order('captured_at', { ascending: true })
-        : Promise.resolve({ data: [], error: null }),
-    ]);
+  if (merchantError || !merchantData?.length) return [];
 
-  if (merchantsError) {
-    console.error('Catalog merchant read failed:', merchantsError);
-    return [];
-  }
-  if (historyError) console.error('Catalog history read failed:', historyError);
-
-  const merchants = (merchantsData || []) as MerchantRow[];
-  const categories = (categoriesData || []) as CategoryRow[];
+  const merchants = merchantData as MerchantRow[];
+  const categories = (categoryData || []) as CategoryRow[];
   const historyRows = (historyData || []) as HistoryRow[];
-
   const merchantMap = new Map(merchants.map((merchant) => [merchant.id, merchant]));
   const categoryMap = new Map(categories.map((category) => [category.id, category]));
   const offerProductMap = new Map(offers.map((offer) => [offer.id, offer.product_id]));
 
   return productRows.flatMap((row): Product[] => {
     if (!row.image_url) return [];
-
     const category = row.category_id ? categoryMap.get(row.category_id) : undefined;
     const productOffers = offers
       .filter((offer) => offer.product_id === row.id && merchantMap.has(offer.merchant_id))
       .sort((a, b) => numeric(a.price) - numeric(b.price));
-
-    if (productOffers.length === 0) return [];
+    if (!productOffers.length) return [];
 
     const mappedOffers: Offer[] = productOffers.map((offer, index) => {
       const merchant = merchantMap.get(offer.merchant_id)!;
-      const current = numeric(offer.price);
-      const reference = numeric(offer.original_price) || current;
-
       return {
         id: offer.id,
         productId: row.id,
-        merchantId: merchant.id,
+        merchantId: offer.merchant_id,
         merchantName: merchant.name,
         merchantLogo: merchant.logo_url || '',
         merchantRating: 0,
-        price: current,
-        originalPrice: reference,
+        price: numeric(offer.price),
+        originalPrice: numeric(offer.original_price) || numeric(offer.price),
         currency: offer.currency,
         inStock: true,
         shippingInfo: 'See retailer for delivery details',
@@ -238,78 +158,59 @@ async function loadLiveCatalog(country: CountryCode): Promise<Product[]> {
       };
     });
 
-    const bestOffer = mappedOffers[0];
+    const best = mappedOffers[0];
     const history: PricePoint[] = historyRows
       .filter((item) => offerProductMap.get(item.offer_id) === row.id && numeric(item.price) > 0)
       .map((item) => ({ date: item.captured_at, price: numeric(item.price) }));
+    const originalPrice = Math.max(best.price, ...mappedOffers.map((offer) => offer.originalPrice || offer.price));
 
-    const originalPrice = Math.max(
-      bestOffer.price,
-      ...mappedOffers.map((offer) => offer.originalPrice || offer.price)
-    );
-
-    return [
-      {
-        id: row.id,
-        title: row.name,
-        slug: row.slug,
-        brand: row.brand || 'Unknown brand',
-        categoryId: row.category_id || '',
-        categorySlug: category?.slug || 'products',
-        categoryName: category?.name || 'Products',
-        description: row.description || '',
-        imageUrl: row.image_url,
-        gallery: [row.image_url],
-        specs: stringSpecs(row.specs),
-        currentBestPrice: bestOffer.price,
-        originalPrice,
-        currency: bestOffer.currency,
-        country,
-        dealScore: 0,
-        isTrending: false,
-        isTopDeal: originalPrice > bestOffer.price,
-        offersCount: mappedOffers.length,
-        bestMerchantName: bestOffer.merchantName,
-        priceLastChecked: bestOffer.lastCheckedAt,
-        priceStats: toPriceStats(bestOffer.price, history),
-        priceHistory: history,
-        offers: mappedOffers,
-      },
-    ];
+    return [{
+      id: row.id,
+      title: row.name,
+      slug: row.slug,
+      brand: row.brand || 'Unknown brand',
+      categoryId: row.category_id || '',
+      categorySlug: category?.slug || 'products',
+      categoryName: category?.name || 'Products',
+      description: row.description || '',
+      imageUrl: row.image_url,
+      gallery: [row.image_url],
+      specs: stringSpecs(row.specs),
+      currentBestPrice: best.price,
+      originalPrice,
+      currency: best.currency,
+      country,
+      dealScore: originalPrice > best.price ? 88 : 75,
+      isTrending: true,
+      isTopDeal: originalPrice > best.price,
+      offersCount: mappedOffers.length,
+      bestMerchantName: best.merchantName,
+      priceLastChecked: best.lastCheckedAt,
+      priceStats: priceStats(best.price, history),
+      priceHistory: history,
+      offers: mappedOffers,
+    }];
   });
 }
 
 export async function getCatalogProducts(country: CountryCode): Promise<{ products: Product[]; isPreview: boolean }> {
-  if (isPreviewCatalogEnabled()) {
-    return { products: getFixtureProducts(country), isPreview: true };
-  }
-
-  return { products: await loadLiveCatalog(country), isPreview: false };
+  const live = await loadLiveCatalog(country);
+  if (live.length >= 12) return { products: live, isPreview: false };
+  return { products: getLaunchCatalog(country), isPreview: true };
 }
 
 export async function getCatalogProductBySlug(
   slug: string,
   country: CountryCode
 ): Promise<{ product: Product | undefined; related: Product[]; isPreview: boolean }> {
-  if (isPreviewCatalogEnabled()) {
-    const product = getFixtureProductBySlug(slug, country);
-    const related = product
-      ? getFixtureProducts(country)
-          .filter((item) => item.categorySlug === product.categorySlug && item.id !== product.id)
-          .slice(0, 4)
-      : [];
-    return { product, related, isPreview: true };
-  }
-
-  const products = await loadLiveCatalog(country);
-  const product = products.find((item) => item.slug.toLowerCase() === slug.toLowerCase());
+  const live = await loadLiveCatalog(country);
+  const source = live.length >= 12 ? live : getLaunchCatalog(country);
+  const isPreview = live.length < 12;
+  const product = source.find((item) => item.slug.toLowerCase() === slug.toLowerCase());
   const related = product
-    ? products
-        .filter((item) => item.categorySlug === product.categorySlug && item.id !== product.id)
-        .slice(0, 4)
+    ? source.filter((item) => item.categorySlug === product.categorySlug && item.id !== product.id).slice(0, 8)
     : [];
-
-  return { product, related, isPreview: false };
+  return { product, related, isPreview };
 }
 
 export async function getHomepageCatalog(country: CountryCode) {
@@ -319,19 +220,17 @@ export async function getHomepageCatalog(country: CountryCode) {
     const discountB = b.originalPrice > 0 ? (b.originalPrice - b.currentBestPrice) / b.originalPrice : 0;
     return discountB - discountA;
   });
-
-  const topDeals = byDiscount.slice(0, 6);
+  const topDeals = byDiscount.slice(0, 12);
   const topDealIds = new Set(topDeals.map((item) => item.id));
   const biggestDrops = [...products]
     .filter((item) => latestObservedDropPercent(item) > 0 && !topDealIds.has(item.id))
     .sort((a, b) => latestObservedDropPercent(b) - latestObservedDropPercent(a))
-    .slice(0, 4);
-
+    .slice(0, 8);
   return {
     isPreview,
     products,
     topDeals,
     biggestDrops,
-    trending: isPreview ? products.filter((item) => item.isTrending).slice(0, 4) : [],
+    trending: products.filter((item) => item.isTrending).slice(0, 12),
   };
 }
