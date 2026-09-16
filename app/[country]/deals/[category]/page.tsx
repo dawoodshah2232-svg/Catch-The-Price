@@ -18,6 +18,7 @@ export async function generateMetadata({ params }: DealsCategoryPageProps): Prom
   const info = COUNTRIES[country];
   const cat = getCategoryBySlug(catSlug);
   const catName = cat?.name || 'Electronics';
+  const { isPreview } = await getCatalogProducts(country);
 
   return {
     title: `Best ${catName} Deals in ${info.name} — CatchThePrice`,

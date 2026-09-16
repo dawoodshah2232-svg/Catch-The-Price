@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import { CountryCode, Product } from '@/lib/types';
 import { COUNTRIES, DEFAULT_COUNTRY } from '@/lib/data/countries';
 import { CATEGORIES, getCategoryBySlug } from '@/lib/data/categories';
-import { getCatalogProducts, isPreviewCatalogEnabled } from '@/lib/data/catalog.server';
+import { getCatalogProducts } from '@/lib/data/catalog.server';
 import { ProductCard } from '@/components/search/ProductCard';
 import { AdSlot } from '@/components/common/AdSlot';
 import { TrendingDown, ChevronRight } from 'lucide-react';
@@ -30,6 +30,7 @@ export async function generateMetadata({ params }: PriceDropsPageProps): Promise
   const info = COUNTRIES[country];
   const cat = getCategoryBySlug(catSlug);
   const catName = cat?.name || 'Electronics';
+  const { isPreview } = await getCatalogProducts(country);
 
   return {
     title: `${catName} Price Drops in ${info.name} — CatchThePrice`,
@@ -45,7 +46,7 @@ export default async function PriceDropsCategoryPage({ params }: PriceDropsPageP
   const countryInfo = COUNTRIES[country];
   const isAll = catSlug === 'all';
   const category = getCategoryBySlug(catSlug);
-  const { products: catalogProducts } = await getCatalogProducts(country);
+  const { products: catalogProducts, isPreview } = await getCatalogProducts(country);
   const products = (isAll ? catalogProducts : catalogProducts.filter((p) => p.categorySlug.toLowerCase() === catSlug.toLowerCase()))
     .filter((p) => observedDropPercent(p) > 0);
   const sorted = [...products].sort((a, b) => observedDropPercent(b) - observedDropPercent(a));
