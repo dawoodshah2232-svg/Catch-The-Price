@@ -27,10 +27,12 @@ export const metadata: Metadata = {
     default: 'CatchThePrice — TRACK IT. CATCH THE DROP. PAY LESS.',
   },
   description:
-    'Price comparison, price tracking, deals discovery and shopping intelligence for shoppers in the UAE and United States. Smarter Shopping for a Brighter Tomorrow.',
-  other: {
-    'mitgo-verification': 'c767fde4-f8bb-429c-836f-f215bd3f8d97',
-  },
+  "Price comparison, price tracking, deals discovery and shopping intelligence for shoppers in the UAE and United States. Smarter Shopping for a Brighter Tomorrow.",
+
+other: {
+  "mitgo-verification": "c767fde4-f8bb-429c-836f-f215bd3f8d97",
+  "impact-site-verification": "c7c1f8bd-95f2-4de6-9398-05a61992fb04",
+},
   robots: isPreviewDeployment
     ? {
         index: false,
