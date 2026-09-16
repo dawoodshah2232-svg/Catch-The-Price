@@ -30,7 +30,6 @@ export async function generateMetadata({ params }: PriceDropsPageProps): Promise
   const info = COUNTRIES[country];
   const cat = getCategoryBySlug(catSlug);
   const catName = cat?.name || 'Electronics';
-  const isPreview = isPreviewCatalogEnabled();
 
   return {
     title: `${catName} Price Drops in ${info.name} — CatchThePrice`,
@@ -46,7 +45,7 @@ export default async function PriceDropsCategoryPage({ params }: PriceDropsPageP
   const countryInfo = COUNTRIES[country];
   const isAll = catSlug === 'all';
   const category = getCategoryBySlug(catSlug);
-  const { products: catalogProducts, isPreview } = await getCatalogProducts(country);
+  const { products: catalogProducts } = await getCatalogProducts(country);
   const products = (isAll ? catalogProducts : catalogProducts.filter((p) => p.categorySlug.toLowerCase() === catSlug.toLowerCase()))
     .filter((p) => observedDropPercent(p) > 0);
   const sorted = [...products].sort((a, b) => observedDropPercent(b) - observedDropPercent(a));
@@ -64,12 +63,7 @@ export default async function PriceDropsCategoryPage({ params }: PriceDropsPageP
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-8 space-y-5 sm:space-y-6">
         {breadcrumbJsonLd && <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }} />}
 
-        {isPreview && (
-          <div className="rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-xs text-amber-900">
-            Development preview: displayed reductions are sample data for interface testing only.
-          </div>
-        )}
-
+      
         <nav aria-label="Breadcrumb" className="flex items-center gap-1.5 text-[11px] sm:text-xs text-[#73858D] overflow-x-auto whitespace-nowrap">
           <a href={`/${country}`} className="hover:text-[#08784B]">Home</a>
           <ChevronRight className="w-3.5 h-3.5 text-[#A0AEA9]" />
