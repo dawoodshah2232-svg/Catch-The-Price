@@ -18,6 +18,15 @@ function pointDate(value: string): number {
   return Number.isFinite(timestamp) ? timestamp : 0;
 }
 
+function formatChartDate(value: string): string {
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(value));
+}
+
 export function PriceHistoryChart({ history, stats }: PriceHistoryChartProps) {
   const { formatLocalPrice } = useCountry();
   const [period, setPeriod] = useState<Period>('90D');
@@ -136,11 +145,11 @@ export function PriceHistoryChart({ history, stats }: PriceHistoryChartProps) {
         </svg>
 
         <div className="mt-1 grid grid-cols-[1fr_auto_1fr] items-center gap-2 text-[9px] sm:text-[10px] text-[#829198] px-1">
-          <span className="truncate">{new Date(filteredPoints[0].date).toLocaleDateString()}</span>
+          <span className="truncate">{formatChartDate(filteredPoints[0].date)}</span>
           <span className="text-center font-bold text-[#08784B] bg-[#EAF5F0] px-2 py-1 rounded-lg max-w-[180px] truncate">
-            {hoveredPoint ? `${new Date(hoveredPoint.date).toLocaleDateString()}: ${formatLocalPrice(hoveredPoint.price)}` : `${filteredPoints.length} observations`}
+            {hoveredPoint ? `${formatChartDate(hoveredPoint.date)}: ${formatLocalPrice(hoveredPoint.price)}` : `${filteredPoints.length} observations`}
           </span>
-          <span className="truncate text-right">{new Date(filteredPoints[filteredPoints.length - 1].date).toLocaleDateString()}</span>
+          <span className="truncate text-right">{formatChartDate(filteredPoints[filteredPoints.length - 1].date)}</span>
         </div>
       </div>
     </section>
