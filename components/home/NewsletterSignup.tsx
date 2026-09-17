@@ -7,15 +7,15 @@ export function NewsletterSignup() {
   const [subscribed, setSubscribed] = useState(false);
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => { event.preventDefault(); setSubscribed(true); };
 
-  return <section className="max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 pt-5 pb-10 sm:pt-8 sm:pb-12">
-    <div className="relative isolate overflow-hidden rounded-2xl border border-[#21453e] bg-[#081218] px-5 py-7 shadow-[0_18px_45px_rgba(3,25,18,.22)] sm:px-8 sm:py-9 lg:px-12 lg:py-11">
+  return <section className="max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8 pt-4 pb-8 sm:pt-8 sm:pb-12">
+    <div className="relative isolate overflow-hidden rounded-2xl border border-[#21453e] bg-[#081218] px-4 py-6 shadow-[0_18px_45px_rgba(3,25,18,.22)] sm:px-8 sm:py-9 lg:px-12 lg:py-11">
       <div className="pointer-events-none absolute -left-24 top-1/2 h-56 w-56 -translate-y-1/2 rounded-full bg-[#11d47b]/18 blur-3xl" aria-hidden="true" />
       <div className="pointer-events-none absolute right-8 top-1/2 hidden h-52 w-52 -translate-y-1/2 rounded-full border border-[#64efa8]/10 bg-[#0c2d26]/45 blur-[1px] lg:block" aria-hidden="true" />
       <div className="relative grid gap-8 lg:grid-cols-[minmax(0,1fr)_270px] lg:items-center">
         <div className="max-w-[760px]">
-          <div className="flex items-start gap-4">
-            <span className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-[#69e9a7]/30 bg-[#144a3b]/80 text-[#8af7bd] shadow-[inset_0_1px_0_rgba(255,255,255,.12),0_8px_22px_rgba(0,0,0,.2)]"><Mail className="h-6 w-6" /></span>
-            <div><h2 className="text-[25px] font-black tracking-[-.045em] text-white sm:text-[30px]">Never Miss a Price Drop</h2><p className="mt-2 max-w-[600px] text-[13px] leading-relaxed text-[#b5cec4] sm:text-[14px]">Get instant price alerts, exclusive deals and weekly buying guides.</p></div>
+          <div className="flex items-start gap-3 sm:gap-4">
+            <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-[#69e9a7]/30 bg-[#144a3b]/80 text-[#8af7bd] shadow-[inset_0_1px_0_rgba(255,255,255,.12),0_8px_22px_rgba(0,0,0,.2)] sm:h-14 sm:w-14"><Mail className="h-5 w-5 sm:h-6 sm:w-6" /></span>
+            <div><h2 className="text-[23px] font-black tracking-[-.045em] text-white sm:text-[30px]">Never Miss a Price Drop</h2><p className="mt-1.5 sm:mt-2 max-w-[600px] text-[12px] leading-relaxed text-[#b5cec4] sm:text-[14px]">Get instant price alerts, exclusive deals and weekly buying guides.</p></div>
           </div>
           <form onSubmit={handleSubmit} className="mt-6 flex w-full max-w-[660px] flex-col gap-2 rounded-xl border border-white/15 bg-white/[.08] p-2 shadow-[inset_0_1px_0_rgba(255,255,255,.1)] backdrop-blur-sm sm:flex-row">
             <input required type="email" name="email" aria-label="Email address" placeholder="Enter your email address" className="h-12 min-w-0 flex-1 rounded-lg border border-transparent bg-white px-4 text-[13px] font-medium text-[#172d24] outline-none placeholder:text-[#82938c] focus:border-[#00C16A] focus:ring-2 focus:ring-[#00C16A]/20" />

@@ -17,13 +17,13 @@ export function Hero() {
     <section className="bg-white pt-4 pb-3 sm:pt-5 sm:pb-4">
       <div className="max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8">
         <div className="grid lg:grid-cols-[minmax(0,1fr)_290px] xl:grid-cols-[minmax(0,1fr)_310px] gap-3">
-          <div className="relative min-h-[320px] sm:min-h-[300px] lg:min-h-[258px] overflow-hidden rounded-md border border-[#e1e9e5] bg-[#d4efe5]">
+          <div className="relative min-h-[282px] sm:min-h-[300px] lg:min-h-[258px] overflow-hidden rounded-md border border-[#e1e9e5] bg-[#d4efe5]">
             <img src="/images/banners/hero.jfif" alt="A selection of technology products" className="absolute inset-0 h-full w-full object-cover object-[73%_center] contrast-[1.03] saturate-[1.04]" />
             <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(241,252,246,.96)_0%,rgba(241,252,246,.90)_39%,rgba(241,252,246,.28)_61%,rgba(241,252,246,0)_80%)]" />
-            <div className="relative z-10 flex min-h-[320px] sm:min-h-[300px] lg:min-h-[258px] items-center">
-              <div className="w-[70%] sm:w-[52%] pl-6 sm:pl-10 pr-2 py-8">
-                <h1 className="text-[37px] sm:text-[42px] lg:text-[44px] leading-[1.02] tracking-[-.055em] font-black text-[#0b161a]">Better Prices.<br/>Smarter Choices</h1>
-                <p className="mt-3 max-w-[380px] text-[13px] sm:text-[14px] leading-relaxed font-medium text-[#43565a]">Compare prices from top retailers in the UAE and save on everything you love.</p>
+            <div className="relative z-10 flex min-h-[282px] sm:min-h-[300px] lg:min-h-[258px] items-center">
+              <div className="w-[76%] sm:w-[52%] pl-5 sm:pl-10 pr-2 py-6 sm:py-8">
+                <h1 className="text-[32px] sm:text-[42px] lg:text-[44px] leading-[1.02] tracking-[-.055em] font-black text-[#0b161a]">Better Prices.<br/>Smarter Choices</h1>
+                <p className="mt-2.5 sm:mt-3 max-w-[380px] text-[12px] sm:text-[14px] leading-relaxed font-medium text-[#43565a]">Compare prices from top retailers in the UAE and save on everything you love.</p>
                 <a href={`/${country}/deals/all`} className="mt-4 h-10 px-5 rounded-md bg-[#168c50] hover:bg-[#087640] shadow-[0_5px_10px_rgba(13,115,65,.18)] text-white text-[12px] font-extrabold inline-flex items-center gap-2 transition-colors">Shop Top Deals <ArrowRight className="w-4 h-4"/></a>
               </div>
             </div>

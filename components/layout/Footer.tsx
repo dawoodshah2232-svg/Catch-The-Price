@@ -16,7 +16,7 @@ export function Footer() {
   const toggleAccordion = (section: string) => setOpenAccordions((prev) => ({ ...prev, [section]: !prev[section] }));
 
   return (
-    <footer className="ctp-footer-dark w-full border-t pt-7 sm:pt-12 pb-24 lg:pb-12 text-xs transition-colors">
+    <footer className="ctp-footer-dark w-full border-t pt-7 sm:pt-12 pb-12 text-xs transition-colors">
       <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-5 gap-y-6 pb-7 sm:pb-10 border-b border-[#1A2B35]">
           {[
@@ -35,9 +35,9 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="flex flex-col md:grid md:grid-cols-5 gap-7 sm:gap-9 py-8 sm:py-11">
+        <div className="flex flex-col md:grid md:grid-cols-5 gap-7 sm:gap-9 py-7 sm:py-11">
           <div className="md:col-span-2 space-y-4 sm:space-y-5">
-            <a href={`/${country}`} aria-label="CatchThePrice home" className="block h-[68px] w-[270px] sm:h-[78px] sm:w-[310px]"><img src="/images/catch-the-price-logo.png" alt="CatchThePrice" className="h-full w-full object-contain object-left drop-shadow-[0_5px_12px_rgba(0,0,0,.24)]" /></a>
+            <a href={`/${country}`} aria-label="CatchThePrice home" className="block h-[58px] w-[230px] sm:h-[78px] sm:w-[310px]"><img src="/images/catch-the-price-logo.png" alt="CatchThePrice" className="h-full w-full object-contain object-left drop-shadow-[0_5px_12px_rgba(0,0,0,.24)]" /></a>
             <p className="chrome-secondary max-w-md text-xs leading-[1.7]">
               <strong className="chrome-primary">Smarter Shopping for a Brighter Tomorrow.</strong><br />Compare prices. Track drops. Save more.
             </p>

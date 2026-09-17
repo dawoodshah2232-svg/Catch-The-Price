@@ -6,10 +6,10 @@ import { COUNTRIES } from '@/lib/data/countries';
 import { CountryCode } from '@/lib/types';
 import { ChevronDown, Check } from 'lucide-react';
 
-interface CountrySwitcherProps { compact?: boolean; shortLabel?: boolean; onDark?: boolean; }
+interface CountrySwitcherProps { compact?: boolean; shortLabel?: boolean; }
 const LIVE_MARKETS: CountryCode[] = ['ae', 'us'];
 
-export function CountrySwitcher({ compact = false, shortLabel = false, onDark = false }: CountrySwitcherProps) {
+export function CountrySwitcher({ compact = false, shortLabel = false }: CountrySwitcherProps) {
   const { country, countryInfo, setCountry } = useCountry();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);

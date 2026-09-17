@@ -3,7 +3,7 @@
 import React from 'react';
 import { CATEGORIES } from '@/lib/data/categories';
 import { useCountry } from '@/context/CountryContext';
-import { Smartphone, Laptop, Gamepad2, Tv, Headphones, Watch, Cpu, ArrowRight } from 'lucide-react';
+import { Smartphone, Laptop, Gamepad2, Tv, Headphones, Watch, Cpu } from 'lucide-react';
 
 const iconMap: Record<string, React.ElementType> = { Smartphone, Laptop, Gamepad2, Tv, Headphones, Watch, Cpu };
 const imageMap: Record<string, string> = {
