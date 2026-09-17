@@ -5,11 +5,12 @@ import { createJsonFeedAdapter, JsonFeedConfig } from '@/lib/ingestion/jsonFeedA
 import { createBestBuyApiAdapter, BestBuyApiConfig } from '@/lib/ingestion/bestBuyAdapter';
 import { MerchantSourceAdapter, prepareApprovedSourceBatch, LaunchMarket } from '@/lib/ingestion/sourceAdapter';
 import { CanonicalCandidate, suggestExactMatch } from '@/lib/ingestion/exactMatcher.server';
+import { syncAdmitadSource } from '@/lib/ingestion/admitadFeedSync.server';
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 type SourceConfig = Partial<JsonFeedConfig & BestBuyApiConfig> & {
-  adapter?: 'json' | 'bestbuy';
+  adapter?: 'json' | 'bestbuy' | 'admitad_xml';
 };
 
 function createAdapter(source: {
@@ -76,6 +77,18 @@ export async function POST(request: NextRequest) {
   const market = String(source.country_code || '').toLowerCase();
   if (!['ae', 'us'].includes(market)) {
     return NextResponse.json({ error: 'Only UAE and US launch-market sources are supported.' }, { status: 400 });
+  }
+
+  if ((source.config as SourceConfig)?.adapter === 'admitad_xml') {
+    const result = await syncAdmitadSource(source as {
+      id: string;
+      name: string;
+      country_code: string;
+      config: unknown;
+      is_active: boolean;
+    });
+    const httpStatus = result.status === 'failed' ? 400 : result.status === 'skipped' ? 409 : 200;
+    return NextResponse.json(result, { status: httpStatus });
   }
 
   let adapter: MerchantSourceAdapter;

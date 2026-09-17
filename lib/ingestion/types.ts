@@ -4,9 +4,13 @@ export interface RawMerchantItem {
   rawBrand?: string;
   rawCategory?: string;
   rawPrice: number;
+  rawOriginalPrice?: number;
   rawCurrency: string;
   rawUrl: string;
+  rawAffiliateUrl?: string;
   rawImageUrl?: string;
+  rawImageUrls?: string[];
+  rawDescription?: string;
   rawGtin?: string;
   rawMpn?: string;
   rawModel?: string;
@@ -14,6 +18,7 @@ export interface RawMerchantItem {
   shippingText?: string;
   merchantSlug: string;
   merchantName: string;
+  rawMetadata?: Record<string, unknown>;
 }
 
 export interface NormalizedItem {
@@ -22,9 +27,13 @@ export interface NormalizedItem {
   brand: string;
   categorySlug: string;
   price: number;
+  originalPrice?: number;
   currency: string;
   url: string;
+  affiliateUrl?: string;
   imageUrl?: string;
+  imageUrls?: string[];
+  description?: string;
   gtin?: string;
   mpn?: string;
   model?: string;
@@ -32,6 +41,7 @@ export interface NormalizedItem {
   shippingInfo: string;
   merchantSlug: string;
   merchantName: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface MatchResult {

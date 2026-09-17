@@ -36,7 +36,7 @@ export async function GET() {
     const config = (source.config || {}) as Record<string, unknown>;
     const rightsId = typeof config.rightsId === 'string' ? config.rightsId : '';
     const adapter = typeof config.adapter === 'string' ? config.adapter : 'unset';
-    const apiEnvKey = typeof config.apiEnvKey === 'string' ? config.apiEnvKey : null;
+    const apiEnvKey = typeof config.apiEnvKey === 'string' ? config.apiEnvKey : typeof config.feedEnv === 'string' ? config.feedEnv : null;
     const rightsRecord = rightsId ? rightsById.get(rightsId) : undefined;
     const credentialReady = apiEnvKey ? Boolean(process.env[apiEnvKey]?.trim()) : true;
     const rightsReady = Boolean(
@@ -125,7 +125,7 @@ export async function PATCH(request: NextRequest) {
   if (body.isActive) {
     const config = (source.config || {}) as Record<string, unknown>;
     const rightsId = typeof config.rightsId === 'string' ? config.rightsId : '';
-    const apiEnvKey = typeof config.apiEnvKey === 'string' ? config.apiEnvKey : null;
+    const apiEnvKey = typeof config.apiEnvKey === 'string' ? config.apiEnvKey : typeof config.feedEnv === 'string' ? config.feedEnv : null;
     const adapter = typeof config.adapter === 'string' ? config.adapter : '';
 
     if (!rightsId || !adapter) {

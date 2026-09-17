@@ -1,4 +1,4 @@
-import { RawMerchantItem, NormalizedItem } from './types';
+import type { RawMerchantItem, NormalizedItem } from './types';
 
 export function normalizeTitle(rawTitle: string): string {
   let cleaned = rawTitle
@@ -60,9 +60,13 @@ export function normalizeMerchantItem(item: RawMerchantItem): NormalizedItem {
     brand,
     categorySlug,
     price: Number(item.rawPrice),
+    originalPrice: Number.isFinite(Number(item.rawOriginalPrice)) ? Number(item.rawOriginalPrice) : undefined,
     currency: item.rawCurrency.toUpperCase(),
     url: item.rawUrl,
+    affiliateUrl: cleanIdentifier(item.rawAffiliateUrl),
     imageUrl: cleanIdentifier(item.rawImageUrl),
+    imageUrls: item.rawImageUrls?.map(cleanIdentifier).filter((value): value is string => Boolean(value)),
+    description: cleanIdentifier(item.rawDescription),
     gtin: cleanIdentifier(item.rawGtin),
     mpn: cleanIdentifier(item.rawMpn),
     model: cleanIdentifier(item.rawModel),
@@ -70,5 +74,6 @@ export function normalizeMerchantItem(item: RawMerchantItem): NormalizedItem {
     shippingInfo: item.shippingText || 'See retailer for delivery details',
     merchantSlug: item.merchantSlug,
     merchantName: item.merchantName,
+    metadata: item.rawMetadata,
   };
 }

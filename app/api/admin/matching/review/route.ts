@@ -157,6 +157,8 @@ export async function POST(request: NextRequest) {
     const specs: Record<string, string> = {};
     if (item.model) specs.Model = item.model;
     if (item.mpn) specs.MPN = item.mpn;
+    const stagedPayload = (item.raw_payload || {}) as Record<string, unknown>;
+    const stagedDescription = typeof stagedPayload.description === 'string' ? stagedPayload.description.slice(0, 4000) : null;
 
     const { data: product, error: createError } = await supabase
       .from('products')
@@ -168,7 +170,7 @@ export async function POST(request: NextRequest) {
         model: item.model || null,
         gtin: item.gtin || null,
         image_url: imageUrl,
-        description: null,
+        description: stagedDescription,
         ai_summary: null,
         specs,
         status: 'draft',
@@ -287,16 +289,22 @@ export async function POST(request: NextRequest) {
     }
 
     const now = new Date().toISOString();
+    const feedPayload = (item.raw_payload || {}) as Record<string, unknown>;
+    const importedOriginalPrice = Number(feedPayload.originalPrice);
+    const originalPrice = Number.isFinite(importedOriginalPrice) && importedOriginalPrice >= Number(item.price)
+      ? importedOriginalPrice
+      : null;
+    const affiliateUrl = typeof feedPayload.affiliateUrl === 'string' ? safeHttps(feedPayload.affiliateUrl) : null;
     const offerPayload = {
       product_id: product.id,
       merchant_id: merchantId,
       country_code: String(source.country_code).toLowerCase(),
       currency: String(item.currency).toUpperCase(),
       price: Number(item.price),
-      original_price: null,
+      original_price: originalPrice,
       availability: item.in_stock ? 'in_stock' : 'out_of_stock',
       product_url: item.product_url,
-      affiliate_url: null,
+      affiliate_url: affiliateUrl,
       source_product_id: item.source_product_id,
       last_checked_at: now,
       is_active: Boolean(item.in_stock),
@@ -318,7 +326,7 @@ export async function POST(request: NextRequest) {
       const { error: historyError } = await supabase.from('price_history').insert({
         offer_id: offer.id,
         price: Number(item.price),
-        original_price: null,
+        original_price: originalPrice,
         availability: item.in_stock ? 'in_stock' : 'out_of_stock',
         captured_at: now,
       });

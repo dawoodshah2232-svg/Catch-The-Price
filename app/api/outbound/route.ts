@@ -9,6 +9,10 @@ function normalizeHost(value: string): string {
   return value.toLowerCase().replace(/^www\./, '');
 }
 
+function isApprovedAdmitadHost(host: string): boolean {
+  return host === 'ad.admitad.com' || host === 'ad.admitad.ru';
+}
+
 function getDeviceType(userAgent: string): 'mobile' | 'tablet' | 'desktop' | 'unknown' {
   const ua = userAgent.toLowerCase();
   if (!ua) return 'unknown';
@@ -128,7 +132,9 @@ export async function GET(request: NextRequest) {
     }
 
     const destinationHost = normalizeHost(destination.hostname);
-    const hostAllowed = merchantHost.length > 0 && (destinationHost === merchantHost || destinationHost.endsWith(`.${merchantHost}`));
+    const merchantDestination = merchantHost.length > 0 && (destinationHost === merchantHost || destinationHost.endsWith(`.${merchantHost}`));
+    const affiliateDestination = Boolean(offer.affiliate_url?.trim()) && isApprovedAdmitadHost(destinationHost);
+    const hostAllowed = merchantDestination || affiliateDestination;
 
     if (!hostAllowed) {
       console.error('Blocked outbound destination host mismatch', { offerId, merchantHost, destinationHost });
