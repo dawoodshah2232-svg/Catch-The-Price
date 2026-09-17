@@ -19,21 +19,17 @@ const imageMap: Record<string, string> = {
 export function CategoryGrid() {
   const { country } = useCountry();
   return (
-    <section id="categories" className="py-5 sm:py-6 max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-      <div className="flex items-center justify-between gap-4 mb-3">
-        <h2 className="text-[18px] sm:text-[21px] font-black tracking-[-.02em] text-[#17242a]">Shop by category</h2>
-        <a href={`/${country}/deals/all`} className="text-[11px] font-extrabold text-[#08784b] flex items-center gap-1">View all <ArrowRight className="w-3.5 h-3.5"/></a>
-      </div>
+    <section id="categories" className="py-2.5 sm:py-3 max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8">
       <div className="overflow-x-auto scrollbar-none -mx-3 px-3 sm:mx-0 sm:px-0">
-        <div className="flex lg:grid lg:grid-cols-7 gap-2.5 min-w-max lg:min-w-0">
+        <div className="flex lg:grid lg:grid-cols-7 gap-2 min-w-max lg:min-w-0">
           {CATEGORIES.map(category => {
             const Icon = iconMap[category.icon] || Smartphone;
             const image = imageMap[category.slug];
-            return <a key={category.id} href={`/${country}/deals/${category.slug}`} className="group w-[132px] sm:w-[150px] lg:w-auto shrink-0 rounded-[8px] bg-white border border-[#dfe4e2] overflow-hidden hover:border-[#a7cdbc] hover:shadow-sm transition-all">
-              <div className="h-[84px] sm:h-[96px] bg-[#f4f6f5] overflow-hidden flex items-center justify-center">
+            return <a key={category.id} href={`/${country}/deals/${category.slug}`} className="group w-[102px] sm:w-[112px] lg:w-auto shrink-0 rounded-[5px] bg-[#fafbfb] border border-[#eef1f0] overflow-hidden hover:border-[#a7cdbc] hover:shadow-sm transition-all">
+              <div className="h-[62px] sm:h-[68px] bg-[#f4f6f5] overflow-hidden flex items-center justify-center">
                 {image ? <img src={image} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform"/> : <Icon className="w-9 h-9 text-[#08784b]"/>}
               </div>
-              <div className="px-2 py-2 text-center text-[10px] sm:text-[11px] font-extrabold text-[#26363c] group-hover:text-[#08784b] line-clamp-1">{category.name}</div>
+              <div className="px-1.5 py-2 text-center text-[9px] sm:text-[10px] font-extrabold text-[#26363c] group-hover:text-[#08784b] line-clamp-1">{category.name}</div>
             </a>;
           })}
         </div>
