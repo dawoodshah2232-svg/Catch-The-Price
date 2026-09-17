@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { BLOG_POSTS, getBlogPost } from '@/lib/data/blog';
 import { AdSlot } from '@/components/common/AdSlot';
-import { ArrowLeft, ArrowRight, BookOpen, CheckCircle2, Clock3, ExternalLink, ShieldCheck } from 'lucide-react';
+import { ArrowLeft, ArrowRight, CheckCircle2, Clock3, ExternalLink, ShieldCheck } from 'lucide-react';
 
 interface ArticlePageProps {
   params: Promise<{ country: string; slug: string }>;

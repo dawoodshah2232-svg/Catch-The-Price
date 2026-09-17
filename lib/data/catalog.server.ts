@@ -193,9 +193,15 @@ async function loadLiveCatalog(country: CountryCode): Promise<Product[]> {
   });
 }
 
+export function isPreviewCatalogEnabled(): boolean {
+  if (process.env.ENABLE_DEMO_CATALOG === 'true') return true;
+  if (process.env.ENABLE_DEMO_CATALOG === 'false') return false;
+  return Boolean(process.env.VERCEL_URL && process.env.VERCEL_URL.includes('vercel.app'));
+}
+
 export async function getCatalogProducts(country: CountryCode): Promise<{ products: Product[]; isPreview: boolean }> {
   const live = await loadLiveCatalog(country);
-  if (live.length >= 12) return { products: live, isPreview: false };
+  if (live.length >= 12 && !isPreviewCatalogEnabled()) return { products: live, isPreview: false };
   return { products: getLaunchCatalog(country), isPreview: true };
 }
 

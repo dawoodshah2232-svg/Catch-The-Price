@@ -1,5 +1,4 @@
 import { Product, CountryCode, Offer, PricePoint } from '../types';
-import { COUNTRIES } from './countries';
 
 // Helper to generate dynamic multi-store offers based on country and base price in USD
 function generateOffersForCountry(

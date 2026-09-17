@@ -9,7 +9,7 @@ export function MobileBottomNav() {
   const { country, savedProductIds } = useCountry();
   const pathname = usePathname();
 
-  if (pathname?.startsWith(`/${country}/product/`)) return null;
+  if (pathname?.startsWith(`/${country}/product/`) || pathname?.startsWith(`/${country}/account`)) return null;
 
   const items = [
     { id: 'home', label: 'Home', href: `/${country}`, icon: Home, isActive: pathname === `/${country}` || pathname === '/' },

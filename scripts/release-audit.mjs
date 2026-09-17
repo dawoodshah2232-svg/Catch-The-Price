@@ -23,7 +23,7 @@ check('Outbound destination host is merchant-bound', outbound.includes('hostAllo
 check('Admin is auth + allowlist protected', adminLayout.includes('createAuthServerClient') && adminLayout.includes('isAllowedAdminEmail'), 'Admin must never rely on obscurity.');
 check('Demo catalog is explicit preview behavior', catalog.includes('ENABLE_DEMO_CATALOG') && catalog.includes('vercel.app'), 'Production must not silently fall back to fixtures.');
 check('Source ingestion is rights-gated', sourceAdapter.includes('sourceRightsId') && /ACTIVE|active/.test(sourceAdapter), 'Retailer accessibility is not publication permission.');
-check('Mobile search remains sticky', header.includes('sticky top-0') && header.includes('<SearchBar chrome'), 'Search must stay available while mobile shoppers scroll.');
+check('Mobile search remains sticky', header.includes('sticky top-0') && (header.includes('<SearchBar chrome') || header.includes('<HeaderSearch')), 'Search must stay available while mobile shoppers scroll.');
 check('Mobile bottom chrome remains dark', bottomNav.includes("bg-[#071015]"), 'Top and bottom brand chrome stay dark in both themes.');
 check('Product retailer CTA uses offer ID only', productPage.includes('/api/outbound?offerId=') && !productPage.includes('targetUrl='), 'Product pages must not pass retailer URLs through the browser.');
 

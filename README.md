@@ -1,121 +1,151 @@
-# CatchThePrice — Price Comparison & Price Tracking Platform
+# CatchThePrice — AI-Powered Shopping Intelligence & Price Tracking
 
 > **TRACK IT. CATCH THE DROP. PAY LESS.**
 >
 > *Smarter Shopping for a Brighter Tomorrow.*
 
-## Current V1 Status
+CatchThePrice (`https://catchtheprice.com`, `/ae`) is a high-performance, mobile-first shopping intelligence and price-comparison platform for the UAE and US markets.
 
-CatchThePrice is a mobile-first price comparison, deal discovery, and price-tracking platform being prepared for an AdSense-first launch.
+---
 
-### Live launch markets
-- 🇦🇪 United Arab Emirates — AED (`/ae`)
-- 🇺🇸 United States — USD (`/us`)
+## 🚀 Core Features
 
-### Planned later markets
-- United Kingdom
-- Canada
-- Australia
-- Saudi Arabia
+### 🛒 Consumer Experience
+- **Multi-Retailer Price Comparison**: Side-by-side comparison across top regional merchants (Amazon, Noon, SharafDG, Virgin, Best Buy, etc.).
+- **Price History & Trend Analysis**: Interactive historical charts displaying recorded highs, lows, and 90-day medians.
+- **Rules-First Deal Score**: Algorithmic 0–100 scoring based on actual historical discounts, avoiding fake retailer MSRP drops.
+- **Persistent User Accounts**: Multi-device saved products, custom target-price tracking, and synchronized browsing history.
+- **Instant Price-Drop Alerts**: Email and in-app notifications when retailer prices hit target thresholds.
+- **Notification Center**: Centralized inbox with read/unread filtering for price drops and deal digests.
+- **Localized Shopping Experience**: Dedicated localized routes for UAE (`/ae` - AED) and USA (`/us` - USD).
 
-These planned markets are not part of the public indexed V1 launch yet.
+### ⚙️ Automation & Matching Engines
+- **Multi-Stage Identity Resolution**: High-precision matching via GTIN/EAN, MPN + Brand, and normalized token Levenshtein scoring.
+- **Price Tracking & Deduplication**: 24-hour window deduplication preventing database bloat while maintaining price history accuracy.
+- **Background Automation Engine**: 12 core automated jobs covering feed ingestion, price checks, deal detection, content discovery, and affiliate link validation.
+- **Human Review Exception Queue**: Automated routing of low-confidence matches and job failures to back-office operators.
 
-## Important Data Status
+### 🛡️ Admin & Back-Office
+- **Automation Jobs Dashboard (`/admin/automation`)**: Manual job triggers, execution schedules, and real-time run logs.
+- **Exception Review Queue (`/admin/review`)**: Operator resolution center for product matches, price anomalies, and system alerts.
+- **Deals Monitor (`/admin/deals`)**: Scored deals analyzer with discount verification.
+- **System Health & Audit Logs (`/admin/system`)**: Database latency checks, email connection status, and administrator action logs.
+- **Search & Conversion Analytics (`/admin/analytics`)**: Live shopper search queries, click-through rates, and device breakdown.
 
-The current repository includes seed/demo product data so the UI, routing, price-history components, deal-score logic, merchant comparison, and alert flows can be tested before live merchant feeds are connected.
+---
 
-Do **not** describe seed/demo prices as live, real-time, verified, or current production prices.
+## 🛠️ Technology Stack
 
-Production data should come only from approved merchant APIs, affiliate feeds, retailer feeds, permitted crawling, or other authorized sources.
+- **Framework**: Next.js 16 (App Router, Turbopack, React 19)
+- **Language**: TypeScript (Strict Mode)
+- **Styling**: Tailwind CSS v4 (Mobile-first responsive design, signature emerald green `#00A859`)
+- **Database & Auth**: Supabase (PostgreSQL with strict Row Level Security, GoTrue PKCE Auth)
+- **Email Dispatch**: Resend / Sendgrid with safe development console fallback
+- **Hosting**: Vercel
 
-## V1 Categories
+---
 
-- Phones
-- Laptops
-- Gaming
-- TVs
-- Headphones
-- Smartwatches
+## 📁 Repository Structure
 
-## Core Product Experience
-
-- Mobile-first responsive UI
-- Product search and discovery
-- Multi-merchant offer comparison
-- Price-history charts
-- Deal Score engine
-- Saved products and price alerts
-- Outbound merchant links
-- Affiliate-ready outbound tracking
-- AdSense-reserved layout slots
-- UAE/USA localized routes and currencies
-- SEO metadata, sitemap, robots, and structured-data support
-
-## Technology
-
-- Next.js 16
-- React 19
-- TypeScript
-- Tailwind CSS 4
-- Supabase / PostgreSQL
-- Vercel
-
-## Environment Variables
-
-```env
-NEXT_PUBLIC_SITE_URL=https://catchtheprice.com
-NEXT_PUBLIC_SUPABASE_URL=https://jghpyvawgdfhfqmtiexb.supabase.co
-NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your_supabase_publishable_key_here
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key_here
-SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key_here
-NEXT_PUBLIC_DEFAULT_COUNTRY=ae
-NEXT_PUBLIC_ADSENSE_CLIENT_ID=ca-pub-XXXXXXXXXXXXXXXX
-NEXT_PUBLIC_ADSENSE_TEST_MODE=true
+```
+├── app/                        # Next.js App Router routes
+│   ├── [country]/              # Localized consumer routes (/ae, /us)
+│   │   ├── account/            # Customer account views (saved, alerts, notifications, history, settings)
+│   │   ├── compare/            # Side-by-side product comparison
+│   │   ├── product/[slug]/     # Canonical product details & offers
+│   │   ├── search/             # Real-time search & filtering
+│   │   └── ...                 # Localized auth pages (login, signup, forgot-password)
+│   ├── admin/                  # Protected administrative back-office
+│   ├── api/                    # Server Route Handlers (account, admin, outbound, catalog)
+│   └── auth/callback/          # Supabase PKCE OAuth callback
+├── components/                 # React UI components (account, admin, product, layout)
+├── docs/                       # Comprehensive documentation
+│   ├── SETUP.md                # Operator setup, Supabase config, and migrations
+│   ├── ARCHITECTURE.md         # Database schemas, security, and engine architecture
+│   └── AUTOMATION.md           # 12 automation jobs and exception handling
+├── lib/                        # Business logic, engines, and utilities
+│   ├── automation/             # Background job runner and scheduler
+│   ├── deals/                  # Algorithmic deal scoring engine
+│   ├── email/                  # Multi-provider email dispatcher & templates
+│   ├── matching/               # Multi-stage product matching engine
+│   ├── pricing/                # Price tracking, deduplication, and statistics
+│   └── supabase/               # Browser and server Supabase clients
+├── scripts/                    # Release audit, runtime smoke, and bootstrapping scripts
+└── supabase/migrations/        # Production SQL migrations with RLS
 ```
 
-Never commit real secrets. `SUPABASE_SERVICE_ROLE_KEY` is server-only and must never be exposed through a `NEXT_PUBLIC_*` variable.
+---
 
-## Development
+## 🔑 Environment Variables
+
+Copy `.env.example` to `.env.local` for local development. Only set actual values in your local environment or Vercel dashboard:
+
+```env
+NEXT_PUBLIC_SITE_URL=
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+ADMIN_EMAILS=
+CRON_SECRET=
+ENABLE_DEMO_CATALOG=
+NEXT_PUBLIC_DEFAULT_COUNTRY=
+BESTBUY_API_KEY=
+NEXT_PUBLIC_ADSENSE_CLIENT_ID=
+NEXT_PUBLIC_ADSENSE_TEST_MODE=
+RESEND_API_KEY=
+EMAIL_FROM=
+```
+
+> [!WARNING]
+> Never commit actual API keys or secrets to version control. `SUPABASE_SERVICE_ROLE_KEY` must remain strictly server-side.
+
+---
+
+## 🚦 Getting Started
+
+### Local Development
 
 ```bash
+# 1. Install dependencies
 npm install
+
+# 2. Run local development server
 npm run dev
 ```
 
-Production verification:
+Visit `http://localhost:3000/ae` to explore the application.
+
+### Production Release Verification
+
+CatchThePrice maintains a strict 5-stage quality pipeline. Run all checks before opening a pull request or deploying:
 
 ```bash
-npm run build
+# 1. TypeScript type check
+npm run typecheck
+
+# 2. ESLint code standard check
 npm run lint
+
+# 3. Next.js production build
+npm run build
+
+# 4. Release invariant audit (15 rules)
+npm run audit:release
+
+# 5. Runtime smoke test
+npm run smoke
 ```
 
-## Deployment
+---
 
-Production deployment is hosted on Vercel. GitHub `main` is the production source branch.
+## 📚 Documentation
 
-Before public launch:
-
-1. Verify UAE and USA routes only.
-2. Replace or clearly label demo data until live feeds are connected.
-3. Verify Privacy Policy, Terms, About, Contact, Affiliate Disclosure, and retailer-checkout disclosures.
-4. Verify AdSense placements do not interfere with search, navigation, Track Price, or merchant Buy buttons.
-5. Verify sitemap and robots rules.
-6. Connect `catchtheprice.com` and verify SSL/canonical URLs.
-7. Add Google Search Console and Analytics.
-8. Apply for AdSense only after useful production content is live and indexable.
-
-## Monetization
-
-V1 is **AdSense-first**. Affiliate monetization can be added to merchant outbound links later.
-
-Ads must never be positioned in a way that encourages accidental clicks or confuses advertising with product/merchant actions.
-
-## Security
-
-- Supabase RLS should remain enabled on public tables.
-- Service-role credentials stay server-side only.
-- Environment files containing secrets remain excluded from Git.
-- Outbound merchant redirects should validate destinations and log only necessary analytics data.
+For full details on setup, architecture, and background automation:
+- **[Operator Setup Guide](file:///e:/Website/CatchThePrice%20v2/docs/SETUP.md)**
+- **[System Architecture Reference](file:///e:/Website/CatchThePrice%20v2/docs/ARCHITECTURE.md)**
+- **[Background Automation Manual](file:///e:/Website/CatchThePrice%20v2/docs/AUTOMATION.md)**
+- **[Autonomous Engineering Handoff](file:///e:/Website/CatchThePrice%20v2/AI_HANDOFF.md)**
 
 ---
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, GitMerge, Layers3, SearchX, ShieldAlert } from 'lucide-react';
+import { CheckCircle2, GitMerge, Layers3, SearchX } from 'lucide-react';
 import { getServerSupabase } from '@/lib/supabase/server';
 import { IngestionReviewActions } from '@/components/admin/IngestionReviewActions';
 

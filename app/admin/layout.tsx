@@ -48,10 +48,14 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     { label: 'Source Rights', href: '/admin/source-rights', icon: ShieldCheck },
     { label: 'Data Ingestion', href: '/admin/ingestion', icon: RefreshCw },
     { label: 'Product Matching', href: '/admin/matching', icon: GitMerge },
+    { label: 'Exception Review', href: '/admin/review', icon: ShieldCheck },
+    { label: 'Automation & Jobs', href: '/admin/automation', icon: RefreshCw },
+    { label: 'Deals & Drops', href: '/admin/deals', icon: Sparkles },
     { label: 'Price Alerts', href: '/admin/alerts', icon: Bell },
     { label: 'Content & AI', href: '/admin/content', icon: Sparkles },
     { label: 'Analytics & Clicks', href: '/admin/analytics', icon: BarChart3 },
     { label: 'SEO & Structured Data', href: '/admin/seo', icon: Globe },
+    { label: 'System & Health', href: '/admin/system', icon: ShieldCheck },
   ];
 
   return (

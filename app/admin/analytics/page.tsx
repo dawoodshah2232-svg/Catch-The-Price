@@ -1,5 +1,5 @@
 import React from 'react';
-import { BarChart3, Bell, Bookmark, MousePointerClick, Smartphone, Globe2, Search, Eye, Users, PackageSearch } from 'lucide-react';
+import { Bell, Bookmark, MousePointerClick, Smartphone, Globe2, Search, Eye, Users, PackageSearch } from 'lucide-react';
 import { getServerSupabase } from '@/lib/supabase/server';
 
 type ClickRow = {

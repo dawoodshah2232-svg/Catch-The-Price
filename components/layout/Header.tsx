@@ -27,7 +27,7 @@ export function Header() {
     { label: 'Compare', href: `/${country}/compare` },
     { label: 'Guides', href: `/${country}/blog` },
     { label: 'News & Tips', href: `/${country}/blog` },
-    { label: 'Track Prices', href: `/${country}/account?tab=alerts` },
+    { label: 'Track Prices', href: `/${country}/account/alerts` },
   ];
 
   return <>
@@ -37,7 +37,7 @@ export function Header() {
           <a href={`/${country}`} aria-label="CatchThePrice Home" className="shrink-0 flex h-[58px] w-[214px] items-center"><img src="/images/catch-the-price-logo.png" alt="CatchThePrice" className="h-full w-full object-contain [image-rendering:-webkit-optimize-contrast]" /></a>
           <div className="min-w-0 flex-1"><HeaderSearch country={country} /></div>
           <div className="ml-1 flex shrink-0 items-center gap-1.5 border-l border-white/[.14] pl-3">
-          <a href={`/${country}/account?tab=saved`} className="relative inline-flex h-10 items-center gap-2 rounded-lg px-2.5 !text-[#e9f1ee] text-[12px] font-bold transition-colors hover:bg-white/[.07] hover:!text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#65E8A8]"><Heart className="h-[18px] w-[18px]"/><span>Saved</span>{savedProductIds.length>0&&<span className="absolute -top-1 -right-1 flex min-w-4 h-4 items-center justify-center rounded-full bg-[#65E8A8] px-1 text-[9px] font-black text-[#06110C]">{savedProductIds.length}</span>}</a>
+          <a href={`/${country}/account/saved`} className="relative inline-flex h-10 items-center gap-2 rounded-lg px-2.5 !text-[#e9f1ee] text-[12px] font-bold transition-colors hover:bg-white/[.07] hover:!text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#65E8A8]"><Heart className="h-[18px] w-[18px]"/><span>Saved</span>{savedProductIds.length>0&&<span className="absolute -top-1 -right-1 flex min-w-4 h-4 items-center justify-center rounded-full bg-[#65E8A8] px-1 text-[9px] font-black text-[#06110C]">{savedProductIds.length}</span>}</a>
           <a href={`/${country}/compare`} className="inline-flex h-10 items-center gap-2 rounded-lg px-2.5 !text-[#e9f1ee] text-[12px] font-bold transition-colors hover:bg-white/[.07] hover:!text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#65E8A8]"><Scale className="h-[18px] w-[18px]"/><span>Compare</span></a>
           <a href={`/${country}/account`} className="inline-flex h-10 items-center gap-2 rounded-lg px-2.5 !text-[#e9f1ee] text-[12px] font-bold transition-colors hover:bg-white/[.07] hover:!text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#65E8A8]"><User className="h-[18px] w-[18px]"/><span>Account</span></a>
           <CountrySwitcher shortLabel />

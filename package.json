@@ -11,7 +11,9 @@
     "start": "next start",
     "lint": "eslint",
     "audit:release": "node scripts/release-audit.mjs",
-    "smoke": "node scripts/runtime-smoke.mjs"
+    "smoke": "node scripts/runtime-smoke.mjs",
+    "bootstrap:dev": "node scripts/bootstrap-dev-user.mjs",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",
