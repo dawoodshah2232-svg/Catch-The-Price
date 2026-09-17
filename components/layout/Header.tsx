@@ -35,7 +35,7 @@ export function Header() {
       <div className="max-w-[1600px] mx-auto px-5 xl:px-8">
         <div className="h-[66px] flex items-center gap-4 xl:gap-5">
           <a href={`/${country}`} aria-label="CatchThePrice Home" className="shrink-0 flex h-[58px] w-[214px] items-center"><img src="/images/catch-the-price-logo.png" alt="CatchThePrice" className="h-full w-full object-contain" /></a>
-          <div className="w-[104px] shrink-0 overflow-hidden rounded-md"><CountrySwitcher onDark /></div>
+          <div className="shrink-0"><CountrySwitcher shortLabel onDark /></div>
           <div className="flex-1 min-w-[360px]"><HeaderSearch country={country} /></div>
           <a href={`/${country}/account?tab=saved`} className="relative h-11 px-3 inline-flex items-center gap-2 !text-[#e9f1ee] text-[12px] font-bold hover:!text-white"><Heart className="w-[18px] h-[18px]"/><span>Saved</span>{savedProductIds.length>0&&<span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-[#65E8A8] text-[#06110C] text-[9px] font-black flex items-center justify-center">{savedProductIds.length}</span>}</a>
           <a href={`/${country}/compare`} className="h-11 px-3 inline-flex items-center gap-2 !text-[#e9f1ee] text-[12px] font-bold hover:!text-white"><Scale className="w-[18px] h-[18px]"/><span>Compare</span></a>

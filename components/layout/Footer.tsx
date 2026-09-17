@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { useCountry } from '@/context/CountryContext';
-import { BrandLogo } from '@/components/common/BrandLogo';
 import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { CATEGORIES } from '@/lib/data/categories';
 import { COUNTRIES } from '@/lib/data/countries';
@@ -18,15 +17,15 @@ export function Footer() {
 
   return (
     <footer className="ctp-footer-dark w-full border-t pt-7 sm:pt-12 pb-24 lg:pb-12 text-xs transition-colors">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 pb-6 sm:pb-10 border-b border-[#1A2B35]">
+      <div className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-5 gap-y-6 pb-7 sm:pb-10 border-b border-[#1A2B35]">
           {[
             { Icon: TrendingDown, title: 'Price Tracking', text: 'Follow genuine price changes across available offers.' },
             { Icon: Sparkles, title: 'Smart Comparison', text: 'Compare products, specifications and retailer offers.' },
             { Icon: BellRing, title: 'Price Alerts', text: 'Track products and set target-price alerts when available.' },
             { Icon: ShieldCheck, title: 'Retailer Checkout', text: 'Purchases are completed directly on the retailer website.' },
           ].map(({ Icon, title, text }) => (
-            <div key={title} className="flex items-start gap-2.5">
+            <div key={title} className="flex items-start gap-3">
               <div className="p-2 rounded-xl bg-[#0F1C24] text-[#4DE4A5] border border-[#223743] shrink-0"><Icon className="w-4 h-4 sm:w-5 sm:h-5" /></div>
               <div className="min-w-0">
                 <h4 className="font-bold chrome-primary text-[11px] sm:text-sm">{title}</h4>
@@ -36,16 +35,16 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="flex flex-col md:grid md:grid-cols-5 gap-5 sm:gap-8 py-6 sm:py-10">
-          <div className="md:col-span-2 space-y-3 sm:space-y-4">
-            <BrandLogo size="lg" variant="full" onDark />
-            <p className="chrome-secondary max-w-sm text-xs leading-relaxed">
+        <div className="flex flex-col md:grid md:grid-cols-5 gap-7 sm:gap-9 py-8 sm:py-11">
+          <div className="md:col-span-2 space-y-4 sm:space-y-5">
+            <a href={`/${country}`} aria-label="CatchThePrice home" className="block h-[54px] w-[220px] sm:h-[60px] sm:w-[250px]"><img src="/images/catch-the-price-logo.png" alt="CatchThePrice" className="h-full w-full object-contain object-left" /></a>
+            <p className="chrome-secondary max-w-md text-xs leading-[1.7]">
               <strong className="chrome-primary">Smarter Shopping for a Brighter Tomorrow.</strong><br />Compare prices. Track drops. Save more.
             </p>
 
-            <div className="flex items-center gap-2 pt-1"><span className="text-[11px] font-semibold chrome-muted">Appearance:</span><ThemeToggle onDark /></div>
+            <div className="flex items-center gap-2.5 pt-1"><span className="text-[11px] font-semibold chrome-muted">Appearance:</span><ThemeToggle onDark /></div>
 
-            <div className="flex flex-wrap items-center gap-1.5 pt-1">
+            <div className="flex flex-wrap items-center gap-2 pt-1">
               <span className="text-[11px] font-semibold chrome-muted">Markets:</span>
               {MARKET_CODES.map((code) => {
                 const c = COUNTRIES[code];
