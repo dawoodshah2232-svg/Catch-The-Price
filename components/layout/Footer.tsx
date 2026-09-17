@@ -2,7 +2,6 @@
 
 import React, { useState } from 'react';
 import { useCountry } from '@/context/CountryContext';
-import { ThemeToggle } from '@/components/common/ThemeToggle';
 import { CATEGORIES } from '@/lib/data/categories';
 import { COUNTRIES } from '@/lib/data/countries';
 import { CountryCode } from '@/lib/types';
@@ -37,15 +36,14 @@ export function Footer() {
 
         <div className="flex flex-col md:grid md:grid-cols-5 gap-7 sm:gap-9 py-8 sm:py-11">
           <div className="md:col-span-2 space-y-4 sm:space-y-5">
-            <a href={`/${country}`} aria-label="CatchThePrice home" className="block h-[62px] w-[250px] sm:h-[70px] sm:w-[280px]"><img src="/images/catch-the-price-logo.png" alt="CatchThePrice" className="h-full w-full object-contain object-left drop-shadow-[0_4px_10px_rgba(0,0,0,.2)]" /></a>
+            <a href={`/${country}`} aria-label="CatchThePrice home" className="block h-[68px] w-[270px] sm:h-[78px] sm:w-[310px]"><img src="/images/catch-the-price-logo.png" alt="CatchThePrice" className="h-full w-full object-contain object-left drop-shadow-[0_5px_12px_rgba(0,0,0,.24)]" /></a>
             <p className="chrome-secondary max-w-md text-xs leading-[1.7]">
               <strong className="chrome-primary">Smarter Shopping for a Brighter Tomorrow.</strong><br />Compare prices. Track drops. Save more.
             </p>
 
-            <div className="flex items-center gap-2.5 pt-1"><span className="text-[11px] font-semibold chrome-muted">Appearance:</span><ThemeToggle onDark /></div>
-
-            <div className="flex flex-wrap items-center gap-2 pt-1">
-              <span className="text-[11px] font-semibold chrome-muted">Markets:</span>
+            <div className="pt-1">
+              <div className="mb-2 flex items-center gap-2"><span className="h-px w-5 bg-[#2c4a3c]" /><span className="text-[11px] font-bold uppercase tracking-[.12em] text-[#d7e8df]">Markets</span></div>
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
               {MARKET_CODES.map((code) => {
                 const c = COUNTRIES[code];
                 const isLive = code === 'ae' || code === 'us';
@@ -54,18 +52,18 @@ export function Footer() {
                     key={code}
                     onClick={() => isLive && setCountry(code)}
                     disabled={!isLive}
-                    className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] transition-colors min-h-[36px] border ${
+                    className={`inline-flex min-h-[42px] items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-[11px] transition-all ${
                       code === country
-                        ? 'bg-[#123026] text-[#67EFB8] font-bold border-[#24543F]'
+                        ? 'border-[#2b875e] bg-[#123c2c] font-bold text-[#a3f6ca] shadow-[inset_0_1px_0_rgba(255,255,255,.06)]'
                         : isLive
-                          ? 'bg-[#0F1C24] text-[#B8C8C1] hover:text-white border-[#223743] hover:border-[#355361]'
-                          : 'bg-[#0A151B] text-[#657970] opacity-65 cursor-not-allowed border-[#172832]'
+                          ? 'border-[#29424e] bg-[#0f1c24] text-[#e0ebe6] hover:-translate-y-px hover:border-[#4d8070] hover:bg-[#14272e] hover:text-white'
+                          : 'cursor-not-allowed border-[#203540] bg-[#0a151b] text-[#95aaa1] opacity-80'
                     }`}
                   >
-                    <span>{c.flag}</span><span>{c.name}</span>
+                    <span className="text-[16px] leading-none">{c.flag}</span><span className="min-w-0 truncate">{c.name}</span>
                   </button>
                 );
-              })}
+              })}</div>
             </div>
           </div>
 

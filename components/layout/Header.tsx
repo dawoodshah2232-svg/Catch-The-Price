@@ -31,11 +31,11 @@ export function Header() {
   ];
 
   return <>
-    <header className="hidden lg:block sticky top-0 z-50 bg-black text-white shadow-[0_6px_22px_rgba(0,0,0,.18)]">
+    <header className="hidden xl:block sticky top-0 z-50 bg-black text-white shadow-[0_6px_22px_rgba(0,0,0,.18)]">
       <div className="max-w-[1600px] mx-auto px-5 xl:px-8">
         <div className="h-[66px] flex items-center gap-4 xl:gap-5">
           <a href={`/${country}`} aria-label="CatchThePrice Home" className="shrink-0 flex h-[58px] w-[214px] items-center"><img src="/images/catch-the-price-logo.png" alt="CatchThePrice" className="h-full w-full object-contain" /></a>
-          <div className="shrink-0"><CountrySwitcher shortLabel onDark /></div>
+          <div className="shrink-0"><CountrySwitcher onDark /></div>
           <div className="flex-1 min-w-[360px]"><HeaderSearch country={country} /></div>
           <a href={`/${country}/account?tab=saved`} className="relative h-11 px-3 inline-flex items-center gap-2 !text-[#e9f1ee] text-[12px] font-bold hover:!text-white"><Heart className="w-[18px] h-[18px]"/><span>Saved</span>{savedProductIds.length>0&&<span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-[#65E8A8] text-[#06110C] text-[9px] font-black flex items-center justify-center">{savedProductIds.length}</span>}</a>
           <a href={`/${country}/compare`} className="h-11 px-3 inline-flex items-center gap-2 !text-[#e9f1ee] text-[12px] font-bold hover:!text-white"><Scale className="w-[18px] h-[18px]"/><span>Compare</span></a>
@@ -53,7 +53,7 @@ export function Header() {
       </div>
     </header>
 
-    <div className="lg:hidden bg-black border-b border-[#1d3540] px-3.5 pt-[max(env(safe-area-inset-top),9px)] pb-2.5"><div className="h-[42px] flex items-center justify-between gap-3"><a href={`/${country}`} aria-label="CatchThePrice Home" className="h-[40px] w-[150px] shrink-0"><img src="/images/catch-the-price-logo.png" alt="CatchThePrice" className="h-full w-full object-contain" /></a><div className="flex items-center gap-1.5"><CountrySwitcher compact onDark/><a href={`/${country}/account`} className="w-10 h-10 rounded-lg border border-[#2a4957] bg-white/[0.04] flex items-center justify-center text-[#8bf3c3]"><User className="w-[17px] h-[17px]"/></a></div></div></div>
-    <div className="lg:hidden sticky top-0 z-50 bg-[#081117] border-b border-[#1d3540] px-3.5 py-2.5 shadow-[0_8px_22px_rgba(0,0,0,.18)]"><HeaderSearch country={country} /></div>
+    <div className="xl:hidden bg-black border-b border-[#1d3540] px-3.5 pt-[max(env(safe-area-inset-top),9px)] pb-2.5"><div className="h-[42px] flex items-center justify-between gap-3"><a href={`/${country}`} aria-label="CatchThePrice Home" className="h-[40px] w-[150px] shrink-0"><img src="/images/catch-the-price-logo.png" alt="CatchThePrice" className="h-full w-full object-contain" /></a><div className="flex items-center gap-1.5"><CountrySwitcher compact onDark/><a href={`/${country}/account`} className="w-10 h-10 rounded-lg border border-[#2a4957] bg-white/[0.04] flex items-center justify-center text-[#8bf3c3]"><User className="w-[17px] h-[17px]"/></a></div></div></div>
+    <div className="xl:hidden sticky top-0 z-50 bg-[#081117] border-b border-[#1d3540] px-3.5 py-2.5 shadow-[0_8px_22px_rgba(0,0,0,.18)]"><HeaderSearch country={country} /></div>
   </>;
 }
