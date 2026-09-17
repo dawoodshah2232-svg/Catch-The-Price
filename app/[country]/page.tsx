@@ -9,6 +9,7 @@ import { PromoBannerRow } from '@/components/home/PromoBannerRow';
 import { BestDealsSection } from '@/components/home/BestDealsSection';
 import { PopularBrandsSection } from '@/components/home/PopularBrandsSection';
 import { CategoryGrid } from '@/components/home/CategoryGrid';
+import { StorefrontExtensions } from '@/components/home/StorefrontExtensions';
 
 interface HomePageProps { params: Promise<{ country: string; }>; }
 
@@ -35,6 +36,8 @@ export default async function HomePage({ params }: HomePageProps) {
   const usingPreviewFallback = live.products.length === 0;
   const products = usingPreviewFallback ? getAllProducts(country) : live.products;
   const topDeals = usingPreviewFallback ? [...products].sort((a,b) => dropPercent(b)-dropPercent(a)).slice(0,6) : live.topDeals;
+  const trending = products.filter(product => product.isTrending).slice(0, 6);
+  const recentlyDropped = [...products].sort((a,b) => dropPercent(b) - dropPercent(a)).slice(6, 12);
   const isPreview = live.isPreview || usingPreviewFallback;
 
   return <div className="min-h-screen bg-[#f7f8f8]">
@@ -44,5 +47,6 @@ export default async function HomePage({ params }: HomePageProps) {
     <PromoBannerRow />
     <BestDealsSection products={topDeals} />
     <PopularBrandsSection products={products} />
+    <StorefrontExtensions products={products.slice(12, 18)} trending={trending.length ? trending : products.slice(6, 12)} dropped={recentlyDropped} />
   </div>;
 }
