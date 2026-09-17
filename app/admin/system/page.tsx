@@ -3,6 +3,7 @@ import { Activity, CheckCircle2, AlertTriangle } from 'lucide-react';
 import { getServerSupabase, isServerSupabaseConfigured } from '@/lib/supabase/server';
 import { getEffectiveEmailProvider } from '@/lib/email/provider';
 import { getAdminAllowlist } from '@/lib/supabase/auth-server';
+import { getRetailerIntegrationStatuses } from '@/lib/retailers/adapters';
 
 export const dynamic = 'force-dynamic';
 
@@ -53,6 +54,7 @@ export default async function SystemPage() {
     await getSystemMetrics();
 
   const hasGeminiKey = Boolean(process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.length > 5);
+  const retailerIntegrations = getRetailerIntegrationStatuses();
 
   const healthChecks = [
     {
@@ -95,6 +97,12 @@ export default async function SystemPage() {
         ? `${feedsCount} ingestion feed source(s) registered; ${feedsErrorCount} reporting errors`
         : 'Ingestion feeds pending merchant partnership credentials',
     },
+    ...retailerIntegrations.map((integration) => ({
+      name: integration.provider,
+      status: integration.status,
+      ok: integration.ok,
+      detail: 'Provider credentials and approved source rights are required before product data can be ingested.',
+    })),
     {
       name: 'Scheduled Background Jobs',
       status: activeJobsCount > 0 ? `${activeJobsCount} Active Jobs` : 'No Active Jobs',

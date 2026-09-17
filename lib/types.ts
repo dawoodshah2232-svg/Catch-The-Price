@@ -28,6 +28,8 @@ export interface Merchant {
   reviewCount: number;
   country: CountryCode;
   affiliateTemplate?: string;
+  affiliateNetwork?: string;
+  affiliateStatus?: 'ACTIVE' | 'PENDING' | 'DISABLED' | 'REVOKED';
   trustedBadge: boolean;
 }
 
@@ -47,6 +49,10 @@ export interface Offer {
   condition: string;
   url: string;
   affiliateUrl?: string;
+  retailerProductId?: string;
+  previousPrice?: number;
+  sourceType?: 'official_api' | 'approved_feed' | 'affiliate_feed' | 'manual';
+  sourceUpdatedAt?: string;
   lastCheckedAt: string;
   isBestPrice?: boolean;
 }

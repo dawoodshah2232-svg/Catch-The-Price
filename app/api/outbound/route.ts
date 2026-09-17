@@ -57,12 +57,13 @@ export async function GET(request: NextRequest) {
           merchant_id,
           country_code,
           product_url,
+          affiliate_url,
           price,
           currency,
           availability,
           is_active,
           last_checked_at,
-          merchants!inner(id,name,website_url,country_code,is_active),
+          merchants!inner(id,name,website_url,country_code,is_active,affiliate_network),
           products!inner(id,name,status)
         `
       )
@@ -143,9 +144,24 @@ export async function GET(request: NextRequest) {
 
     const { destinationUrl } = buildAffiliateUrl({
       productUrl: offer.product_url,
-      affiliateUrl: (offer as any).affiliate_url,
+      affiliateUrl: offer.affiliate_url,
       clickId,
     });
+
+    const destinationType = offer.affiliate_url?.trim() ? 'affiliate' : 'retailer';
+    try {
+      if (new URL(destinationUrl).protocol !== 'https:') {
+        return NextResponse.json(
+          { error: 'Retailer destination is not secure.' },
+          { status: 500, headers: { 'X-Robots-Tag': 'noindex, nofollow' } }
+        );
+      }
+    } catch {
+      return NextResponse.json(
+        { error: 'Retailer destination is invalid.' },
+        { status: 500, headers: { 'X-Robots-Tag': 'noindex, nofollow' } }
+      );
+    }
 
     const { error: clickError } = await supabase.from('outbound_clicks').insert({
       offer_id: offer.id,
@@ -156,6 +172,9 @@ export async function GET(request: NextRequest) {
       currency: offer.currency,
       referrer_host: referrerHost,
       device_type: getDeviceType(userAgent),
+      click_id: clickId,
+      destination_type: destinationType,
+      affiliate_network: merchant.affiliate_network || null,
     });
 
     if (clickError) {
