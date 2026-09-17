@@ -6,10 +6,10 @@ import { COUNTRIES } from '@/lib/data/countries';
 import { CountryCode } from '@/lib/types';
 import { ChevronDown, Check } from 'lucide-react';
 
-interface CountrySwitcherProps { compact?: boolean; onDark?: boolean; }
+interface CountrySwitcherProps { compact?: boolean; shortLabel?: boolean; onDark?: boolean; }
 const LIVE_MARKETS: CountryCode[] = ['ae', 'us'];
 
-export function CountrySwitcher({ compact = false, onDark = false }: CountrySwitcherProps) {
+export function CountrySwitcher({ compact = false, shortLabel = false, onDark = false }: CountrySwitcherProps) {
   const { country, countryInfo, setCountry } = useCountry();
   const [isOpen, setIsOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -32,7 +32,7 @@ export function CountrySwitcher({ compact = false, onDark = false }: CountrySwit
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`h-10 ${compact ? 'min-w-[44px] px-3' : 'min-w-[222px] px-3.5'} flex items-center justify-center gap-2 rounded-lg border text-xs font-semibold whitespace-nowrap transition-colors focus:outline-none focus:ring-2 focus:ring-[#00D27A]/20 ${
+        className={`h-10 ${compact ? 'min-w-[44px] px-3' : shortLabel ? 'min-w-[82px] px-2.5' : 'min-w-[222px] px-3.5'} flex items-center justify-center gap-2 rounded-lg border text-xs font-semibold whitespace-nowrap transition-colors focus:outline-none focus:ring-2 focus:ring-[#00D27A]/20 ${
           onDark
             ? 'bg-[#0F1C24] border-[#223743] text-[#E7F1ED] hover:border-[#355361]'
             : 'ui-surface hover:border-[#9CCFBA] ui-text'
@@ -41,8 +41,8 @@ export function CountrySwitcher({ compact = false, onDark = false }: CountrySwit
         aria-label="Select market and currency"
       >
         <span className="text-[17px] leading-none" aria-hidden="true">{countryInfo.flag}</span>
-        {!compact && <span className="min-w-0 flex-1 text-left">{countryInfo.name}</span>}
-        {!compact && <span className={onDark ? 'text-[#b8c9c1]' : 'ui-muted'}>{countryInfo.currency}</span>}
+        {!compact && <span className={shortLabel ? '' : 'min-w-0 flex-1 text-left'}>{shortLabel ? (country === 'ae' ? 'UAE' : 'USA') : countryInfo.name}</span>}
+        {!compact && !shortLabel && <span className={onDark ? 'text-[#b8c9c1]' : 'ui-muted'}>{countryInfo.currency}</span>}
         <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${onDark ? 'text-[#93A9A0]' : 'ui-muted'} ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 

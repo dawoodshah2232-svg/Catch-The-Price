@@ -19,7 +19,7 @@ function HeaderSearch({ country }: { country: string }) {
 }
 
 export function Header() {
-  const { country, savedProductIds } = useCountry();
+  const { country, countryInfo, savedProductIds } = useCountry();
   const pathname = usePathname();
   const nav = [
     { label: "Today's Deals", href: `/${country}/deals/all` },
@@ -33,13 +33,16 @@ export function Header() {
   return <>
     <header className="hidden xl:block sticky top-0 z-50 bg-black text-white shadow-[0_6px_22px_rgba(0,0,0,.18)]">
       <div className="max-w-[1600px] mx-auto px-5 xl:px-8">
-        <div className="h-[66px] flex items-center gap-4 xl:gap-5">
-          <a href={`/${country}`} aria-label="CatchThePrice Home" className="shrink-0 flex h-[58px] w-[214px] items-center"><img src="/images/catch-the-price-logo.png" alt="CatchThePrice" className="h-full w-full object-contain" /></a>
-          <div className="shrink-0"><CountrySwitcher onDark /></div>
-          <div className="flex-1 min-w-[360px]"><HeaderSearch country={country} /></div>
-          <a href={`/${country}/account?tab=saved`} className="relative h-11 px-3 inline-flex items-center gap-2 !text-[#e9f1ee] text-[12px] font-bold hover:!text-white"><Heart className="w-[18px] h-[18px]"/><span>Saved</span>{savedProductIds.length>0&&<span className="absolute -top-1 -right-1 min-w-4 h-4 px-1 rounded-full bg-[#65E8A8] text-[#06110C] text-[9px] font-black flex items-center justify-center">{savedProductIds.length}</span>}</a>
-          <a href={`/${country}/compare`} className="h-11 px-3 inline-flex items-center gap-2 !text-[#e9f1ee] text-[12px] font-bold hover:!text-white"><Scale className="w-[18px] h-[18px]"/><span>Compare</span></a>
-          <a href={`/${country}/account`} className="h-11 px-3 inline-flex items-center gap-2 !text-[#e9f1ee] text-[13px] font-bold hover:!text-white"><User className="w-[18px] h-[18px]"/><span>Account</span></a>
+        <div className="h-[66px] flex items-center gap-3 xl:gap-4">
+          <a href={`/${country}`} aria-label="CatchThePrice Home" className="shrink-0 flex h-[58px] w-[214px] items-center"><img src="/images/catch-the-price-logo.png" alt="CatchThePrice" className="h-full w-full object-contain [image-rendering:-webkit-optimize-contrast]" /></a>
+          <div className="min-w-0 flex-1"><HeaderSearch country={country} /></div>
+          <div className="ml-1 flex shrink-0 items-center gap-1.5 border-l border-white/[.14] pl-3">
+          <a href={`/${country}/account?tab=saved`} className="relative inline-flex h-10 items-center gap-2 rounded-lg px-2.5 !text-[#e9f1ee] text-[12px] font-bold transition-colors hover:bg-white/[.07] hover:!text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#65E8A8]"><Heart className="h-[18px] w-[18px]"/><span>Saved</span>{savedProductIds.length>0&&<span className="absolute -top-1 -right-1 flex min-w-4 h-4 items-center justify-center rounded-full bg-[#65E8A8] px-1 text-[9px] font-black text-[#06110C]">{savedProductIds.length}</span>}</a>
+          <a href={`/${country}/compare`} className="inline-flex h-10 items-center gap-2 rounded-lg px-2.5 !text-[#e9f1ee] text-[12px] font-bold transition-colors hover:bg-white/[.07] hover:!text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#65E8A8]"><Scale className="h-[18px] w-[18px]"/><span>Compare</span></a>
+          <a href={`/${country}/account`} className="inline-flex h-10 items-center gap-2 rounded-lg px-2.5 !text-[#e9f1ee] text-[12px] font-bold transition-colors hover:bg-white/[.07] hover:!text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#65E8A8]"><User className="h-[18px] w-[18px]"/><span>Account</span></a>
+          <CountrySwitcher shortLabel onDark />
+          <button type="button" aria-label={`Currency: ${countryInfo.currency}. Currency follows the selected market.`} className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-[#223743] bg-[#0f1c24] px-2.5 text-[12px] font-bold text-[#e7f1ed] transition-colors hover:border-[#467060] hover:bg-[#14272e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#65E8A8]">{countryInfo.currency}<ChevronDown className="h-3.5 w-3.5 text-[#a9c0b6]" /></button>
+          </div>
         </div>
       </div>
       <div className="bg-[#0b151c] border-y border-white/[0.08]">
