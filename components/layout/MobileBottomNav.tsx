@@ -15,7 +15,7 @@ export function MobileBottomNav() {
     { id: 'home', label: 'Home', href: `/${country}`, icon: Home, isActive: pathname === `/${country}` || pathname === '/' },
     { id: 'categories', label: 'Categories', href: `/${country}#categories`, icon: LayoutGrid, isActive: false },
     { id: 'compare', label: 'Compare', href: `/${country}/compare`, icon: ArrowRightLeft, isActive: pathname?.startsWith(`/${country}/compare`) },
-    { id: 'saved', label: 'Saved', href: `/${country}/account?tab=saved`, icon: Bookmark, badge: savedProductIds.length > 0 ? savedProductIds.length : null, isActive: pathname?.startsWith(`/${country}/account`) && pathname.includes('tab=saved') },
+    { id: 'saved', label: 'Saved', href: `/${country}/account/saved`, icon: Bookmark, badge: savedProductIds.length > 0 ? savedProductIds.length : null, isActive: pathname === `/${country}/account/saved` },
   ];
 
   return (

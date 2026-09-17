@@ -58,6 +58,17 @@ export async function recordOfferPrice(input: PriceRecordInput): Promise<{ recor
     return { recorded: false, reason: error.message };
   }
 
+  // Also update latest price on the offer record
+  try {
+    await supabase
+      .from('offers')
+      .update({
+        price: input.price,
+        last_checked_at: new Date().toISOString(),
+      })
+      .eq('id', input.offerId);
+  } catch {}
+
   return { recorded: true };
 }
 

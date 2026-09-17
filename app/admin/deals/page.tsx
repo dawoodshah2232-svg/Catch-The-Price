@@ -14,7 +14,7 @@ export default async function DealsAdminPage() {
   if (supabase) {
     const { data } = await supabase
       .from('deals')
-      .select('*, products(title, slug, image_url, brand)')
+      .select('*, products(name, slug, image_url, brand)')
       .order('deal_score', { ascending: false })
       .limit(50);
     deals = data || [];
@@ -92,7 +92,7 @@ export default async function DealsAdminPage() {
                       </span>
                     </td>
                     <td className="py-3 font-bold text-white max-w-xs truncate">
-                      {deal.products?.title || 'Unknown Product'}
+                      {deal.products?.name || deal.products?.title || 'Unknown Product'}
                     </td>
                     <td className="py-3 text-slate-400">{deal.products?.brand || '—'}</td>
                     <td className="py-3 font-black text-white">

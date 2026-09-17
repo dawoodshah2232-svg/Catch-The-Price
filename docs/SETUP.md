@@ -40,13 +40,26 @@ CatchThePrice utilizes PostgreSQL with Row Level Security (RLS) managed via Supa
 
 Run the following SQL files in your Supabase SQL Editor or via the Supabase CLI in this exact order:
 
-1. **User Account & Retention Foundation**  
+1. **Base Catalog & Core Schema**  
+   `supabase/migrations/20260914_base_catalog_schema.sql`  
+   - Creates foundational tables: `categories`, `merchants`, `products`, `offers`, `price_history`, `watchlists`, and `alert_events`.
+   - Enables Row Level Security and defines public read policies.
+
+2. **Source Rights, Ingestion Staging & Analytics**  
+   - `supabase/migrations/20260915_source_rights.sql`
+   - `supabase/migrations/20260915_bestbuy_source_config.sql`
+   - `supabase/migrations/20260915_ingestion_staging.sql`
+   - `supabase/migrations/20260915_content_ai_queue.sql`
+   - `supabase/migrations/20260915_outbound_clicks.sql`
+   - `supabase/migrations/20260915_analytics_events.sql`
+
+3. **User Account & Retention Foundation**  
    `supabase/migrations/20260917_user_account_retention.sql`  
-   - Creates `profiles`, `user_settings`, `saved_products`, `price_alerts`, `notifications`, `recently_viewed`, and `watchlists`.
+   - Creates `profiles`, `user_settings`, `saved_products`, `price_alerts`, `notifications`, and `recently_viewed`.
    - Attaches `handle_new_user()` trigger to automatically create profile and settings rows on Supabase Auth sign-up.
    - Enforces strict user-level RLS policies (`auth.uid() = user_id`).
 
-2. **Automation, Matching & Back-Office Foundation**  
+4. **Automation, Matching & Back-Office Foundation**  
    `supabase/migrations/20260917_automation_matching_foundation.sql`  
    - Creates `brands`, `product_variants`, `product_identifiers`, `deals`, `automation_jobs`, `automation_runs`, `human_review_queue`, and `audit_logs`.
    - Enforces RLS with `revoke all from anon, authenticated` on back-office tables, restricting access to server-side service-role queries.
