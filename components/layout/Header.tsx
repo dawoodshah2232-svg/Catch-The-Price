@@ -41,7 +41,7 @@ export function Header() {
           <a href={`/${country}/compare`} className="inline-flex h-10 items-center gap-2 rounded-lg px-2.5 !text-[#e9f1ee] text-[12px] font-bold transition-colors hover:bg-white/[.07] hover:!text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#65E8A8]"><Scale className="h-[18px] w-[18px]"/><span>Compare</span></a>
           <a href={`/${country}/account`} className="inline-flex h-10 items-center gap-2 rounded-lg px-2.5 !text-[#e9f1ee] text-[12px] font-bold transition-colors hover:bg-white/[.07] hover:!text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#65E8A8]"><User className="h-[18px] w-[18px]"/><span>Account</span></a>
           <CountrySwitcher shortLabel onDark />
-          <button type="button" aria-label={`Currency: ${countryInfo.currency}. Currency follows the selected market.`} className="inline-flex h-10 items-center gap-1.5 rounded-lg border border-[#223743] bg-[#0f1c24] px-2.5 text-[12px] font-bold text-[#e7f1ed] transition-colors hover:border-[#467060] hover:bg-[#14272e] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#65E8A8]">{countryInfo.currency}<ChevronDown className="h-3.5 w-3.5 text-[#a9c0b6]" /></button>
+          <button type="button" aria-label={`Currency: ${countryInfo.currency}. Currency follows the selected market.`} className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-[#D1D5DB] bg-white px-3.5 py-2.5 text-[12px] font-semibold text-[#1F2937] transition-colors hover:border-[#00C16A] focus:border-[#00C16A] focus:outline-none focus:ring-2 focus:ring-[#00C16A]/20">{countryInfo.currency}<ChevronDown className="h-3.5 w-3.5 text-[#6B7280]" /></button>
           </div>
         </div>
       </div>
