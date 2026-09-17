@@ -69,6 +69,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     for (const category of CATEGORIES) {
       entries.push({
+        url: `${baseUrl}/${country}/category/${category.slug}`,
+        lastModified: new Date(),
+        changeFrequency: 'daily',
+        priority: 0.85,
+      });
+
+      entries.push({
         url: `${baseUrl}/${country}/deals/${category.slug}`,
         lastModified: new Date(),
         changeFrequency: 'daily',

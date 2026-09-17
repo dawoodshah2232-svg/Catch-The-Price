@@ -23,6 +23,8 @@ const viewports = [
 const testRoutes = [
   { path: '/ae', label: 'home' },
   { path: '/ae/search', label: 'search' },
+  { path: '/ae/category/phones', label: 'category-phones' },
+  { path: '/ae/brand/apple', label: 'brand-apple' },
   { path: '/ae/account', label: 'account-overview' },
   { path: '/ae/account/saved', label: 'account-saved' },
   { path: '/ae/account/alerts', label: 'account-alerts' },

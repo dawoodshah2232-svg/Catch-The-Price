@@ -1,7 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getServerSupabase } from '@/lib/supabase/server';
 
-const VALID_EVENTS = new Set(['page_view', 'search', 'product_view', 'save', 'alert_intent']);
+const VALID_EVENTS = new Set([
+  'page_view',
+  'search',
+  'product_view',
+  'save',
+  'save_product',
+  'alert_intent',
+  'create_alert',
+  'compare',
+  'affiliate_click',
+  'retailer_click',
+  'deal_view',
+  'guide_view',
+]);
 const VALID_MARKETS = new Set(['ae', 'us']);
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
@@ -63,11 +76,18 @@ export async function POST(request: NextRequest) {
   }
 
   const searchQuery = eventType === 'search' ? safeText(body.searchQuery, 120) : null;
-  const productSlug = eventType === 'product_view' || eventType === 'save' || eventType === 'alert_intent'
-    ? safeText(body.productSlug, 160)
-    : null;
+  const productSlug =
+    eventType === 'product_view' ||
+    eventType === 'save' ||
+    eventType === 'save_product' ||
+    eventType === 'alert_intent' ||
+    eventType === 'create_alert' ||
+    eventType === 'deal_view'
+      ? safeText(body.productSlug, 160)
+      : null;
 
   const metadata: Record<string, string | number | boolean> = {};
+
   if (eventType === 'search') {
     const resultCount = safeCount(body.resultCount);
     if (resultCount !== null) {
@@ -75,8 +95,35 @@ export async function POST(request: NextRequest) {
       metadata.zero_result = resultCount === 0;
     }
   }
-  if (eventType === 'save' && typeof body.saved === 'boolean') {
+
+  if ((eventType === 'save' || eventType === 'save_product') && typeof body.saved === 'boolean') {
     metadata.saved = body.saved;
+  }
+
+  if (eventType === 'create_alert' || eventType === 'alert_intent') {
+    if (typeof body.targetPrice === 'number' && Number.isFinite(body.targetPrice)) {
+      metadata.target_price = body.targetPrice;
+    }
+  }
+
+  if (eventType === 'compare') {
+    if (body.leftProduct) metadata.left_product = safeText(body.leftProduct, 160) || '';
+    if (body.rightProduct) metadata.right_product = safeText(body.rightProduct, 160) || '';
+  }
+
+  if (eventType === 'affiliate_click' || eventType === 'retailer_click') {
+    if (body.offerId) metadata.offer_id = safeText(body.offerId, 80) || '';
+    if (body.merchantName) metadata.merchant_name = safeText(body.merchantName, 100) || '';
+  }
+
+  if (eventType === 'deal_view') {
+    if (typeof body.dealScore === 'number') metadata.deal_score = body.dealScore;
+    if (body.category) metadata.category = safeText(body.category, 60) || '';
+  }
+
+  if (eventType === 'guide_view') {
+    if (body.guideSlug) metadata.guide_slug = safeText(body.guideSlug, 120) || '';
+    if (body.category) metadata.category = safeText(body.category, 60) || '';
   }
 
   const { error } = await supabase.from('analytics_events').insert({

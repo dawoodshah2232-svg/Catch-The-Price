@@ -9,40 +9,14 @@ import { AdSlot } from '@/components/common/AdSlot';
 import { sendAnalyticsEvent } from '@/lib/analytics/client';
 import { ArrowDown, ArrowUpDown, RotateCcw, Search as SearchIcon, SlidersHorizontal } from 'lucide-react';
 
+import { searchProducts, saveRecentSearch } from '@/lib/search/searchEngine';
+
 interface SearchPageProps {
   params: Promise<{ country: string }>;
 }
 
 type SortBy = 'relevance' | 'price_asc' | 'price_desc' | 'biggest_drop';
 const PAGE_SIZE = 24;
-
-function relevanceScore(product: Product, query: string) {
-  const q = query.trim().toLowerCase();
-  if (!q) return 0;
-
-  const title = product.title.toLowerCase();
-  const brand = product.brand.toLowerCase();
-  const category = product.categoryName.toLowerCase();
-  const specText = Object.values(product.specs || {}).join(' ').toLowerCase();
-  let score = 0;
-
-  if (title === q) score += 100;
-  if (title.startsWith(q)) score += 55;
-  if (title.includes(q)) score += 35;
-  if (brand === q) score += 30;
-  else if (brand.includes(q)) score += 20;
-  if (category.includes(q)) score += 12;
-  if (specText.includes(q)) score += 8;
-
-  const tokens = q.split(/\s+/).filter(Boolean);
-  for (const token of tokens) {
-    if (title.includes(token)) score += 6;
-    if (brand.includes(token)) score += 4;
-    if (specText.includes(token)) score += 2;
-  }
-
-  return score;
-}
 
 function SearchContent() {
   const searchParams = useSearchParams();
@@ -105,34 +79,7 @@ function SearchContent() {
   );
 
   const results = useMemo(() => {
-    const q = searchQuery.trim().toLowerCase();
-    const filtered = products.filter((product) => {
-      if (q) {
-        const specText = Object.values(product.specs || {}).join(' ');
-        const haystack = `${product.title} ${product.brand} ${product.categoryName} ${specText}`.toLowerCase();
-        const tokens = q.split(/\s+/).filter(Boolean);
-        if (!tokens.every((token) => haystack.includes(token))) return false;
-      }
-      if (category && product.categorySlug !== category) return false;
-      if (brand && product.brand !== brand) return false;
-      if (merchant && !product.offers.some((offer) => offer.merchantName === merchant)) return false;
-      return true;
-    });
-
-    return [...filtered].sort((a, b) => {
-      if (sortBy === 'price_asc') return a.currentBestPrice - b.currentBestPrice;
-      if (sortBy === 'price_desc') return b.currentBestPrice - a.currentBestPrice;
-      if (sortBy === 'biggest_drop') {
-        const aDrop = a.originalPrice > 0 ? (a.originalPrice - a.currentBestPrice) / a.originalPrice : 0;
-        const bDrop = b.originalPrice > 0 ? (b.originalPrice - b.currentBestPrice) / b.originalPrice : 0;
-        return bDrop - aDrop;
-      }
-
-      const relevanceDifference = relevanceScore(b, q) - relevanceScore(a, q);
-      if (relevanceDifference !== 0) return relevanceDifference;
-      if (a.offersCount !== b.offersCount) return b.offersCount - a.offersCount;
-      return a.currentBestPrice - b.currentBestPrice;
-    });
+    return searchProducts(products, searchQuery, { category, brand, merchant, sortBy });
   }, [products, searchQuery, category, brand, merchant, sortBy]);
 
   const visibleResults = results.slice(0, visibleCount);
@@ -143,6 +90,9 @@ function SearchContent() {
 
     const query = searchQuery.trim();
     if (query.length < 2) return;
+
+    // Save recent search query locally
+    saveRecentSearch(query);
 
     const signature = `${country}|${query.toLowerCase()}|${category}|${brand}|${merchant}|${results.length}`;
     const timer = window.setTimeout(() => {

@@ -48,3 +48,96 @@ export async function sendAnalyticsEvent(payload: Record<string, unknown>) {
     // Analytics must never interrupt shopping or navigation.
   }
 }
+
+export function trackProductView(productSlug: string, country: string) {
+  void sendAnalyticsEvent({
+    eventType: 'product_view',
+    productSlug,
+    country,
+    path: `/${country}/product/${productSlug}`,
+  });
+}
+
+export function trackSearch(query: string, resultCount: number, country: string) {
+  void sendAnalyticsEvent({
+    eventType: 'search',
+    searchQuery: query,
+    resultCount,
+    country,
+    path: `/${country}/search`,
+  });
+}
+
+export function trackCompare(leftProduct: string, rightProduct: string, country: string) {
+  void sendAnalyticsEvent({
+    eventType: 'compare',
+    leftProduct,
+    rightProduct,
+    country,
+    path: `/${country}/compare`,
+  });
+}
+
+export function trackSaveProduct(productSlug: string, saved: boolean, country: string) {
+  void sendAnalyticsEvent({
+    eventType: 'save_product',
+    productSlug,
+    saved,
+    country,
+    path: `/${country}/product/${productSlug}`,
+  });
+}
+
+export function trackCreateAlert(productSlug: string, targetPrice: number, country: string) {
+  void sendAnalyticsEvent({
+    eventType: 'create_alert',
+    productSlug,
+    targetPrice,
+    country,
+    path: `/${country}/product/${productSlug}`,
+  });
+}
+
+export function trackAffiliateClick(offerId: string, merchantName: string, country: string, productSlug?: string) {
+  void sendAnalyticsEvent({
+    eventType: 'affiliate_click',
+    offerId,
+    merchantName,
+    productSlug,
+    country,
+    path: productSlug ? `/${country}/product/${productSlug}` : `/${country}`,
+  });
+}
+
+export function trackRetailerClick(offerId: string, merchantName: string, country: string, productSlug?: string) {
+  void sendAnalyticsEvent({
+    eventType: 'retailer_click',
+    offerId,
+    merchantName,
+    productSlug,
+    country,
+    path: productSlug ? `/${country}/product/${productSlug}` : `/${country}`,
+  });
+}
+
+export function trackDealView(productSlug: string, dealScore: number, category: string, country: string) {
+  void sendAnalyticsEvent({
+    eventType: 'deal_view',
+    productSlug,
+    dealScore,
+    category,
+    country,
+    path: `/${country}/deals/${category}`,
+  });
+}
+
+export function trackGuideView(guideSlug: string, category: string, country: string) {
+  void sendAnalyticsEvent({
+    eventType: 'guide_view',
+    guideSlug,
+    category,
+    country,
+    path: `/${country}/blog/${guideSlug}`,
+  });
+}
+

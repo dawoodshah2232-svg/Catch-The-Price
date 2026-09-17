@@ -8,6 +8,9 @@ export default function robots(): MetadataRoute.Robots {
       disallow: [
         '/api/',
         '/admin',
+        '/ae/account/',
+        '/us/account/',
+        '/auth/',
         '/ae/search',
         '/us/search',
         '/uk/',

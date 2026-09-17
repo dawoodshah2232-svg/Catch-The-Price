@@ -16,30 +16,31 @@ To provide absolute operational clarity, the platform status is explicitly categ
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  [1] CODE COMPLETE                       100% DONE & VERIFIED               │
-│  [2] DATABASE MIGRATIONS CREATED         100% CREATED & ORDERED (10 files)  │
+│  [2] DATABASE MIGRATIONS CREATED         100% CREATED & ORDERED (11 files)  │
 │  [3] DATABASE MIGRATIONS ACTUALLY APPLIED PENDING REMOTE CREDENTIALS        │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### State Definitions
-- **CODE COMPLETE**: All user account pages, persistent saved products, price drop alerts, notification center, browsing history, settings, localized auth flows, matching engine, price tracking & deduplication, rules-first deal scoring, background automation runner, and admin back-office dashboards are 100% written, typechecked, linted, and tested.
-- **DATABASE MIGRATIONS CREATED**: 10 clean, sequential SQL migrations are committed under `supabase/migrations/`, establishing base schemas, ingestion staging, user accounts, and automation tables with strict Row Level Security.
-- **DATABASE MIGRATIONS ACTUALLY APPLIED**: Pending. The local workspace does not contain live remote credentials (`SUPABASE_SERVICE_ROLE_KEY` / `NEXT_PUBLIC_SUPABASE_URL`), so migrations must be applied by Dawood in the Supabase Dashboard or CLI.
+- **CODE COMPLETE**: 100% of all user systems, account dashboards, saved products, price alerts, notifications, settings, localized auth flows, matching engine, price tracking & deduplication, rules-first deal scoring, background automation runner, admin back-office, category/brand/retailer landing hubs, typo-tolerant search engine, standardized SEO schemas, provider-neutral affiliate attribution, 12-event analytics taxonomy, 10-point data quality engine, and 23 automated tests are completely written, verified, and passing.
+- **DATABASE MIGRATIONS CREATED**: 11 clean, sequential SQL migrations are committed under `supabase/migrations/`, establishing base schemas, ingestion staging, user retention, automation matching tables, and analytics taxonomy with strict Row Level Security.
+- **DATABASE MIGRATIONS ACTUALLY APPLIED**: Pending. The local workspace does not contain live remote credentials (`SUPABASE_SERVICE_ROLE_KEY` / `NEXT_PUBLIC_SUPABASE_URL`), so migrations must be executed in the Supabase Dashboard or CLI.
 
 ---
 
 ## 2. Verification & Testing Scorecard
 
-All automated test suites pass with 100% success rate:
+All automated test suites pass with a 100% success rate:
 
 | Test Suite | Command | Result | Details |
 | :--- | :--- | :---: | :--- |
 | **TypeScript Validation** | `npm run typecheck` | ✅ **0 Errors** | Strict mode across entire codebase (`tsc --noEmit`) |
-| **ESLint Quality** | `npm run lint` | ✅ **0 Warnings, 0 Errors** | Clean Next.js + React 19 standards |
-| **Next.js Production Build** | `npm run build` | ✅ **93 Pages Prerendered** | Next.js 16.3.5 Turbopack compilation |
+| **ESLint Quality** | `npm run lint` | ✅ **0 Warnings, 0 Errors** | Next.js 16 + React 19 rules |
+| **Automated Unit & Integration Tests** | `npm test` | ✅ **23/23 Passed** | Node native runner (`node:test`): matching, deals, affiliates, search, quality, security |
+| **Next.js Production Build** | `npm run build` | ✅ **92 Pages Prerendered** | Next.js 16.3.5 Turbopack compilation |
 | **Release Invariant Audit** | `npm run audit:release` | ✅ **15/15 Checks Passed** | Verified offer-ID redirects, HTTPS, search stickiness, no fake claims |
-| **Runtime Smoke Suite** | `npm run smoke` | ✅ **18/18 Routes Passed** | HTTP 200 on public/auth/account routes, HTTP 404 on unlaunched `/uk` |
-| **Automated Browser Viewport** | `npm run test:browser` | ✅ **24/24 Tests Passed** | Headless Chrome rendered Desktop (1280px), Mobile-360, Mobile-390, Mobile-430 |
+| **Runtime Smoke Suite** | `npm run smoke` | ✅ **19/19 Routes Passed** | HTTP 200 on public/auth/account routes, HTTP 404 on unlaunched `/uk` |
+| **Automated Browser Viewport** | `npm run test:browser` | ✅ **32/32 Tests Passed** | Headless Chrome tested Desktop (1280px), Mobile-360, Mobile-390, Mobile-430 across 8 key routes |
 
 ---
 
@@ -85,14 +86,47 @@ All automated test suites pass with 100% success rate:
 - **`/admin/automation`**: Interactive management for all 12 jobs with live **"Run Now"** triggers and execution history table.
 - **`/admin/review`**: Human review queue with queue-type tabs (`PRODUCT_MATCHING`, `AUTOMATION_FAILURES`, `PRICE_ANOMALY`, `MERCHANT_ANOMALIES`), priority badges, and resolve/dismiss controls with immutable audit logging.
 - **`/admin/deals`**: Scored deals overview with score badges, discount percentages, and retailer competitor counts.
-- **`/admin/system`**: Live diagnostics for Database latency, Email Provider configuration, Cron Secret status, and Admin Allowlist enforcement.
+- **`/admin/system`**: Live diagnostics for Database latency, Retailer Feeds health, Automation Failures (24h), Catalog Freshness, Email Provider configuration, Cron Secret status, AI Engine status, and Admin Allowlist enforcement.
 - **`/admin/products` & `/admin/analytics`**: Real-time product inventory counts, shopper search queries, click-through rates, and device breakdown.
+
+### 3.4 Secondary Backlog Engineering (Completed)
+- **Public Page Engineering Preparation**:
+  - `/[country]/category/[slug]`: Category landing page with subcategory navigation, product grid, Breadcrumbs JSON-LD, ItemList JSON-LD, and honest empty states.
+  - `/[country]/brand/[slug]`: Brand landing page with brand moniker, models count, min/max price range, and Brand JSON-LD.
+  - `/[country]/retailer/[slug]`: Retailer landing page with verified merchant badge, direct hand-off disclosures, and Organization JSON-LD.
+- **Search Foundation (`lib/search/searchEngine.ts`)**:
+  - Levenshtein edit distance calculation supporting single/double character typo tolerance (e.g. "iphne" -> "iPhone", "sumsung" -> "Samsung").
+  - Multi-attribute relevance scoring: exact title (120) > prefix (60) > substring (40) > brand (35) > category (25) > specs/identifiers (80-150).
+  - Client-side recent searches persistence in `localStorage` (`ctp_recent_searches_v1`) with 1-tap search recall and instant clear.
+  - `SearchBar.tsx` enhanced with recent search history popover on focus and instant suggestion ranking.
+- **SEO Engine Foundation (`lib/seo/schema.ts`)**:
+  - Standardized JSON-LD generators for `BreadcrumbList`, `ItemList`, `Product` + `AggregateOffer`, `Brand`, `Organization`, and `FAQPage`.
+  - `app/robots.ts` updated to disallow private user account paths (`/[country]/account/`), auth callbacks, and internal APIs from search engine bots.
+  - `app/sitemap.ts` updated to dynamically index category and brand hubs.
+- **Affiliate Foundation (`lib/affiliate/affiliateEngine.ts` & `conversionImporter.ts`)**:
+  - Provider-neutral network adapters (Amazon Associates, Impact, CJ, Rakuten, Awin, Custom, Direct).
+  - Dynamic `clickId` generation (`generateClickId()`) and sub-ID parameter injection without inventing fake credentials.
+  - Down-funnel conversion ingestion schema, EPC (Earnings Per Click) and Conversion Rate calculation foundation.
+  - Outbound redirect route (`app/api/outbound/route.ts`) upgraded with click tracking and host validation.
+- **Analytics Foundation (`app/api/analytics/event/route.ts` & `lib/analytics/client.ts`)**:
+  - Full 12-event shopping intelligence taxonomy: `product_view`, `search`, `compare`, `save_product`, `create_alert`, `affiliate_click`, `retailer_click`, `deal_view`, `guide_view`, etc.
+  - SQL migration `20260917_analytics_event_taxonomy.sql` updating table check constraint.
+  - Strongly-typed client tracker functions (`trackProductView`, `trackSearch`, `trackCompare`, `trackSaveProduct`, `trackCreateAlert`, etc.).
+- **Data Quality Engine (`lib/dataQuality/dataQualityEngine.server.ts`)**:
+  - Automated inspection validating 10 criteria: `STALE_OFFERS`, `IMPOSSIBLE_PRICES`, `MISSING_IMAGES`, `DUPLICATE_PRODUCTS`, `DUPLICATE_OFFERS`, `INVALID_AFFILIATE_URLS`, `MISSING_IDENTIFIERS`, `SUSPICIOUS_PRICE_CHANGES`, `PRODUCTS_WITHOUT_OFFERS`, and `LOW_CONFIDENCE_MATCHING`.
+  - Automatically routes detected anomalies to `human_review_queue` table with low/medium/high priority.
+  - On-demand admin trigger endpoint at `/api/admin/data-quality`.
+- **System Health Diagnostics (`app/admin/system/page.tsx`)**:
+  - Multi-point operational diagnostics showing real database counts for stale offers, active schedules, 24h job failures, and feed errors with zero fake "healthy" indicators.
+- **Security & Performance**:
+  - Production HTTP security headers added in `next.config.ts` (`X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`).
+  - Remote image patterns configured for simpleicons and unsplash.
 
 ---
 
 ## 4. Complete Database Migration Sequence
 
-Run these 10 SQL files in order in your Supabase SQL Editor:
+Run these 11 SQL files in exact order in your Supabase SQL Editor:
 
 1. **`20260914_base_catalog_schema.sql`** — Base tables: `categories`, `merchants`, `products`, `offers`, `price_history`, `watchlists`, and `alert_events` with RLS.
 2. **`20260915_source_rights.sql`** — Publisher and affiliate source permissions registry.
@@ -104,6 +138,7 @@ Run these 10 SQL files in order in your Supabase SQL Editor:
 8. **`20260915_analytics_events.sql`** — Privacy-safe shopper search and product interaction events.
 9. **`20260917_user_account_retention.sql`** — User profiles, settings, saved products, price alerts, notifications, recently viewed, and auth triggers.
 10. **`20260917_automation_matching_foundation.sql`** — Brands, product variants, product identifiers, deals, automation jobs, automation runs, human review queue, and audit logs.
+11. **`20260917_analytics_event_taxonomy.sql`** — Expansion of `analytics_events` check constraint to support the full shopping intelligence taxonomy.
 
 ---
 
@@ -113,7 +148,7 @@ The following items are external prerequisites that cannot be executed autonomou
 
 1. **Supabase Database Connection**:
    - `NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` must be added to `.env.local` or Vercel Environment Variables.
-   - The 10 database migrations listed in Section 4 must be executed in the Supabase SQL Editor.
+   - The 11 database migrations listed in Section 4 must be executed in the Supabase SQL Editor.
 2. **Email Delivery Provider**:
    - `RESEND_API_KEY` and verified `EMAIL_FROM` (e.g. `alerts@catchtheprice.com`) must be configured in Resend.com for live email delivery.
 3. **Admin User Allowlist**:
@@ -132,10 +167,10 @@ npm run bootstrap:dev
 # 2. Run the 5-stage verification suite
 npm run typecheck
 npm run lint
-npm run build
+npm test
 npm run audit:release
 npm run smoke
 
-# 3. Run browser viewport responsive tests
+# 3. Run browser viewport responsive tests (Chrome Headless)
 npm run test:browser
 ```

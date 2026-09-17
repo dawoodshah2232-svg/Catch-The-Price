@@ -4,7 +4,14 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useCountry } from '@/context/CountryContext';
 import { Product } from '@/lib/types';
-import { Search, X, ArrowRight, Sparkles } from 'lucide-react';
+import { Search, X, ArrowRight, Sparkles, History } from 'lucide-react';
+import {
+  scoreProductRelevance,
+  getRecentSearches,
+  saveRecentSearch,
+  removeRecentSearch,
+  clearRecentSearches,
+} from '@/lib/search/searchEngine';
 
 interface SearchBarProps {
   isHero?: boolean;
@@ -20,8 +27,13 @@ export function SearchBar({ isHero = false, autoFocus = false, className = '', o
   const [query, setQuery] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [suggestions, setSuggestions] = useState<Product[]>([]);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
   const [catalog, setCatalog] = useState<Product[]>([]);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    setRecentSearches(getRecentSearches());
+  }, []);
 
   useEffect(() => {
     let active = true;
@@ -42,16 +54,18 @@ export function SearchBar({ isHero = false, autoFocus = false, className = '', o
 
   useEffect(() => {
     if (query.trim().length >= 2) {
-      const q = query.toLowerCase();
-      setSuggestions(
-        catalog
-          .filter((p) => p.title.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q) || p.categoryName.toLowerCase().includes(q))
-          .slice(0, 5)
-      );
+      const q = query.trim();
+      const scored = catalog
+        .map((p) => ({ product: p, score: scoreProductRelevance(p, q) }))
+        .filter((item) => item.score > 0)
+        .sort((a, b) => b.score - a.score)
+        .slice(0, 5)
+        .map((item) => item.product);
+
+      setSuggestions(scored);
       setIsOpen(true);
     } else {
       setSuggestions([]);
-      setIsOpen(false);
     }
   }, [query, catalog]);
 
@@ -65,13 +79,41 @@ export function SearchBar({ isHero = false, autoFocus = false, className = '', o
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!query.trim()) return;
+    const term = query.trim();
+    if (!term) return;
+    saveRecentSearch(term);
+    setRecentSearches(getRecentSearches());
     setIsOpen(false);
     onSearchSubmitted?.();
-    router.push(`/${country}/search?q=${encodeURIComponent(query.trim())}`);
+    router.push(`/${country}/search?q=${encodeURIComponent(term)}`);
+  };
+
+  const handleSelectRecent = (term: string) => {
+    saveRecentSearch(term);
+    setRecentSearches(getRecentSearches());
+    setIsOpen(false);
+    setQuery(term);
+    onSearchSubmitted?.();
+    router.push(`/${country}/search?q=${encodeURIComponent(term)}`);
+  };
+
+  const handleRemoveRecent = (e: React.MouseEvent, term: string) => {
+    e.stopPropagation();
+    const updated = removeRecentSearch(term);
+    setRecentSearches(updated);
+  };
+
+  const handleClearAllRecent = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    clearRecentSearches();
+    setRecentSearches([]);
   };
 
   const handleSelectProduct = (slug: string) => {
+    if (query.trim()) {
+      saveRecentSearch(query.trim());
+      setRecentSearches(getRecentSearches());
+    }
     setIsOpen(false);
     setQuery('');
     onSearchSubmitted?.();
@@ -96,7 +138,7 @@ export function SearchBar({ isHero = false, autoFocus = false, className = '', o
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            onFocus={() => query.trim().length >= 2 && setIsOpen(true)}
+            onFocus={() => setIsOpen(true)}
             placeholder="Search products, brands or models…"
             autoFocus={autoFocus}
             className={`min-w-0 flex-1 bg-transparent placeholder:text-[#8A9A94] focus:outline-none ${chrome ? 'text-[#102027]' : 'ui-text'} ${
@@ -135,31 +177,71 @@ export function SearchBar({ isHero = false, autoFocus = false, className = '', o
         </div>
       </form>
 
-      {isOpen && suggestions.length > 0 && (
+      {isOpen && (
         <div className="ctp-popover-light absolute left-0 right-0 top-full mt-2 rounded-2xl border shadow-[0_18px_48px_rgba(24,52,43,0.16)] overflow-hidden z-50">
-          <div className="px-3 sm:px-4 py-2 bg-[#F8FAF9] border-b border-[#E2EAE6] flex items-center justify-between gap-3 text-xs text-[#52636B]">
-            <span className="flex items-center gap-1.5 font-bold text-[#0B8F58] min-w-0"><Sparkles className="w-3.5 h-3.5 shrink-0" /> Product suggestions</span>
-            <span className="hidden sm:inline text-[11px] text-[#73858D]">Press Enter to search all</span>
-          </div>
+          {query.trim().length >= 2 && suggestions.length > 0 ? (
+            <>
+              <div className="px-3 sm:px-4 py-2 bg-[#F8FAF9] border-b border-[#E2EAE6] flex items-center justify-between gap-3 text-xs text-[#52636B]">
+                <span className="flex items-center gap-1.5 font-bold text-[#0B8F58] min-w-0"><Sparkles className="w-3.5 h-3.5 shrink-0" /> Product suggestions</span>
+                <span className="hidden sm:inline text-[11px] text-[#73858D]">Press Enter to search all</span>
+              </div>
 
-          <div className="divide-y divide-[#DDE7E3]">
-            {suggestions.map((product) => (
-              <button key={product.id} onClick={() => handleSelectProduct(product.slug)} className="w-full flex items-center gap-3 p-3 text-left hover:bg-[#F4F8F6] transition-colors group min-w-0">
-                <img src={product.imageUrl} alt={product.title} className="w-11 h-11 object-contain rounded-xl bg-white p-1 border border-[#DDE7E3] shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <p className="text-xs sm:text-sm font-semibold text-[#102027] truncate group-hover:text-[#0B8F58] transition-colors">{product.title}</p>
-                  <div className="text-[10px] sm:text-[11px] text-[#52636B] flex items-center gap-1.5 mt-0.5 min-w-0">
-                    <span className="font-semibold text-[#73858D] uppercase tracking-wider shrink-0">{product.brand}</span><span>•</span><span className="truncate">{product.categoryName}</span>
-                    <span className="hidden sm:inline">•</span><span className="hidden sm:inline text-[#0B8F58] font-extrabold shrink-0">{formatLocalPrice(product.currentBestPrice)}</span>
-                  </div>
-                </div>
+              <div className="divide-y divide-[#DDE7E3]">
+                {suggestions.map((product) => (
+                  <button key={product.id} onClick={() => handleSelectProduct(product.slug)} className="w-full flex items-center gap-3 p-3 text-left hover:bg-[#F4F8F6] transition-colors group min-w-0">
+                    <img src={product.imageUrl} alt={product.title} className="w-11 h-11 object-contain rounded-xl bg-white p-1 border border-[#DDE7E3] shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs sm:text-sm font-semibold text-[#102027] truncate group-hover:text-[#0B8F58] transition-colors">{product.title}</p>
+                      <div className="text-[10px] sm:text-[11px] text-[#52636B] flex items-center gap-1.5 mt-0.5 min-w-0">
+                        <span className="font-semibold text-[#73858D] uppercase tracking-wider shrink-0">{product.brand}</span><span>•</span><span className="truncate">{product.categoryName}</span>
+                        <span className="hidden sm:inline">•</span><span className="hidden sm:inline text-[#0B8F58] font-extrabold shrink-0">{formatLocalPrice(product.currentBestPrice)}</span>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+
+              <button onClick={handleSubmit} className="w-full py-2.5 px-4 bg-[#F8FAF9] hover:bg-[#EAF8F1] text-center text-xs font-bold text-[#0B8F58] flex items-center justify-center gap-1.5 border-t border-[#E2EAE6]">
+                <span className="truncate">See all results for &ldquo;{query}&rdquo;</span><ArrowRight className="w-3.5 h-3.5 shrink-0" />
               </button>
-            ))}
-          </div>
+            </>
+          ) : query.trim().length < 2 && recentSearches.length > 0 ? (
+            <div>
+              <div className="px-3 sm:px-4 py-2 bg-[#F8FAF9] border-b border-[#E2EAE6] flex items-center justify-between gap-3 text-xs text-[#52636B]">
+                <span className="flex items-center gap-1.5 font-bold text-[#31474F] min-w-0"><History className="w-3.5 h-3.5 text-[#0B8F58] shrink-0" /> Recent searches</span>
+                <button
+                  type="button"
+                  onClick={handleClearAllRecent}
+                  className="text-[11px] font-semibold text-[#8A9A94] hover:text-red-500 transition-colors"
+                >
+                  Clear all
+                </button>
+              </div>
 
-          <button onClick={handleSubmit} className="w-full py-2.5 px-4 bg-[#F8FAF9] hover:bg-[#EAF8F1] text-center text-xs font-bold text-[#0B8F58] flex items-center justify-center gap-1.5 border-t border-[#E2EAE6]">
-            <span className="truncate">See all results for &ldquo;{query}&rdquo;</span><ArrowRight className="w-3.5 h-3.5 shrink-0" />
-          </button>
+              <div className="divide-y divide-[#EBF0EE]">
+                {recentSearches.map((term) => (
+                  <div
+                    key={term}
+                    onClick={() => handleSelectRecent(term)}
+                    className="w-full flex items-center justify-between px-3.5 py-2.5 hover:bg-[#F4F8F6] cursor-pointer transition-colors group"
+                  >
+                    <div className="flex items-center gap-2.5 text-xs sm:text-sm font-medium text-[#20343C] group-hover:text-[#0B8F58]">
+                      <Search className="w-3.5 h-3.5 text-[#8A9A94] group-hover:text-[#0B8F58]" />
+                      <span>{term}</span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={(e) => handleRemoveRecent(e, term)}
+                      className="p-1 text-[#A0AEA9] hover:text-red-500 transition-colors"
+                      aria-label={`Remove ${term}`}
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </div>
       )}
     </div>
