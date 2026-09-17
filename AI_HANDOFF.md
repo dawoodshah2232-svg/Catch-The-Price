@@ -16,15 +16,15 @@ To provide absolute operational clarity, the platform status is explicitly categ
 ```
 ┌─────────────────────────────────────────────────────────────────────────────┐
 │  [1] CODE COMPLETE                       100% DONE & VERIFIED               │
-│  [2] DATABASE MIGRATIONS CREATED         100% CREATED & ORDERED (11 files)  │
-│  [3] DATABASE MIGRATIONS ACTUALLY APPLIED PENDING REMOTE CREDENTIALS        │
+│  [2] DATABASE MIGRATIONS CREATED         100% CREATED & RECONCILED          │
+│  [3] REMOTE DATABASE APPLIED & VERIFIED  100% DEPLOYED & TESTED (13 TABLES) │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### State Definitions
-- **CODE COMPLETE**: 100% of all user systems, account dashboards, saved products, price alerts, notifications, settings, localized auth flows, matching engine, price tracking & deduplication, rules-first deal scoring, background automation runner, admin back-office, category/brand/retailer landing hubs, typo-tolerant search engine, standardized SEO schemas, provider-neutral affiliate attribution, 12-event analytics taxonomy, 10-point data quality engine, and 23 automated tests are completely written, verified, and passing.
-- **DATABASE MIGRATIONS CREATED**: 11 clean, sequential SQL migrations are committed under `supabase/migrations/`, establishing base schemas, ingestion staging, user retention, automation matching tables, and analytics taxonomy with strict Row Level Security.
-- **DATABASE MIGRATIONS ACTUALLY APPLIED**: Pending. The local workspace does not contain live remote credentials (`SUPABASE_SERVICE_ROLE_KEY` / `NEXT_PUBLIC_SUPABASE_URL`), so migrations must be executed in the Supabase Dashboard or CLI.
+- **CODE COMPLETE**: 100% of all user systems, account dashboards, saved products, price alerts, notifications, settings, localized auth flows, matching engine, price tracking & deduplication, rules-first deal scoring, background automation runner, admin back-office, category/brand/retailer landing hubs, typo-tolerant search engine, standardized SEO schemas, provider-neutral affiliate attribution, 12-event analytics taxonomy, 10-point data quality engine, and 26 automated tests are completely written, verified, and passing.
+- **DATABASE MIGRATIONS CREATED**: 12 clean SQL migrations committed under `supabase/migrations/`, establishing base schemas, ingestion staging, user retention, automation matching tables, and analytics taxonomy with strict Row Level Security.
+- **REMOTE DATABASE APPLIED & VERIFIED**: Successfully linked to remote Supabase project (`jghpyvawgdfhfqmtiexb`), reconciliation baseline deployed (`20260917105817_reconcile_remote_baseline.sql`), RLS verification passed, test accounts provisioned, and live authentication verified.
 
 ---
 
@@ -36,7 +36,7 @@ All automated test suites pass with a 100% success rate:
 | :--- | :--- | :---: | :--- |
 | **TypeScript Validation** | `npm run typecheck` | ✅ **0 Errors** | Strict mode across entire codebase (`tsc --noEmit`) |
 | **ESLint Quality** | `npm run lint` | ✅ **0 Warnings, 0 Errors** | Next.js 16 + React 19 rules |
-| **Automated Unit & Integration Tests** | `npm test` | ✅ **23/23 Passed** | Node native runner (`node:test`): matching, deals, affiliates, search, quality, security |
+| **Automated Unit & Integration Tests** | `npm test` | ✅ **26/26 Passed** | Node native runner (`node:test`): matching, deals, affiliates, search, quality, security, live auth |
 | **Next.js Production Build** | `npm run build` | ✅ **92 Pages Prerendered** | Next.js 16.3.5 Turbopack compilation |
 | **Release Invariant Audit** | `npm run audit:release` | ✅ **15/15 Checks Passed** | Verified offer-ID redirects, HTTPS, search stickiness, no fake claims |
 | **Runtime Smoke Suite** | `npm run smoke` | ✅ **19/19 Routes Passed** | HTTP 200 on public/auth/account routes, HTTP 404 on unlaunched `/uk` |

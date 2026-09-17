@@ -57,7 +57,9 @@ function safeCount(value: unknown): number | null {
 
 export async function POST(request: NextRequest) {
   const supabase = getServerSupabase();
-  if (!supabase) return NextResponse.json({ ok: false }, { status: 503 });
+  if (!supabase) {
+    return NextResponse.json({ ok: true, queued: false, reason: 'unconfigured' }, { status: 200 });
+  }
 
   let body: Record<string, unknown>;
   try {
@@ -139,8 +141,8 @@ export async function POST(request: NextRequest) {
   });
 
   if (error) {
-    console.error('Analytics event insert failed:', error);
-    return NextResponse.json({ ok: false }, { status: 500 });
+    console.warn('Analytics event insert skipped/failed:', error.message);
+    return NextResponse.json({ ok: false, queued: false, error: error.message }, { status: 200 });
   }
 
   return new NextResponse(null, { status: 204, headers: { 'Cache-Control': 'no-store' } });

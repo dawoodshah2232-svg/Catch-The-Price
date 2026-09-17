@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useCountry } from '@/context/CountryContext';
 import { Product } from '@/lib/types';
+import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 
 interface AlertItem {
   id: string;
@@ -43,12 +44,13 @@ interface AlertItem {
 }
 
 export function PriceAlertsView() {
-  const { country, countryInfo, alerts: contextAlerts, removeAlert, formatLocalPrice } = useCountry();
+  const { country, countryInfo, alerts: contextAlerts, addAlert, removeAlert, formatLocalPrice } = useCountry();
   const searchParams = useSearchParams();
   const preselectedProductId = searchParams.get('productId');
 
   const [alerts, setAlerts] = useState<AlertItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAuthed, setIsAuthed] = useState(false);
   const [editingAlertId, setEditingAlertId] = useState<string | null>(null);
   const [editPriceInput, setEditPriceInput] = useState<string>('');
   const [filter, setFilter] = useState<'all' | 'active' | 'reached'>('all');
@@ -65,22 +67,35 @@ export function PriceAlertsView() {
     let active = true;
     setLoading(true);
 
-    Promise.all([
-      fetch(`/api/account/alerts?country=${encodeURIComponent(country)}`, { cache: 'no-store' })
-        .then((res) => (res.ok ? res.json() : { alerts: [] }))
-        .catch(() => ({ alerts: [] })),
-      fetch(`/api/catalog?country=${encodeURIComponent(country)}`, { cache: 'no-store' })
-        .then((res) => (res.ok ? res.json() : { products: [] }))
-        .catch(() => ({ products: [] })),
-    ]).then(([alertsRes, catRes]) => {
+    const loadAlerts = async () => {
+      const supabase = createSupabaseBrowserClient();
+      let authed = false;
+      if (supabase) {
+        const { data: { user } } = await supabase.auth.getUser();
+        authed = Boolean(user);
+      }
+      if (!active) return;
+      setIsAuthed(authed);
+
+      const [alertsRes, catRes] = await Promise.all([
+        authed
+          ? fetch(`/api/account/alerts?country=${encodeURIComponent(country)}`, { cache: 'no-store' })
+              .then((res) => (res.ok ? res.json() : { alerts: [] }))
+              .catch(() => ({ alerts: [] }))
+          : Promise.resolve({ alerts: [] }),
+        fetch(`/api/catalog?country=${encodeURIComponent(country)}`, { cache: 'no-store' })
+          .then((res) => (res.ok ? res.json() : { products: [] }))
+          .catch(() => ({ products: [] })),
+      ]);
+
       if (!active) return;
       const fetchedCatalog: Product[] = Array.isArray(catRes.products) ? catRes.products : [];
       setCatalog(fetchedCatalog);
 
-      if (Array.isArray(alertsRes.alerts) && alertsRes.alerts.length > 0) {
+      if (authed && Array.isArray(alertsRes.alerts) && alertsRes.alerts.length > 0) {
         setAlerts(alertsRes.alerts);
       } else {
-        // Fallback: populate from context
+        // Fallback: populate from local context
         const catMap = new Map(fetchedCatalog.map((p) => [p.id, p]));
         const mapped: AlertItem[] = contextAlerts
           .filter((a) => a.country === country)
@@ -116,6 +131,10 @@ export function PriceAlertsView() {
         setAlerts(mapped);
       }
       setLoading(false);
+    };
+
+    loadAlerts().catch(() => {
+      if (active) setLoading(false);
     });
 
     return () => {
@@ -130,6 +149,8 @@ export function PriceAlertsView() {
     setAlerts((prev) =>
       prev.map((a) => (a.id === alert.id ? { ...a, isActive: nextActive } : a))
     );
+
+    if (!isAuthed) return;
 
     try {
       await fetch('/api/account/alerts', {
@@ -172,6 +193,12 @@ export function PriceAlertsView() {
       })
     );
 
+    if (!isAuthed) {
+      setFeedbackMessage('Target price updated locally.');
+      setTimeout(() => setFeedbackMessage(null), 3000);
+      return;
+    }
+
     try {
       await fetch('/api/account/alerts', {
         method: 'PATCH',
@@ -190,6 +217,8 @@ export function PriceAlertsView() {
     setAlerts((prev) => prev.filter((a) => a.id !== alert.id));
     removeAlert(alert.id);
 
+    if (!isAuthed) return;
+
     try {
       await fetch(`/api/account/alerts?id=${encodeURIComponent(alert.id)}`, {
         method: 'DELETE',
@@ -206,6 +235,54 @@ export function PriceAlertsView() {
 
     setCreating(true);
     const prod = catalog.find((p) => p.id === newProductId);
+    const curr = prod?.currentBestPrice || 0;
+    const diff = curr > target ? curr - target : 0;
+
+    const createdItem: AlertItem = {
+      id: `alert-${Date.now()}`,
+      productId: newProductId,
+      country,
+      targetPrice: target,
+      initialPrice: curr,
+      currentPrice: curr,
+      difference: diff,
+      differencePercent: curr > target && curr > 0 ? (diff / curr) * 100 : 0,
+      isTargetReached: curr > 0 && curr <= target,
+      alertType: 'below_amount',
+      isActive: true,
+      product: prod
+        ? {
+            id: prod.id,
+            title: prod.title,
+            slug: prod.slug,
+            imageUrl: prod.imageUrl,
+            currentBestPrice: prod.currentBestPrice,
+            currency: prod.currency,
+            bestMerchantName: prod.bestMerchantName,
+          }
+        : null,
+    };
+
+    if (!isAuthed) {
+      addAlert({
+        productId: newProductId,
+        productTitle: prod?.title || 'Product',
+        productImage: prod?.imageUrl || '',
+        currentPrice: curr,
+        targetPrice: target,
+        alertType: 'below_amount',
+        currency: prod?.currency || countryInfo.currency,
+        country,
+        isActive: true,
+      });
+      setAlerts((prev) => [createdItem, ...prev]);
+      setShowNewModal(false);
+      setNewTargetPrice('');
+      setFeedbackMessage('Price alert created! (Saved on this device)');
+      setTimeout(() => setFeedbackMessage(null), 3500);
+      setCreating(false);
+      return;
+    }
 
     try {
       const res = await fetch('/api/account/alerts', {
@@ -222,34 +299,7 @@ export function PriceAlertsView() {
 
       if (res.ok) {
         const data = await res.json();
-        const curr = prod?.currentBestPrice || 0;
-        const diff = curr > target ? curr - target : 0;
-
-        const createdItem: AlertItem = {
-          id: data.alert?.id || `alert-${Date.now()}`,
-          productId: newProductId,
-          country,
-          targetPrice: target,
-          initialPrice: curr,
-          currentPrice: curr,
-          difference: diff,
-          differencePercent: curr > target && curr > 0 ? (diff / curr) * 100 : 0,
-          isTargetReached: curr > 0 && curr <= target,
-          alertType: 'below_amount',
-          isActive: true,
-          product: prod
-            ? {
-                id: prod.id,
-                title: prod.title,
-                slug: prod.slug,
-                imageUrl: prod.imageUrl,
-                currentBestPrice: prod.currentBestPrice,
-                currency: prod.currency,
-                bestMerchantName: prod.bestMerchantName,
-              }
-            : null,
-        };
-
+        if (data.alert?.id) createdItem.id = data.alert.id;
         setAlerts((prev) => [createdItem, ...prev]);
         setShowNewModal(false);
         setNewTargetPrice('');
@@ -257,7 +307,22 @@ export function PriceAlertsView() {
         setTimeout(() => setFeedbackMessage(null), 3500);
       }
     } catch {
-      // Ignored
+      addAlert({
+        productId: newProductId,
+        productTitle: prod?.title || 'Product',
+        productImage: prod?.imageUrl || '',
+        currentPrice: curr,
+        targetPrice: target,
+        alertType: 'below_amount',
+        currency: prod?.currency || countryInfo.currency,
+        country,
+        isActive: true,
+      });
+      setAlerts((prev) => [createdItem, ...prev]);
+      setShowNewModal(false);
+      setNewTargetPrice('');
+      setFeedbackMessage('Price alert saved locally.');
+      setTimeout(() => setFeedbackMessage(null), 3500);
     } finally {
       setCreating(false);
     }
@@ -299,6 +364,23 @@ export function PriceAlertsView() {
         <div className="flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 p-3.5 text-xs font-semibold text-emerald-800">
           <CheckCircle2 className="h-4 w-4 text-[#00A859] shrink-0" />
           <span>{feedbackMessage}</span>
+        </div>
+      )}
+
+      {!isAuthed && (
+        <div className="flex items-center justify-between gap-3 rounded-2xl border border-emerald-300/60 bg-emerald-50/70 p-3.5 text-xs text-emerald-900">
+          <div className="flex items-center gap-2">
+            <Bell className="h-4 w-4 text-[#00A859] shrink-0" />
+            <span>
+              <strong>Guest mode:</strong> Alerts are active locally. <Link href={`/${country}/login`} className="font-black text-[#008f4c] underline hover:text-[#006e3a]">Sign in</Link> to receive email drop notifications and sync across devices.
+            </span>
+          </div>
+          <Link
+            href={`/${country}/login`}
+            className="shrink-0 rounded-xl bg-[#00C16A] px-3 py-1.5 text-[11px] font-black text-white hover:bg-[#00a85c] transition-colors"
+          >
+            Sign In
+          </Link>
         </div>
       )}
 

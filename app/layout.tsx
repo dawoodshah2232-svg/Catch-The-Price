@@ -70,8 +70,8 @@ const themeScript = `
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`scroll-smooth ${plusJakartaSans.variable}`} data-theme="light" suppressHydrationWarning>
-      <body className="font-sans antialiased min-h-screen flex flex-col selection:bg-[#00D27A]/20 selection:text-[#083b28]">
+    <html lang="en" className={plusJakartaSans.variable} data-theme="light" suppressHydrationWarning>
+      <body className="font-sans antialiased min-h-screen flex flex-col selection:bg-[#00D27A]/20 selection:text-[#083b28]" suppressHydrationWarning>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         {children}
       </body>

@@ -50,6 +50,7 @@
   * { -webkit-tap-highlight-color: transparent; }
 
   html {
+    scroll-behavior: smooth;
     color-scheme: light;
     background-color: var(--ui-bg);
   }

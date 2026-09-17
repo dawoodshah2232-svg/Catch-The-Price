@@ -77,17 +77,17 @@ function LoginForm() {
 
   return (
     <div className="w-full max-w-md">
-      <div className="text-center mb-8">
+      <div className="text-center mb-5">
         <BrandLogo size="lg" />
-        <h1 className="mt-6 text-2xl sm:text-3xl font-black text-[#0c1913] tracking-tight">
+        <h1 className="mt-3.5 text-2xl font-black text-[#0c1913] tracking-tight">
           Welcome back
         </h1>
-        <p className="mt-2 text-sm text-[#546b62]">
+        <p className="mt-1 text-xs text-[#546b62]">
           Sign in to access your saved products, price alerts, and deals.
         </p>
       </div>
 
-      <div className="rounded-3xl border border-[#d6e3dd] bg-white p-6 sm:p-8 shadow-[0_16px_40px_rgba(12,25,19,0.06)]">
+      <div className="rounded-3xl border border-[#d6e3dd] bg-white p-6 sm:p-7 shadow-[0_16px_40px_rgba(12,25,19,0.06)]">
         {errorMessage && (
           <div className="mb-6 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-xs font-semibold text-red-800">
             <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
@@ -211,7 +211,7 @@ function LoginForm() {
           </button>
         </div>
 
-        <div className="mt-7 text-center">
+        <div className="mt-5 text-center">
           <p className="text-xs text-[#546b62]">
             Don&apos;t have an account?{' '}
             <a
@@ -224,7 +224,7 @@ function LoginForm() {
         </div>
       </div>
 
-      <div className="mt-6 flex items-center justify-center gap-2 text-[11px] text-[#6b8076]">
+      <div className="mt-4 flex items-center justify-center gap-2 text-[11px] text-[#6b8076]">
         <ShieldCheck className="w-4 h-4 text-[#00A859]" />
         <span>Secure authentication with encrypted credentials</span>
       </div>
@@ -234,7 +234,7 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <main className="min-h-screen bg-[#f3f7f5] text-[#0c1913] flex items-center justify-center px-4 py-12">
+    <main className="min-h-screen bg-[#f3f7f5] text-[#0c1913] flex items-center justify-center px-4 py-8 sm:py-10">
       <Suspense
         fallback={
           <div className="text-center text-xs text-[#73858D]">

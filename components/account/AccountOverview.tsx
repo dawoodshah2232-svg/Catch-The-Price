@@ -18,6 +18,7 @@ import { useCountry } from '@/context/CountryContext';
 import { Product } from '@/lib/types';
 import { ProductCard } from '@/components/search/ProductCard';
 import { getRecentlyViewedSlugs } from '@/lib/recentlyViewed/client';
+import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 
 interface EnrichedAlert {
   id: string;
@@ -52,17 +53,30 @@ export function AccountOverview() {
     let active = true;
     setLoading(true);
 
-    Promise.all([
-      fetch(`/api/catalog?country=${encodeURIComponent(country)}`, { cache: 'no-store' })
-        .then((res) => (res.ok ? res.json() : { products: [] }))
-        .catch(() => ({ products: [] })),
-      fetch(`/api/account/alerts?country=${encodeURIComponent(country)}`, { cache: 'no-store' })
-        .then((res) => (res.ok ? res.json() : { alerts: [] }))
-        .catch(() => ({ alerts: [] })),
-      fetch('/api/account/notifications', { cache: 'no-store' })
-        .then((res) => (res.ok ? res.json() : { notifications: [] }))
-        .catch(() => ({ notifications: [] })),
-    ]).then(([catRes, alertsRes, notifRes]) => {
+    const loadData = async () => {
+      const supabase = createSupabaseBrowserClient();
+      let hasUser = false;
+      if (supabase) {
+        const { data: { user } } = await supabase.auth.getUser();
+        hasUser = Boolean(user);
+      }
+      if (!active) return;
+
+      const [catRes, alertsRes, notifRes] = await Promise.all([
+        fetch(`/api/catalog?country=${encodeURIComponent(country)}`, { cache: 'no-store' })
+          .then((res) => (res.ok ? res.json() : { products: [] }))
+          .catch(() => ({ products: [] })),
+        hasUser
+          ? fetch(`/api/account/alerts?country=${encodeURIComponent(country)}`, { cache: 'no-store' })
+              .then((res) => (res.ok ? res.json() : { alerts: [] }))
+              .catch(() => ({ alerts: [] }))
+          : Promise.resolve({ alerts: [] }),
+        hasUser
+          ? fetch('/api/account/notifications', { cache: 'no-store' })
+              .then((res) => (res.ok ? res.json() : { notifications: [] }))
+              .catch(() => ({ notifications: [] }))
+          : Promise.resolve({ notifications: [] }),
+      ]);
       if (!active) return;
       const products: Product[] = Array.isArray(catRes.products) ? catRes.products : [];
       setCatalog(products);
@@ -118,6 +132,10 @@ export function AccountOverview() {
       }
 
       setLoading(false);
+    };
+
+    loadData().catch(() => {
+      if (active) setLoading(false);
     });
 
     return () => {

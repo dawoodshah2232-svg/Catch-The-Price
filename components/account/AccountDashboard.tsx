@@ -6,6 +6,7 @@ import { useCountry } from '@/context/CountryContext';
 import { ProductCard } from '@/components/search/ProductCard';
 import { Product } from '@/lib/types';
 import { clearRecentlyViewed, getRecentlyViewedSlugs } from '@/lib/recentlyViewed/client';
+import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 import { Bell, Bookmark, CheckCircle2, Clock, Info, Settings, ShieldCheck, Trash2 } from 'lucide-react';
 
 type TabId = 'saved' | 'tracked' | 'alerts' | 'recent' | 'settings';
@@ -77,18 +78,37 @@ export function AccountDashboard() {
   useEffect(() => {
     let active = true;
     setHistoryLoading(true);
-    fetch(`/api/account/alert-events?country=${encodeURIComponent(country)}`, { cache: 'no-store' })
-      .then(async (response) => (response.ok ? response.json() : { events: [] }))
-      .then((payload) => {
-        if (!active) return;
-        setHistoryEvents(Array.isArray(payload.events) ? payload.events : []);
-      })
-      .catch(() => {
-        if (active) setHistoryEvents([]);
-      })
-      .finally(() => {
+
+    const loadHistory = async () => {
+      const supabase = createSupabaseBrowserClient();
+      if (!supabase) {
         if (active) setHistoryLoading(false);
-      });
+        return;
+      }
+
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!active) return;
+      if (!user) {
+        setHistoryEvents([]);
+        setHistoryLoading(false);
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/account/alert-events?country=${encodeURIComponent(country)}`, { cache: 'no-store' });
+        if (!active) return;
+        const payload = response.ok ? await response.json() : { events: [] };
+        setHistoryEvents(Array.isArray(payload.events) ? payload.events : []);
+      } catch {
+        if (active) setHistoryEvents([]);
+      } finally {
+        if (active) setHistoryLoading(false);
+      }
+    };
+
+    loadHistory().catch(() => {
+      if (active) setHistoryLoading(false);
+    });
 
     return () => {
       active = false;

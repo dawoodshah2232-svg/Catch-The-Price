@@ -231,16 +231,16 @@ export function AccountNavShell({ children, country }: AccountNavShellProps) {
 
           {/* Guest Sync Callout Banner */}
           {!user && !loadingUser && (
-            <div className="mt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-emerald-500/30 bg-emerald-950/40 p-3.5 sm:p-4 text-xs">
-              <div className="flex items-center gap-2.5">
-                <TrendingDown className="h-4 w-4 text-[#00C16A] shrink-0" />
-                <span className="text-slate-200">
-                  <strong className="text-white">Save your alerts permanently:</strong> Sign in to sync your saved products and price drop alerts across phone and desktop.
+            <div className="mt-5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl border border-emerald-500/40 bg-gradient-to-r from-emerald-950/80 to-[#0b1c15] p-3.5 sm:p-4 text-xs shadow-[0_4px_16px_rgba(0,0,0,0.2)]">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <TrendingDown className="h-4 w-4 text-[#00E6A2] shrink-0" />
+                <span className="text-slate-100 leading-relaxed">
+                  <strong className="text-white font-bold">Sync your alerts across devices:</strong> Sign in to save products permanently and receive real-time price-drop notifications.
                 </span>
               </div>
               <Link
                 href={`/${country}/login`}
-                className="shrink-0 font-bold text-[#68efb8] hover:underline flex items-center gap-1"
+                className="shrink-0 inline-flex items-center gap-1 rounded-xl bg-[#00C16A] px-3.5 py-1.5 text-xs font-black text-[#081510] hover:bg-[#00e6a2] transition-colors self-start sm:self-auto"
               >
                 <span>Sign in now</span>
                 <ChevronRight className="h-3.5 w-3.5" />
@@ -249,7 +249,7 @@ export function AccountNavShell({ children, country }: AccountNavShellProps) {
           )}
 
           {/* Account Subnavigation Tabs */}
-          <div className="mt-6 flex items-center gap-1 overflow-x-auto pb-1 scrollbar-none">
+          <div className="mt-6 flex items-center gap-1.5 overflow-x-auto pb-1.5 scrollbar-none">
             {tabs.map((tab) => {
               const Icon = tab.icon;
               const active = isTabActive(tab.href, tab.exact);
@@ -258,10 +258,10 @@ export function AccountNavShell({ children, country }: AccountNavShellProps) {
                 <Link
                   key={tab.label}
                   href={tab.href}
-                  className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all ${
+                  className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all border ${
                     active
-                      ? 'bg-[#00C16A] text-[#081510] shadow-[0_2px_10px_rgba(0,193,106,0.3)]'
-                      : 'text-slate-300 hover:bg-white/10 hover:text-white'
+                      ? 'bg-[#00C16A] text-[#081510] border-[#00e6a2] shadow-[0_2px_12px_rgba(0,193,106,0.35)]'
+                      : 'text-[#d2ddda] bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.12] hover:text-white hover:border-white/[0.16]'
                   }`}
                 >
                   <Icon className="h-4 w-4" />

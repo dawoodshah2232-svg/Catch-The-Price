@@ -14,6 +14,7 @@ import {
 import { useCountry } from '@/context/CountryContext';
 import { Product } from '@/lib/types';
 import { getRecentlyViewedSlugs, clearRecentlyViewed } from '@/lib/recentlyViewed/client';
+import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 
 interface AlertEvent {
   id: string;
@@ -31,29 +32,45 @@ export function HistoryView() {
   const [recentProducts, setRecentProducts] = useState<Product[]>([]);
   const [alertEvents, setAlertEvents] = useState<AlertEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isAuthed, setIsAuthed] = useState(false);
 
   useEffect(() => {
     let active = true;
     setLoading(true);
 
-    Promise.all([
-      fetch(`/api/catalog?country=${encodeURIComponent(country)}`, { cache: 'no-store' })
-        .then((res) => (res.ok ? res.json() : { products: [] }))
-        .catch(() => ({ products: [] })),
-      fetch(`/api/account/alert-events?country=${encodeURIComponent(country)}`, { cache: 'no-store' })
-        .then((res) => (res.ok ? res.json() : { events: [] }))
-        .catch(() => ({ events: [] })),
-      fetch(`/api/account/recently-viewed?country=${encodeURIComponent(country)}`, { cache: 'no-store' })
-        .then((res) => (res.ok ? res.json() : { items: [] }))
-        .catch(() => ({ items: [] })),
-    ]).then(([catRes, eventsRes, recentRes]) => {
+    const loadHistory = async () => {
+      const supabase = createSupabaseBrowserClient();
+      let authed = false;
+      if (supabase) {
+        const { data: { user } } = await supabase.auth.getUser();
+        authed = Boolean(user);
+      }
+      if (!active) return;
+      setIsAuthed(authed);
+
+      const [catRes, eventsRes, recentRes] = await Promise.all([
+        fetch(`/api/catalog?country=${encodeURIComponent(country)}`, { cache: 'no-store' })
+          .then((res) => (res.ok ? res.json() : { products: [] }))
+          .catch(() => ({ products: [] })),
+        authed
+          ? fetch(`/api/account/alert-events?country=${encodeURIComponent(country)}`, { cache: 'no-store' })
+              .then((res) => (res.ok ? res.json() : { events: [] }))
+              .catch(() => ({ events: [] }))
+          : Promise.resolve({ events: [] }),
+        authed
+          ? fetch(`/api/account/recently-viewed?country=${encodeURIComponent(country)}`, { cache: 'no-store' })
+              .then((res) => (res.ok ? res.json() : { items: [] }))
+              .catch(() => ({ items: [] }))
+          : Promise.resolve({ items: [] }),
+      ]);
+
       if (!active) return;
       const prods: Product[] = Array.isArray(catRes.products) ? catRes.products : [];
 
       setAlertEvents(Array.isArray(eventsRes.events) ? eventsRes.events : []);
 
       // Recently viewed: merge server items with local storage slugs
-      if (Array.isArray(recentRes.items) && recentRes.items.length > 0) {
+      if (authed && Array.isArray(recentRes.items) && recentRes.items.length > 0) {
         setRecentProducts(recentRes.items.map((i: any) => i.product).filter(Boolean));
       } else {
         const slugs = getRecentlyViewedSlugs(country);
@@ -64,6 +81,10 @@ export function HistoryView() {
       }
 
       setLoading(false);
+    };
+
+    loadHistory().catch(() => {
+      if (active) setLoading(false);
     });
 
     return () => {
@@ -74,9 +95,11 @@ export function HistoryView() {
   function handleClearBrowsingHistory() {
     clearRecentlyViewed(country);
     setRecentProducts([]);
-    fetch(`/api/account/recently-viewed?country=${encodeURIComponent(country)}`, {
-      method: 'DELETE',
-    }).catch(() => undefined);
+    if (isAuthed) {
+      fetch(`/api/account/recently-viewed?country=${encodeURIComponent(country)}`, {
+        method: 'DELETE',
+      }).catch(() => undefined);
+    }
   }
 
   return (
@@ -210,6 +233,24 @@ export function HistoryView() {
             </p>
           </div>
         )
+      ) : !isAuthed ? (
+        <div className="rounded-3xl border border-dashed border-[#d2e0da] bg-white p-10 sm:p-12 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#e6f9f0] text-[#00A859]">
+            <TrendingDown className="h-8 w-8" />
+          </div>
+          <h2 className="mt-4 text-xl font-black text-[#0c1913]">Price Movement History</h2>
+          <p className="mt-2 text-xs text-[#5c7268] max-w-md mx-auto leading-relaxed">
+            Price change and trigger events are tied to your account alerts. Sign in or register to record historical price drops on your tracked products.
+          </p>
+          <div className="mt-6 flex items-center justify-center gap-3">
+            <Link
+              href={`/${country}/login`}
+              className="inline-flex items-center gap-1.5 rounded-2xl bg-[#00C16A] px-5 py-2.5 text-xs font-black text-white hover:bg-[#00a85c] shadow-[0_4px_12px_rgba(0,193,106,0.25)] transition-all"
+            >
+              <span>Sign In</span>
+            </Link>
+          </div>
+        </div>
       ) : alertEvents.length > 0 ? (
         <div className="space-y-3">
           {alertEvents.map((event) => (

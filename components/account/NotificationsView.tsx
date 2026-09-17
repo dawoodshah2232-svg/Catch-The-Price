@@ -15,6 +15,8 @@ import {
   Info,
   ExternalLink,
 } from 'lucide-react';
+import { useCountry } from '@/context/CountryContext';
+import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 
 interface NotificationItem {
   id: string;
@@ -61,28 +63,55 @@ function getIconForType(type: NotificationItem['type']) {
 }
 
 export function NotificationsView() {
+  const { country } = useCountry();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [isAuthed, setIsAuthed] = useState(false);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
   useEffect(() => {
     let active = true;
     setLoading(true);
 
-    fetch('/api/account/notifications', { cache: 'no-store' })
-      .then((res) => (res.ok ? res.json() : { notifications: [], unreadCount: 0 }))
-      .then((data) => {
+    const loadNotifications = async () => {
+      const supabase = createSupabaseBrowserClient();
+      let authed = false;
+      if (supabase) {
+        const { data: { user } } = await supabase.auth.getUser();
+        authed = Boolean(user);
+      }
+      if (!active) return;
+      setIsAuthed(authed);
+
+      if (!authed) {
+        setNotifications([]);
+        setUnreadCount(0);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/account/notifications', { cache: 'no-store' });
         if (!active) return;
-        setNotifications(Array.isArray(data.notifications) ? data.notifications : []);
-        setUnreadCount(typeof data.unreadCount === 'number' ? data.unreadCount : 0);
-      })
-      .catch(() => {
+        if (res.ok) {
+          const data = await res.json();
+          setNotifications(Array.isArray(data.notifications) ? data.notifications : []);
+          setUnreadCount(typeof data.unreadCount === 'number' ? data.unreadCount : 0);
+        } else {
+          setNotifications([]);
+          setUnreadCount(0);
+        }
+      } catch {
         if (active) setNotifications([]);
-      })
-      .finally(() => {
+      } finally {
         if (active) setLoading(false);
-      });
+      }
+    };
+
+    loadNotifications().catch(() => {
+      if (active) setLoading(false);
+    });
 
     return () => {
       active = false;
@@ -95,6 +124,8 @@ export function NotificationsView() {
       prev.map((n) => (n.id === id ? { ...n, is_read: true, read_at: new Date().toISOString() } : n))
     );
     setUnreadCount((prev) => Math.max(0, prev - 1));
+
+    if (!isAuthed) return;
 
     try {
       await fetch('/api/account/notifications', {
@@ -111,6 +142,8 @@ export function NotificationsView() {
     // Optimistic update
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true, read_at: new Date().toISOString() })));
     setUnreadCount(0);
+
+    if (!isAuthed) return;
 
     try {
       await fetch('/api/account/notifications', {
@@ -129,6 +162,8 @@ export function NotificationsView() {
       setUnreadCount((prev) => Math.max(0, prev - 1));
     }
     setNotifications((prev) => prev.filter((n) => n.id !== id));
+
+    if (!isAuthed) return;
 
     try {
       await fetch(`/api/account/notifications?id=${encodeURIComponent(id)}`, {
@@ -265,6 +300,30 @@ export function NotificationsView() {
               </div>
             </div>
           ))}
+        </div>
+      ) : !isAuthed ? (
+        <div className="rounded-3xl border border-dashed border-[#d2e0da] bg-white p-10 sm:p-12 text-center">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-[#e6f9f0] text-[#00A859]">
+            <Bell className="h-8 w-8" />
+          </div>
+          <h2 className="mt-4 text-xl font-black text-[#0c1913]">Stay Updated on Price Drops</h2>
+          <p className="mt-2 text-xs text-[#5c7268] max-w-md mx-auto leading-relaxed">
+            You are currently shopping as a guest. Sign in or register to activate your personal Notification Center and receive real-time alerts when your tracked items drop in price.
+          </p>
+          <div className="mt-6 flex items-center justify-center gap-3">
+            <Link
+              href={`/${country}/login`}
+              className="inline-flex items-center gap-1.5 rounded-2xl bg-[#00C16A] px-5 py-2.5 text-xs font-black text-white hover:bg-[#00a85c] shadow-[0_4px_12px_rgba(0,193,106,0.25)] transition-all"
+            >
+              <span>Sign In to CatchThePrice</span>
+            </Link>
+            <Link
+              href={`/${country}/signup`}
+              className="inline-flex items-center gap-1.5 rounded-2xl border border-[#d2e0da] bg-white px-4 py-2.5 text-xs font-bold text-[#0c1913] hover:bg-[#f2f7f4] transition-colors"
+            >
+              <span>Create Free Account</span>
+            </Link>
+          </div>
         </div>
       ) : (
         <div className="rounded-3xl border border-dashed border-[#d2e0da] bg-white p-12 text-center">

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
   Settings,
@@ -40,29 +41,54 @@ export function SettingsView() {
     let active = true;
     setLoading(true);
 
-    fetch('/api/account/profile', { cache: 'no-store' })
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (!active) return;
-        if (data?.user) {
-          setUser(data.user);
-          setDisplayName(data.user.profile?.display_name || '');
-          setEmail(data.user.email || '');
-          setMarket(data.user.profile?.preferred_country || country);
+    const loadProfile = async () => {
+      const supabase = createSupabaseBrowserClient();
+      if (!supabase) {
+        if (active) setLoading(false);
+        return;
+      }
 
-          const s = data.user.settings;
-          if (s) {
-            setNotifyPriceDrops(Boolean(s.notify_price_drops));
-            setNotifyTargetReached(Boolean(s.notify_target_reached));
-            setNotifyWeeklyDigest(Boolean(s.notify_weekly_digest));
-            setNotifyDeals(Boolean(s.notify_deals));
+      const {
+        data: { user: authUser },
+      } = await supabase.auth.getUser();
+
+      if (!active) return;
+      if (!authUser) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/account/profile', { cache: 'no-store' });
+        if (!active) return;
+        if (res.ok) {
+          const data = await res.json();
+          if (data?.user) {
+            setUser(data.user);
+            setDisplayName(data.user.profile?.display_name || authUser.user_metadata?.full_name || '');
+            setEmail(data.user.email || authUser.email || '');
+            setMarket(data.user.profile?.preferred_country || country);
+
+            const s = data.user.settings;
+            if (s) {
+              setNotifyPriceDrops(Boolean(s.notify_price_drops));
+              setNotifyTargetReached(Boolean(s.notify_target_reached));
+              setNotifyWeeklyDigest(Boolean(s.notify_weekly_digest));
+              setNotifyDeals(Boolean(s.notify_deals));
+            }
           }
         }
-        setLoading(false);
-      })
-      .catch(() => {
+      } catch {
+        // Ignored
+      } finally {
         if (active) setLoading(false);
-      });
+      }
+    };
+
+    loadProfile().catch(() => {
+      if (active) setLoading(false);
+    });
 
     return () => {
       active = false;
@@ -73,6 +99,17 @@ export function SettingsView() {
     e.preventDefault();
     setSaving(true);
     setFeedback(null);
+
+    if (!user) {
+      if (market !== country) {
+        setCountry(market as any);
+        router.push(`/${market}/account/settings`);
+      }
+      setFeedback({ type: 'success', text: 'Shopping region preferences saved locally.' });
+      setSaving(false);
+      setTimeout(() => setFeedback(null), 3000);
+      return;
+    }
 
     try {
       const res = await fetch('/api/account/profile', {
@@ -152,42 +189,72 @@ export function SettingsView() {
         </div>
       )}
 
-      <form onSubmit={handleSaveSettings} className="space-y-6">
-        {/* 1. Profile Information */}
-        <section className="rounded-3xl border border-[#d6e3dd] bg-white p-6 shadow-[0_4px_16px_rgba(0,0,0,0.02)] space-y-4">
-          <h2 className="text-sm font-black text-[#0c1913] flex items-center gap-2">
-            <User className="h-4 w-4 text-[#00A859]" />
-            <span>Profile Information</span>
-          </h2>
-
-          <div>
-            <label className="block text-xs font-bold text-[#1f382e] mb-1.5" htmlFor="settings-name">
-              Full / Display Name
-            </label>
-            <input
-              id="settings-name"
-              type="text"
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              placeholder="Your name"
-              className="h-11 w-full rounded-2xl border border-[#d2e0da] bg-[#f8faf9] px-3.5 text-xs font-bold text-[#0c1913] outline-none focus:border-[#00C16A] focus:bg-white"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-[#1f382e] mb-1.5" htmlFor="settings-email">
-              Email Address
-            </label>
-            <div className="flex h-11 items-center gap-2 rounded-2xl border border-[#d2e0da] bg-slate-50 px-3.5 text-xs text-slate-500">
-              <Mail className="h-4 w-4 text-slate-400" />
-              <span className="font-medium text-[#0c1913]">{email || 'guest@catchtheprice.local'}</span>
-              <span className="ml-auto flex items-center gap-1 rounded-md bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
-                <ShieldCheck className="h-3 w-3" />
-                Verified
-              </span>
+      {!user && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-3xl border border-emerald-300/60 bg-emerald-50/70 p-6">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <ShieldCheck className="h-5 w-5 text-[#00A859]" />
+              <h3 className="text-sm font-black text-[#0c1913]">Browsing as a Guest</h3>
             </div>
+            <p className="text-xs text-[#5c7268] max-w-lg leading-relaxed">
+              Sign in or create a free account to customize notifications, save alerts permanently, and synchronize across all your devices.
+            </p>
           </div>
-        </section>
+          <div className="flex items-center gap-2 shrink-0">
+            <Link
+              href={`/${country}/login`}
+              className="inline-flex h-10 items-center justify-center rounded-xl bg-[#00C16A] px-4 text-xs font-black text-white hover:bg-[#00a85c] shadow-[0_4px_12px_rgba(0,193,106,0.25)] transition-all"
+            >
+              Sign In
+            </Link>
+            <Link
+              href={`/${country}/signup`}
+              className="inline-flex h-10 items-center justify-center rounded-xl border border-[#d2e0da] bg-white px-4 text-xs font-bold text-[#0c1913] hover:bg-[#f2f7f4] transition-colors"
+            >
+              Register
+            </Link>
+          </div>
+        </div>
+      )}
+
+      <form onSubmit={handleSaveSettings} className="space-y-6">
+        {/* 1. Profile Information (Only for authenticated users) */}
+        {user && (
+          <section className="rounded-3xl border border-[#d6e3dd] bg-white p-6 shadow-[0_4px_16px_rgba(0,0,0,0.02)] space-y-4">
+            <h2 className="text-sm font-black text-[#0c1913] flex items-center gap-2">
+              <User className="h-4 w-4 text-[#00A859]" />
+              <span>Profile Information</span>
+            </h2>
+
+            <div>
+              <label className="block text-xs font-bold text-[#1f382e] mb-1.5" htmlFor="settings-name">
+                Full / Display Name
+              </label>
+              <input
+                id="settings-name"
+                type="text"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                placeholder="Your name"
+                className="h-11 w-full rounded-2xl border border-[#d2e0da] bg-[#f8faf9] px-3.5 text-xs font-bold text-[#0c1913] outline-none focus:border-[#00C16A] focus:bg-white"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#1f382e] mb-1.5" htmlFor="settings-email">
+                Email Address
+              </label>
+              <div className="flex h-11 items-center gap-2 rounded-2xl border border-[#d2e0da] bg-slate-50 px-3.5 text-xs text-slate-500">
+                <Mail className="h-4 w-4 text-slate-400" />
+                <span className="font-medium text-[#0c1913]">{email}</span>
+                <span className="ml-auto flex items-center gap-1 rounded-md bg-emerald-100 px-2 py-0.5 text-[10px] font-bold text-emerald-800">
+                  <ShieldCheck className="h-3 w-3" />
+                  Verified
+                </span>
+              </div>
+            </div>
+          </section>
+        )}
 
         {/* 2. Market & Currency Preferences */}
         <section className="rounded-3xl border border-[#d6e3dd] bg-white p-6 shadow-[0_4px_16px_rgba(0,0,0,0.02)] space-y-4">
