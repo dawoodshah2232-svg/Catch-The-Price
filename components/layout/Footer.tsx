@@ -8,6 +8,7 @@ import { CountryCode } from '@/lib/types';
 import { ShieldCheck, TrendingDown, BellRing, Sparkles, ChevronDown, BookOpen } from 'lucide-react';
 
 const MARKET_CODES: CountryCode[] = ['ae', 'us', 'sa', 'uk', 'ca', 'au'];
+const MARKET_LABELS: Record<CountryCode, string> = { ae: 'UAE', us: 'USA', sa: 'Saudi Arabia', uk: 'UK', ca: 'Canada', au: 'Australia' };
 
 export function Footer() {
   const { country, setCountry } = useCountry();
@@ -52,15 +53,15 @@ export function Footer() {
                     key={code}
                     onClick={() => isLive && setCountry(code)}
                     disabled={!isLive}
-                    className={`inline-flex min-h-[42px] items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-[11px] transition-all ${
+                    className={`inline-flex min-h-[42px] items-center gap-2 rounded-xl border px-3 py-2 text-left text-[11px] font-semibold transition-all ${
                       code === country
-                        ? 'border-[#2b875e] bg-[#123c2c] font-bold text-[#a3f6ca] shadow-[inset_0_1px_0_rgba(255,255,255,.06)]'
+                        ? 'border-[#00C16A] bg-[#d9fbe7] text-[#065F46] shadow-[0_3px_9px_rgba(0,193,106,.14)]'
                         : isLive
-                          ? 'border-[#29424e] bg-[#0f1c24] text-[#e0ebe6] hover:-translate-y-px hover:border-[#4d8070] hover:bg-[#14272e] hover:text-white'
-                          : 'cursor-not-allowed border-[#203540] bg-[#0a151b] text-[#95aaa1] opacity-80'
+                          ? 'border-[#6dd9a5] bg-[#ECFDF5] text-[#075b43] hover:-translate-y-px hover:border-[#00C16A] hover:bg-[#dff9eb] hover:shadow-[0_4px_10px_rgba(0,193,106,.14)]'
+                          : 'cursor-not-allowed border-[#8bd9b2] bg-[#f0fdf4] text-[#27694f] opacity-90'
                     }`}
                   >
-                    <span className="text-[16px] leading-none">{c.flag}</span><span className="min-w-0 truncate">{c.name}</span>
+                    <span className="text-[16px] leading-none">{c.flag}</span><span className="min-w-0 truncate">{MARKET_LABELS[code]}</span>
                   </button>
                 );
               })}</div>

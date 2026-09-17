@@ -32,14 +32,14 @@ export function CountrySwitcher({ compact = false, shortLabel = false, onDark = 
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`h-10 ${compact ? 'min-w-[44px]' : shortLabel ? 'min-w-[82px]' : 'min-w-[222px]'} flex items-center justify-center gap-2 rounded-xl border border-[#D1D5DB] bg-white px-3.5 py-2.5 text-xs font-semibold text-[#1F2937] whitespace-nowrap transition-colors hover:border-[#00C16A] focus:border-[#00C16A] focus:outline-none focus:ring-2 focus:ring-[#00C16A]/20`}
+        className={`h-10 ${compact ? 'min-w-[44px]' : shortLabel ? 'min-w-[82px]' : 'min-w-[222px]'} flex items-center justify-center gap-2 rounded-xl border border-[#67d7a2] bg-[#ECFDF5] px-3.5 py-2.5 text-xs font-semibold text-[#065F46] whitespace-nowrap shadow-[inset_0_1px_0_rgba(255,255,255,.8)] transition-all hover:-translate-y-px hover:border-[#00C16A] hover:bg-[#dff9eb] hover:shadow-[0_4px_10px_rgba(0,193,106,.14)] focus:border-[#00C16A] focus:outline-none focus:ring-2 focus:ring-[#00C16A]/25`}
         aria-expanded={isOpen}
         aria-label="Select country"
       >
         <span className="text-[17px] leading-none" aria-hidden="true">{countryInfo.flag}</span>
         {!compact && <span className={shortLabel ? '' : 'min-w-0 flex-1 text-left'}>{shortLabel ? (country === 'ae' ? 'UAE' : 'USA') : countryInfo.name}</span>}
-        {!compact && !shortLabel && <span className="text-[#1F2937]">{countryInfo.currency}</span>}
-        <ChevronDown className={`w-3.5 h-3.5 text-[#6B7280] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+        {!compact && !shortLabel && <span className="text-[#065F46]">{countryInfo.currency}</span>}
+        <ChevronDown className={`w-3.5 h-3.5 text-[#047857] transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
       </button>
 
       {isOpen && (

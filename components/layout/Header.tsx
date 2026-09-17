@@ -33,7 +33,7 @@ export function Header() {
   return <>
     <header className="hidden xl:block sticky top-0 z-50 bg-black text-white shadow-[0_6px_22px_rgba(0,0,0,.18)]">
       <div className="max-w-[1600px] mx-auto px-5 xl:px-8">
-        <div className="h-[66px] flex items-center gap-3 xl:gap-4">
+        <div className="h-[66px] flex items-center gap-2.5 xl:gap-3.5">
           <a href={`/${country}`} aria-label="CatchThePrice Home" className="shrink-0 flex h-[58px] w-[214px] items-center"><img src="/images/catch-the-price-logo.png" alt="CatchThePrice" className="h-full w-full object-contain [image-rendering:-webkit-optimize-contrast]" /></a>
           <div className="min-w-0 flex-1"><HeaderSearch country={country} /></div>
           <div className="ml-1 flex shrink-0 items-center gap-1.5 border-l border-white/[.14] pl-3">
@@ -41,7 +41,7 @@ export function Header() {
           <a href={`/${country}/compare`} className="inline-flex h-10 items-center gap-2 rounded-lg px-2.5 !text-[#e9f1ee] text-[12px] font-bold transition-colors hover:bg-white/[.07] hover:!text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#65E8A8]"><Scale className="h-[18px] w-[18px]"/><span>Compare</span></a>
           <a href={`/${country}/account`} className="inline-flex h-10 items-center gap-2 rounded-lg px-2.5 !text-[#e9f1ee] text-[12px] font-bold transition-colors hover:bg-white/[.07] hover:!text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#65E8A8]"><User className="h-[18px] w-[18px]"/><span>Account</span></a>
           <CountrySwitcher shortLabel onDark />
-          <button type="button" aria-label={`Currency: ${countryInfo.currency}. Currency follows the selected market.`} className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-[#D1D5DB] bg-white px-3.5 py-2.5 text-[12px] font-semibold text-[#1F2937] transition-colors hover:border-[#00C16A] focus:border-[#00C16A] focus:outline-none focus:ring-2 focus:ring-[#00C16A]/20">{countryInfo.currency}<ChevronDown className="h-3.5 w-3.5 text-[#6B7280]" /></button>
+          <button type="button" aria-label={`Currency: ${countryInfo.currency}. Currency follows the selected market.`} className="inline-flex h-10 items-center gap-1.5 rounded-xl border border-[#67d7a2] bg-[#ECFDF5] px-3.5 py-2.5 text-[12px] font-semibold text-[#065F46] shadow-[inset_0_1px_0_rgba(255,255,255,.8)] transition-all hover:-translate-y-px hover:border-[#00C16A] hover:bg-[#dff9eb] hover:shadow-[0_4px_10px_rgba(0,193,106,.14)] focus:border-[#00C16A] focus:outline-none focus:ring-2 focus:ring-[#00C16A]/25">{countryInfo.currency}<ChevronDown className="h-3.5 w-3.5 text-[#047857]" /></button>
           </div>
         </div>
       </div>
