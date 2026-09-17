@@ -32,7 +32,7 @@ export function CountrySwitcher({ compact = false, shortLabel = false }: Country
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className={`h-10 ${compact ? 'min-w-[44px]' : shortLabel ? 'min-w-[82px]' : 'min-w-[222px]'} flex items-center justify-center gap-2 rounded-xl border border-[#67d7a2] bg-[#ECFDF5] px-3.5 py-2.5 text-xs font-semibold text-[#065F46] whitespace-nowrap shadow-[inset_0_1px_0_rgba(255,255,255,.8)] transition-all hover:-translate-y-px hover:border-[#00C16A] hover:bg-[#dff9eb] hover:shadow-[0_4px_10px_rgba(0,193,106,.14)] focus:border-[#00C16A] focus:outline-none focus:ring-2 focus:ring-[#00C16A]/25`}
+        className={`h-10 ${compact ? 'min-w-[38px] gap-1 px-2' : `${shortLabel ? 'min-w-[82px]' : 'min-w-[222px]'} gap-2 px-3.5`} flex items-center justify-center rounded-xl border border-[#67d7a2] bg-[#ECFDF5] py-2.5 text-xs font-semibold text-[#065F46] whitespace-nowrap shadow-[inset_0_1px_0_rgba(255,255,255,.8)] transition-all hover:-translate-y-px hover:border-[#00C16A] hover:bg-[#dff9eb] hover:shadow-[0_4px_10px_rgba(0,193,106,.14)] focus:border-[#00C16A] focus:outline-none focus:ring-2 focus:ring-[#00C16A]/25`}
         aria-expanded={isOpen}
         aria-label="Select country"
       >

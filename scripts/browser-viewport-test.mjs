@@ -15,6 +15,8 @@ if (!fs.existsSync(screenshotDir)) {
 
 const viewports = [
   { name: 'desktop', width: 1280, height: 800 },
+  { name: 'desktop-wide', width: 1440, height: 900 },
+  { name: 'tablet', width: 768, height: 1024 },
   { name: 'mobile-360', width: 360, height: 780 },
   { name: 'mobile-390', width: 390, height: 844 },
   { name: 'mobile-430', width: 430, height: 932 },
@@ -28,7 +30,12 @@ const testRoutes = [
   { path: '/ae/account', label: 'account-overview' },
   { path: '/ae/account/saved', label: 'account-saved' },
   { path: '/ae/account/alerts', label: 'account-alerts' },
+  { path: '/ae/account/notifications', label: 'account-notifications' },
+  { path: '/ae/account/history', label: 'account-history' },
+  { path: '/ae/account/settings', label: 'account-settings' },
   { path: '/ae/login', label: 'login' },
+  { path: '/ae/signup', label: 'signup' },
+  { path: '/admin-access', label: 'admin-access' },
 ];
 
 function sleep(ms) {
@@ -48,6 +55,15 @@ async function waitForServer(timeoutMs = 45000) {
 }
 
 async function main() {
+  const globals = fs.readFileSync(path.join(process.cwd(), 'app', 'globals.css'), 'utf8');
+  const accountNav = fs.readFileSync(path.join(process.cwd(), 'components', 'account', 'AccountNavShell.tsx'), 'utf8');
+  if (globals.includes('.public-shell [class*="text-white"]') || !globals.includes('.ctp-dark-tab[data-active')) {
+    throw new Error('Contrast regression guard failed: shared dark-surface states are incomplete.');
+  }
+  if (!accountNav.includes('ctp-dark-tab') || !accountNav.includes("aria-current={active ? 'page'")) {
+    throw new Error('Contrast regression guard failed: account navigation lacks accessible semantic states.');
+  }
+
   console.log(`Starting Next.js production server on port ${port}...`);
   const server = spawn(
     process.execPath,
@@ -85,6 +101,10 @@ async function main() {
         ];
 
         try {
+          const response = await fetch(url, { redirect: 'manual' });
+          if (response.status < 200 || response.status >= 400) {
+            throw new Error(`route returned HTTP ${response.status}`);
+          }
           await execFileAsync(chromePath, args, { timeout: 15000 });
 
           if (fs.existsSync(outPath)) {

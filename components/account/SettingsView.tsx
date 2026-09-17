@@ -161,7 +161,7 @@ export function SettingsView() {
   }
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="max-w-[1100px] space-y-6">
       <div>
         <h1 className="text-2xl font-black text-[#0c1913] flex items-center gap-2.5">
           <Settings className="h-6 w-6 text-[#00A859]" />
@@ -211,13 +211,13 @@ export function SettingsView() {
               href={`/${country}/signup`}
               className="inline-flex h-10 items-center justify-center rounded-xl border border-[#d2e0da] bg-white px-4 text-xs font-bold text-[#0c1913] hover:bg-[#f2f7f4] transition-colors"
             >
-              Register
+              Create Account
             </Link>
           </div>
         </div>
       )}
 
-      <form onSubmit={handleSaveSettings} className="space-y-6">
+      <form onSubmit={handleSaveSettings} className="grid gap-6 lg:grid-cols-2">
         {/* 1. Profile Information (Only for authenticated users) */}
         {user && (
           <section className="rounded-3xl border border-[#d6e3dd] bg-white p-6 shadow-[0_4px_16px_rgba(0,0,0,0.02)] space-y-4">
@@ -283,7 +283,7 @@ export function SettingsView() {
         </section>
 
         {/* 3. Notification Preferences */}
-        <section className="rounded-3xl border border-[#d6e3dd] bg-white p-6 shadow-[0_4px_16px_rgba(0,0,0,0.02)] space-y-4">
+        <section className="rounded-3xl border border-[#d6e3dd] bg-white p-6 shadow-[0_4px_16px_rgba(0,0,0,0.02)] space-y-4 lg:col-span-2">
           <h2 className="text-sm font-black text-[#0c1913] flex items-center gap-2">
             <Bell className="h-4 w-4 text-[#00A859]" />
             <span>Alert & Notification Preferences</span>
@@ -353,7 +353,7 @@ export function SettingsView() {
         </section>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-2 lg:col-span-2">
           <button
             type="submit"
             disabled={saving}

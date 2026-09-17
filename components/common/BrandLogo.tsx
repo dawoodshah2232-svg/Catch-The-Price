@@ -7,11 +7,13 @@ interface BrandLogoProps {
   variant?: 'full' | 'symbol' | 'monochrome';
   size?: 'sm' | 'md' | 'lg';
   className?: string;
+  surface?: 'dark-surface' | 'light-surface';
   onDark?: boolean;
 }
 
-export function BrandLogo({ variant = 'full', size = 'md', className = '', onDark = false }: BrandLogoProps) {
+export function BrandLogo({ variant = 'full', size = 'md', className = '', surface, onDark = false }: BrandLogoProps) {
   const { country } = useCountry();
+  const darkSurface = surface ? surface === 'dark-surface' : onDark;
 
   if (variant === 'symbol') {
     const symbolSizes = {
@@ -35,7 +37,7 @@ export function BrandLogo({ variant = 'full', size = 'md', className = '', onDar
     );
   }
 
-  if (onDark) {
+  if (variant === 'full') {
     const symbolSizes = {
       sm: 'w-7 h-7',
       md: 'w-8 h-8 sm:w-9 sm:h-9',
@@ -59,7 +61,7 @@ export function BrandLogo({ variant = 'full', size = 'md', className = '', onDar
           className={`${symbolSizes[size]} object-contain drop-shadow-md transition-transform duration-200 group-hover:scale-105`}
         />
         <span className={`${wordSizes[size]} font-black tracking-[-0.035em] leading-none whitespace-nowrap`}>
-          <span className="text-white">CatchThe</span><span className="text-[#00D27A]">Price</span>
+          <span className={darkSurface ? 'text-white' : 'text-[#102027]'}>CatchThe</span><span className="text-[#00D27A]">Price</span>
         </span>
       </a>
     );

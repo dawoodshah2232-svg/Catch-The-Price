@@ -185,7 +185,7 @@ export function AccountNavShell({ children, country }: AccountNavShellProps) {
               </div>
 
               <div className="min-w-0">
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <h1 className="text-xl sm:text-2xl font-black tracking-tight text-white truncate">
                     {user ? user.displayName : 'Guest Shopper'}
                   </h1>
@@ -204,7 +204,7 @@ export function AccountNavShell({ children, country }: AccountNavShellProps) {
                 <button
                   type="button"
                   onClick={handleSignOut}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-white/10 bg-white/5 px-3.5 py-2 text-xs font-bold text-slate-200 transition-colors hover:bg-white/10 hover:text-white"
+                  className="ctp-dark-action inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold"
                 >
                   <LogOut className="h-3.5 w-3.5 text-emerald-400" />
                   <span>Sign Out</span>
@@ -220,9 +220,9 @@ export function AccountNavShell({ children, country }: AccountNavShellProps) {
                   </Link>
                   <Link
                     href={`/${country}/signup?next=${encodeURIComponent(pathname)}`}
-                    className="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/5 px-3.5 py-2 text-xs font-bold text-white hover:bg-white/10 transition-colors"
+                    className="ctp-dark-action inline-flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold"
                   >
-                    <span>Register</span>
+                    <span>Create Account</span>
                   </Link>
                 </div>
               )}
@@ -235,7 +235,7 @@ export function AccountNavShell({ children, country }: AccountNavShellProps) {
               <div className="flex items-center gap-2.5 min-w-0">
                 <TrendingDown className="h-4 w-4 text-[#00E6A2] shrink-0" />
                 <span className="text-slate-100 leading-relaxed">
-                  <strong className="text-white font-bold">Sync your alerts across devices:</strong> Sign in to save products permanently and receive real-time price-drop notifications.
+                  <strong className="text-white font-bold">Sync your saved items across devices.</strong> Save products permanently and receive real-time price-drop notifications.
                 </span>
               </div>
               <Link
@@ -258,11 +258,9 @@ export function AccountNavShell({ children, country }: AccountNavShellProps) {
                 <Link
                   key={tab.label}
                   href={tab.href}
-                  className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold transition-all border ${
-                    active
-                      ? 'bg-[#00C16A] text-[#081510] border-[#00e6a2] shadow-[0_2px_12px_rgba(0,193,106,0.35)]'
-                      : 'text-[#d2ddda] bg-white/[0.04] border-white/[0.08] hover:bg-white/[0.12] hover:text-white hover:border-white/[0.16]'
-                  }`}
+                  aria-current={active ? 'page' : undefined}
+                  data-active={active}
+                  className="ctp-dark-tab inline-flex shrink-0 items-center gap-2 rounded-xl px-3.5 py-2 text-xs font-bold"
                 >
                   <Icon className="h-4 w-4" />
                   <span>{tab.label}</span>

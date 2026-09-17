@@ -174,3 +174,15 @@ npm run smoke
 # 3. Run browser viewport responsive tests (Chrome Headless)
 npm run test:browser
 ```
+
+---
+
+## 7. Supabase Auth confirmation-email branding (operator action)
+
+Hosted Supabase Auth templates are managed in the Supabase Dashboard (or the Management API), not by the committed database migration configuration. In the linked production project, open **Authentication → Email Templates → Confirm signup** and set:
+
+- **Subject:** `Confirm your CatchThePrice account`
+- **Template:** use the hosted template editor with a dark `#081218` container, CatchThePrice wordmark, an emerald `#00C16A` **Confirm Email** button linked to `{{ .ConfirmationURL }}`, a note that the link was requested to secure the account, and `CatchThePrice — Track it. Catch the drop. Pay less.` in the footer.
+- Keep `{{ .ConfirmationURL }}` intact and confirm that the production app URL is present in **Authentication → URL Configuration → Redirect URLs** before saving.
+
+Do not place Auth management tokens or mailer credentials in this repository.

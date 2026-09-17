@@ -64,7 +64,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <aside className="w-full md:w-64 bg-ctp-surface border-r border-ctp p-4 flex flex-col justify-between shrink-0">
           <div>
             <div className="flex items-center justify-between pb-4 border-b border-ctp">
-              <BrandLogo size="sm" />
+              <BrandLogo size="sm" surface="dark-surface" />
               <span className="px-2 py-0.5 rounded text-[10px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                 PRIVATE
               </span>

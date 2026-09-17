@@ -9,7 +9,7 @@ import { createSupabaseBrowserClient } from '@/lib/supabase/browser';
 
 export default function AdminAccessPage() {
   const router = useRouter();
-  const [email, setEmail] = useState('info@catchtheprice.com');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
