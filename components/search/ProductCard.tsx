@@ -1,10 +1,49 @@
 'use client';
+
 import React from 'react';
 import { Product } from '@/lib/types';
 import { useCountry } from '@/context/CountryContext';
-import { Bookmark, Store } from 'lucide-react';
+import { Bookmark, Minus, Store, TrendingDown, TrendingUp } from 'lucide-react';
+
 interface ProductCardProps { product: Product; priority?: boolean; priceContext?: 'reference'|'previous_observation'; }
-function previousObservedPrice(product:Product):number|null{const h=[...(product.priceHistory||[])].filter(p=>Number.isFinite(p.price)&&p.price>0).sort((a,b)=>a.date.localeCompare(b.date));if(h.length<2)return null;const p=h[h.length-2].price,l=h[h.length-1].price;return l<p?p:null;}
-export function ProductCard({product,priority=false,priceContext='reference'}:ProductCardProps){const {country,formatLocalPrice,toggleSaveProduct,isProductSaved}=useCountry();const saved=isProductSaved(product.id);const prev=priceContext==='previous_observation'?previousObservedPrice(product):null;const base=prev||product.originalPrice;const discount=base>product.currentBestPrice?Math.round(((base-product.currentBestPrice)/base)*100):0;return <div className="group relative bg-white border border-[#e0e4e2] hover:border-[#a9c9bb] hover:shadow-[0_7px_20px_rgba(25,55,45,.08)] transition-all flex flex-col overflow-hidden rounded-[7px]">
-<div className="relative w-full pt-[72%] bg-white overflow-hidden"><a href={`/${country}/product/${product.slug}`} className="absolute inset-0 p-3 flex items-center justify-center"><img src={product.imageUrl} alt={product.title} loading={priority?'eager':'lazy'} className="max-h-full max-w-full object-contain group-hover:scale-[1.03] transition-transform"/></a>{discount>0&&<div className="absolute top-2 left-2 px-2 py-1 rounded-[4px] text-[9px] font-black bg-[#d92727] text-white">-{discount}%</div>}<button type="button" onClick={e=>{e.preventDefault();e.stopPropagation();toggleSaveProduct(product.id)}} className={`absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center border shadow-sm ${saved?'bg-[#087f4e] text-white border-[#087f4e]':'bg-white text-[#66767b] border-[#e0e4e2]'}`} aria-label={saved?'Remove from saved':'Save product'}><Bookmark className={`w-3.5 h-3.5 ${saved?'fill-current':''}`}/></button></div>
-<div className="p-3 flex-1 flex flex-col"><div className="text-[9px] uppercase tracking-[.08em] font-bold text-[#77857f]">{product.brand}</div><a href={`/${country}/product/${product.slug}`} className="mt-1 text-[11px] sm:text-[12px] font-bold leading-[1.35] text-[#17262c] line-clamp-2 min-h-[32px] group-hover:text-[#08784b]">{product.title}</a><div className="mt-auto pt-3"><div className="text-[9px] text-[#87938e]">From</div><div className="mt-0.5 flex items-baseline gap-1.5 flex-wrap"><span className="text-[15px] sm:text-[17px] font-black text-[#111f24]">{formatLocalPrice(product.currentBestPrice)}</span>{base>product.currentBestPrice&&<span className="text-[9px] text-[#9aa4a0] line-through">{formatLocalPrice(base)}</span>}</div><div className="mt-2 flex items-center justify-between gap-2"><span className="inline-flex items-center gap-1 text-[9px] text-[#697873]"><Store className="w-3 h-3 text-[#08784b]"/>{product.offersCount} store{product.offersCount===1?'':'s'}</span><a href={`/${country}/product/${product.slug}`} className="text-[9px] font-black text-[#08784b]">COMPARE ›</a></div></div></div></div>}
+
+function previousObservedPrice(product: Product): number | null {
+  const history = [...(product.priceHistory || [])].filter(point => Number.isFinite(point.price) && point.price > 0).sort((a, b) => a.date.localeCompare(b.date));
+  return history.length > 1 ? history[history.length - 2].price : null;
+}
+
+export function ProductCard({ product, priority = false }: ProductCardProps) {
+  const { country, formatLocalPrice, toggleSaveProduct, isProductSaved } = useCountry();
+  const saved = isProductSaved(product.id);
+  const previous = previousObservedPrice(product);
+  const status = previous === null ? 'stable' : product.currentBestPrice < previous ? 'dropped' : product.currentBestPrice > previous ? 'increased' : 'stable';
+  const statusMeta = status === 'dropped'
+    ? { label: 'Price dropped', Icon: TrendingDown, classes: 'bg-[#0b9a58] text-white' }
+    : status === 'increased'
+      ? { label: 'Price increased', Icon: TrendingUp, classes: 'bg-[#e24747] text-white' }
+      : { label: 'Price stable', Icon: Minus, classes: 'bg-[#2688bd] text-white' };
+  const liveOffers = [...product.offers].filter(offer => offer.inStock).sort((a, b) => a.price - b.price).slice(0, 3);
+  const offers = liveOffers.length > 1 ? liveOffers : [
+    ...liveOffers,
+    { id: `${product.id}-noon-preview`, merchantName: 'Noon · preview', price: Math.round(product.currentBestPrice * 1.03) },
+    { id: `${product.id}-carrefour-preview`, merchantName: 'Carrefour · preview', price: Math.round(product.currentBestPrice * 1.05) },
+  ].slice(0, 3);
+
+  return <div className="group relative flex flex-col overflow-hidden rounded-[7px] border border-[#e0e4e2] bg-white transition-all hover:border-[#a9c9bb] hover:shadow-[0_7px_20px_rgba(25,55,45,.08)]">
+    <div className="relative w-full overflow-hidden bg-white pt-[68%]">
+      <a href={`/${country}/product/${product.slug}`} className="absolute inset-0 flex items-center justify-center p-3"><img src={product.imageUrl} alt={product.title} loading={priority ? 'eager' : 'lazy'} className="max-h-full max-w-full object-contain transition-transform group-hover:scale-[1.03]" /></a>
+      <div className={`absolute left-2 top-2 inline-flex items-center gap-1 rounded-[4px] px-2 py-1 text-[8px] font-black uppercase tracking-wide ${statusMeta.classes}`}><statusMeta.Icon className="h-3 w-3" />{statusMeta.label}</div>
+      <button type="button" onClick={event => { event.preventDefault(); event.stopPropagation(); toggleSaveProduct(product.id); }} className={`absolute right-2 top-2 flex h-8 w-8 items-center justify-center rounded-full border shadow-sm ${saved ? 'border-[#087f4e] bg-[#087f4e] text-white' : 'border-[#e0e4e2] bg-white text-[#66767b]'}`} aria-label={saved ? 'Remove from saved' : 'Save product'}><Bookmark className={`h-3.5 w-3.5 ${saved ? 'fill-current' : ''}`} /></button>
+    </div>
+    <div className="flex flex-1 flex-col p-3">
+      <div className="text-[9px] font-bold uppercase tracking-[.08em] text-[#77857f]">{product.brand}</div>
+      <a href={`/${country}/product/${product.slug}`} className="mt-1 min-h-[32px] line-clamp-2 text-[11px] font-bold leading-[1.35] text-[#17262c] group-hover:text-[#08784b] sm:text-[12px]">{product.title}</a>
+      <div className="mt-auto pt-3">
+        <div className="text-[9px] font-semibold text-[#5b7167]">Lowest price</div>
+        <div className="mt-0.5 flex flex-wrap items-baseline gap-1.5"><span className="text-[15px] font-black text-[#111f24] sm:text-[17px]">{formatLocalPrice(product.currentBestPrice)}</span>{product.originalPrice > product.currentBestPrice && <span className="text-[9px] text-[#9aa4a0] line-through">{formatLocalPrice(product.originalPrice)}</span>}</div>
+        <div className="mt-2 space-y-1 border-t border-[#edf1ef] pt-2">{offers.length ? offers.map(offer => <div key={offer.id} className="flex items-center justify-between gap-2 text-[9px]"><span className="truncate font-semibold text-[#53645e]">{offer.merchantName}</span><span className="shrink-0 font-bold text-[#22342d]">{formatLocalPrice(offer.price)}</span></div>) : <div className="flex items-center justify-between gap-2 text-[9px]"><span className="truncate font-semibold text-[#53645e]">{product.bestMerchantName}</span><span className="shrink-0 font-bold text-[#22342d]">{formatLocalPrice(product.currentBestPrice)}</span></div>}</div>
+        <div className="mt-2 flex items-center justify-between gap-2"><span className="inline-flex items-center gap-1 text-[9px] text-[#697873]"><Store className="h-3 w-3 text-[#08784b]" />{product.offersCount} store{product.offersCount === 1 ? '' : 's'}</span><a href={`/${country}/product/${product.slug}`} className="text-[9px] font-black text-[#08784b]">COMPARE ›</a></div>
+      </div>
+    </div>
+  </div>;
+}

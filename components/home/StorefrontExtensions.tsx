@@ -5,6 +5,7 @@ import { ArrowRight, BadgeCheck, BellRing, Flame, Grid2X2, Newspaper, ShieldChec
 import { Product } from '@/lib/types';
 import { ProductCard } from '@/components/search/ProductCard';
 import { useCountry } from '@/context/CountryContext';
+import { ProductCarousel } from './ProductCarousel';
 
 type ShelfProps = { title: string; subtitle: string; products: Product[]; icon: React.ElementType; tone: string };
 
@@ -16,7 +17,7 @@ function ProductShelf({ title, subtitle, products, icon: Icon, tone }: ShelfProp
       <div><h2 className="flex items-center gap-2 text-[20px] sm:text-[22px] font-black tracking-[-.04em] text-[#142228]"><Icon className={`h-5 w-5 ${tone}`} />{title}</h2><p className="mt-0.5 text-[11px] font-medium text-[#718087]">{subtitle}</p></div>
       <a href={`/${country}/search`} className="inline-flex items-center gap-1 text-[11px] font-extrabold text-[#08784b] hover:text-[#045e3a]">View more <ArrowRight className="h-3.5 w-3.5" /></a>
     </div>
-    <div className="-mx-3 flex snap-x snap-mandatory gap-3 overflow-x-auto px-3 pb-2 scrollbar-none sm:mx-0 sm:px-0">{products.slice(0, 6).map(product => <div key={product.id} className="w-[184px] shrink-0 snap-start sm:w-[202px]"><ProductCard product={product} /></div>)}</div>
+    <ProductCarousel>{products.slice(0, 6).map(product => <div key={product.id} className="w-[184px] shrink-0 snap-start sm:w-[202px]"><ProductCard product={product} /></div>)}</ProductCarousel>
   </section>;
 }
 

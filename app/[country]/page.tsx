@@ -10,6 +10,7 @@ import { BestDealsSection } from '@/components/home/BestDealsSection';
 import { PopularBrandsSection } from '@/components/home/PopularBrandsSection';
 import { CategoryGrid } from '@/components/home/CategoryGrid';
 import { StorefrontExtensions } from '@/components/home/StorefrontExtensions';
+import { NewsletterSignup } from '@/components/home/NewsletterSignup';
 
 interface HomePageProps { params: Promise<{ country: string; }>; }
 
@@ -48,5 +49,6 @@ export default async function HomePage({ params }: HomePageProps) {
     <BestDealsSection products={topDeals} />
     <PopularBrandsSection products={products} />
     <StorefrontExtensions products={products.slice(12, 18)} trending={trending.length ? trending : products.slice(6, 12)} dropped={recentlyDropped} />
+    <NewsletterSignup />
   </div>;
 }

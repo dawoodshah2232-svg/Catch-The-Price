@@ -37,7 +37,7 @@ export function Footer() {
 
         <div className="flex flex-col md:grid md:grid-cols-5 gap-7 sm:gap-9 py-8 sm:py-11">
           <div className="md:col-span-2 space-y-4 sm:space-y-5">
-            <a href={`/${country}`} aria-label="CatchThePrice home" className="block h-[54px] w-[220px] sm:h-[60px] sm:w-[250px]"><img src="/images/catch-the-price-logo.png" alt="CatchThePrice" className="h-full w-full object-contain object-left" /></a>
+            <a href={`/${country}`} aria-label="CatchThePrice home" className="block h-[62px] w-[250px] sm:h-[70px] sm:w-[280px]"><img src="/images/catch-the-price-logo.png" alt="CatchThePrice" className="h-full w-full object-contain object-left drop-shadow-[0_4px_10px_rgba(0,0,0,.2)]" /></a>
             <p className="chrome-secondary max-w-md text-xs leading-[1.7]">
               <strong className="chrome-primary">Smarter Shopping for a Brighter Tomorrow.</strong><br />Compare prices. Track drops. Save more.
             </p>

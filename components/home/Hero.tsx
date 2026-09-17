@@ -29,9 +29,9 @@ export function Hero() {
             </div>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-1 gap-2.5 rounded-md border border-[#edf0ef] bg-[#fff] p-3">
-            {benefits.map(({Icon,title,text}) => <a key={title} href={title === 'Track Prices' ? `/${country}/account?tab=alerts` : title === 'Compare Products' ? `/${country}/compare` : `/${country}/deals/all`} className="rounded-md px-1.5 py-1 flex items-center gap-3 hover:bg-[#f5fbf8] transition-colors">
-              <div className="w-10 h-10 rounded-full bg-[#d8f6e5] text-[#11834d] flex items-center justify-center shrink-0"><Icon className="w-[19px] h-[19px]"/></div>
+          <div className="grid grid-cols-2 lg:grid-cols-1 gap-2.5 rounded-md border border-white/60 bg-white/70 p-3 shadow-[0_8px_26px_rgba(16,55,37,.08)] backdrop-blur-md">
+            {benefits.map(({Icon,title,text}) => <a key={title} href={title === 'Track Prices' ? `/${country}/account?tab=alerts` : title === 'Compare Products' ? `/${country}/compare` : `/${country}/deals/all`} className="group rounded-lg border border-transparent bg-white/40 px-2 py-2.5 flex items-center gap-3 transition-all hover:-translate-y-px hover:border-[#c7ead9] hover:bg-white/85 hover:shadow-[0_5px_14px_rgba(19,80,52,.09)]">
+              <div className="w-10 h-10 rounded-xl bg-[linear-gradient(145deg,#e5fff0,#c8f5dd)] text-[#087f4e] flex items-center justify-center shrink-0 shadow-[inset_0_1px_0_rgba(255,255,255,.9)] transition-transform group-hover:scale-105"><Icon className="w-[19px] h-[19px]"/></div>
               <div><div className="text-[12px] sm:text-[13px] font-black text-[#17252b]">{title}</div><div className="mt-0.5 text-[10px] sm:text-[11px] leading-snug text-[#6f7f79]">{text}</div></div>
             </a>)}
           </div>
