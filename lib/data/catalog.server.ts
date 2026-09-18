@@ -106,22 +106,22 @@ async function loadLiveCatalog(country: CountryCode): Promise<Product[]> {
       : Promise.resolve({ data: [] }),
   ]);
 
-  if (offerError || !offerData?.length) return [];
-  const offers = (offerData as OfferRow[]).filter((offer) => offer.availability === 'in_stock' && numeric(offer.price) > 0);
-  if (!offers.length) return [];
+  const offers = (!offerError && offerData?.length)
+    ? (offerData as OfferRow[]).filter((offer) => offer.availability === 'in_stock' && numeric(offer.price) > 0)
+    : [];
 
   const merchantIds = [...new Set(offers.map((offer) => offer.merchant_id))];
   const offerIds = offers.map((offer) => offer.id);
-  const [{ data: merchantData, error: merchantError }, { data: historyData }] = await Promise.all([
-    supabase.from('merchants').select('id,name,logo_url,is_active').in('id', merchantIds).eq('is_active', true),
+  const [{ data: merchantData }, { data: historyData }] = await Promise.all([
+    merchantIds.length
+      ? supabase.from('merchants').select('id,name,logo_url,is_active').in('id', merchantIds).eq('is_active', true)
+      : Promise.resolve({ data: [] }),
     offerIds.length
       ? supabase.from('price_history').select('offer_id,price,captured_at').in('offer_id', offerIds).order('captured_at', { ascending: true })
       : Promise.resolve({ data: [] }),
   ]);
 
-  if (merchantError || !merchantData?.length) return [];
-
-  const merchants = merchantData as MerchantRow[];
+  const merchants = (merchantData || []) as MerchantRow[];
   const categories = (categoryData || []) as CategoryRow[];
   const historyRows = (historyData || []) as HistoryRow[];
   const merchantMap = new Map(merchants.map((merchant) => [merchant.id, merchant]));
@@ -134,7 +134,6 @@ async function loadLiveCatalog(country: CountryCode): Promise<Product[]> {
     const productOffers = offers
       .filter((offer) => offer.product_id === row.id && merchantMap.has(offer.merchant_id))
       .sort((a, b) => numeric(a.price) - numeric(b.price));
-    if (!productOffers.length) return [];
 
     const mappedOffers: Offer[] = productOffers.map((offer, index) => {
       const merchant = merchantMap.get(offer.merchant_id)!;
@@ -158,11 +157,13 @@ async function loadLiveCatalog(country: CountryCode): Promise<Product[]> {
       };
     });
 
-    const best = mappedOffers[0];
+    const hasOffers = mappedOffers.length > 0;
+    const best = hasOffers ? mappedOffers[0] : null;
     const history: PricePoint[] = historyRows
       .filter((item) => offerProductMap.get(item.offer_id) === row.id && numeric(item.price) > 0)
       .map((item) => ({ date: item.captured_at, price: numeric(item.price) }));
-    const originalPrice = Math.max(best.price, ...mappedOffers.map((offer) => offer.originalPrice || offer.price));
+    const currentPrice = best ? best.price : 0;
+    const originalPrice = best ? Math.max(best.price, ...mappedOffers.map((offer) => offer.originalPrice || offer.price)) : 0;
 
     return [{
       id: row.id,
@@ -176,17 +177,17 @@ async function loadLiveCatalog(country: CountryCode): Promise<Product[]> {
       imageUrl: row.image_url,
       gallery: [row.image_url],
       specs: stringSpecs(row.specs),
-      currentBestPrice: best.price,
+      currentBestPrice: currentPrice,
       originalPrice,
-      currency: best.currency,
+      currency: best ? best.currency : 'AED',
       country,
-      dealScore: originalPrice > best.price ? 88 : 75,
+      dealScore: originalPrice > currentPrice && currentPrice > 0 ? 88 : 75,
       isTrending: true,
-      isTopDeal: originalPrice > best.price,
+      isTopDeal: originalPrice > currentPrice && currentPrice > 0,
       offersCount: mappedOffers.length,
-      bestMerchantName: best.merchantName,
-      priceLastChecked: best.lastCheckedAt,
-      priceStats: priceStats(best.price, history),
+      bestMerchantName: best ? best.merchantName : 'Retailers pending',
+      priceLastChecked: best ? best.lastCheckedAt : new Date().toISOString(),
+      priceStats: priceStats(currentPrice, history),
       priceHistory: history,
       offers: mappedOffers,
     }];

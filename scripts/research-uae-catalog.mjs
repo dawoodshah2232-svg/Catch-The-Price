@@ -10,9 +10,12 @@ const rows = (await readFile(input, 'utf8')).trim().split(/\r?\n/).slice(1).map(
 let previous = [];
 try { previous = JSON.parse(await readFile(output, 'utf8')); } catch {}
 const results = [];
+const selected = new Set((process.env.CATALOG_RESEARCH_ROWS || '').split(',').filter(Boolean).map(Number));
 async function research(row) {
+  const existing = previous.find(p => p.name === row.name && p.source === row.source);
+  if (selected.size && !selected.has(rows.indexOf(row) + 1) && existing) return existing;
   const cached = previous.find(p => p.name === row.name && p.source === row.source && p.httpStatus === 200 && p.imageHttpStatus === 200);
-  if (cached) return cached;
+  if (cached && !selected.size) return cached;
   const result = { ...row, checkedAt: new Date().toISOString(), market: 'ae', currency: 'AED', retailerPriority: ['amazon-uae', 'noon-ae'], offers: [], price: null, rating: null, stock: null };
   try {
     const response = await fetch(row.source, { signal: AbortSignal.timeout(25000) });
@@ -30,7 +33,16 @@ async function research(row) {
     const image = metas['og:image'] || metas['twitter:image'];
     result.imageUrl = image ? new URL(image, response.url).href : null;
     result.gallery = result.imageUrl ? [result.imageUrl] : [];
-    if (!image) result.imageCandidates = [...html.matchAll(/<img\b[^>]*>/gi)].slice(0, 50).map(m => m[0]).filter(t => /\.jpg|\.png|\.webp/.test(t)).slice(0, 12);
+    if (!image || selected.size) {
+      const words = row.name.toLowerCase().split(/\s+/).filter(w => w.length > 2 && w !== row.brand.toLowerCase());
+      result.imageCandidates = [...html.matchAll(/<img\b[^>]*>/gi)].map(m => m[0]).filter(t => /\.jpg|\.png|\.webp/.test(t) && words.some(w => t.toLowerCase().includes(w))).map(t => ({
+        alt: decode(t.match(/\balt=["']([^"']*)["']/i)?.[1]),
+        src: decode(t.match(/\b(?:src|data-src|data-src-1440)=["']([^"']*)["']/i)?.[1]),
+      })).filter(i => i.src && !i.src.startsWith('data:')).slice(0, 12);
+      result.structuredProducts = [];
+      const visit = value => { if (Array.isArray(value)) return value.forEach(visit); if (!value || typeof value !== 'object') return; if (value['@type'] === 'Product') result.structuredProducts.push({ name: value.name, image: value.image, model: value.model }); Object.values(value).filter(v => typeof v === 'object').forEach(visit); };
+      for (const tag of html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)) { try { visit(JSON.parse(tag[1])); } catch {} }
+    }
     if (result.imageUrl) {
       const imageResponse = await fetch(result.imageUrl, { signal: AbortSignal.timeout(15000) });
       result.imageHttpStatus = imageResponse.status;

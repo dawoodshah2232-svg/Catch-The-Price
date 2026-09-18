@@ -151,12 +151,18 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
               <div className="flex flex-wrap items-baseline justify-between gap-3">
                 <div>
                   <span className="text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider text-[#73858D] block mb-0.5">
-                    Current lowest listed price
+                    {product.currentBestPrice > 0 ? 'Current lowest listed price' : 'UAE Retailer Offers'}
                   </span>
                   <div className="flex items-baseline gap-2.5 sm:gap-3">
-                    <span className="text-2xl sm:text-4xl font-extrabold text-[#08784B]">{formatLocalPrice(product.currentBestPrice)}</span>
-                    {product.originalPrice > product.currentBestPrice && (
-                      <span className="text-sm sm:text-base text-[#829198] line-through font-medium">{formatLocalPrice(product.originalPrice)}</span>
+                    {product.currentBestPrice > 0 ? (
+                      <>
+                        <span className="text-2xl sm:text-4xl font-extrabold text-[#08784B]">{formatLocalPrice(product.currentBestPrice)}</span>
+                        {product.originalPrice > product.currentBestPrice && (
+                          <span className="text-sm sm:text-base text-[#829198] line-through font-medium">{formatLocalPrice(product.originalPrice)}</span>
+                        )}
+                      </>
+                    ) : (
+                      <span className="text-xl sm:text-2xl font-extrabold text-[#08784B]">Retailer offers pending verification</span>
                     )}
                   </div>
                 </div>
