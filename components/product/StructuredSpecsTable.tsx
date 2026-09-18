@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { SpecGroup } from '@/lib/types';
 import { Sliders, Monitor, Cpu, Camera, Battery, Smartphone, Wifi, Info } from 'lucide-react';
+import { specIcon } from './specIcons';
 
 interface StructuredSpecsTableProps {
   specGroups?: SpecGroup[];
@@ -74,7 +75,7 @@ export function StructuredSpecsTable({ specGroups, fallbackSpecs = {}, brand = '
       </div>
 
       {/* Specification Category Tabs (Functional & Clickable) */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+      <div className="flex items-center gap-2 overflow-x-auto pb-1" aria-label="Specification categories">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isSelected = activeTab === tab.id;
@@ -84,9 +85,10 @@ export function StructuredSpecsTable({ specGroups, fallbackSpecs = {}, brand = '
               key={tab.id}
               type="button"
               onClick={() => setActiveTab(tab.id)}
-              className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold shrink-0 transition-all cursor-pointer ${
+              aria-pressed={isSelected}
+              className={`inline-flex min-h-11 items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold shrink-0 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 cursor-pointer ${
                 isSelected
-                  ? 'bg-[#E5F8EF] text-[#08784B] border border-[#C7EEDC] shadow-2xs'
+                  ? 'bg-emerald-700 text-white border border-emerald-700 shadow-sm'
                   : 'bg-[#F4F7F6] text-[#60727A] hover:text-[#102027] border border-[#DDE7E3] hover:border-[#BFD2CA]'
               }`}
             >
@@ -98,40 +100,43 @@ export function StructuredSpecsTable({ specGroups, fallbackSpecs = {}, brand = '
       </div>
 
       {/* Information-Rich Two-Column Specification Rows */}
-      <div className="space-y-4 pt-1">
-        {displayGroups.map((group, groupIdx) => (
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 pt-1 items-start">
+        {displayGroups.map((group, groupIdx) => {
+          const GroupIcon = specIcon(group.category);
+          return (
           <div
             key={groupIdx}
             className="rounded-2xl border border-[#EDF2F0] bg-white overflow-hidden"
           >
             {/* Group Header */}
-            <div className="bg-[#F8FAF9] px-3.5 py-2 border-b border-[#EDF2F0] flex items-center justify-between">
-              <h4 className="text-[11px] font-extrabold uppercase tracking-wider text-[#08784B]">
+            <div className="bg-[#F4F7F6] px-3.5 py-3 border-b border-[#EDF2F0] flex items-center gap-2">
+              <GroupIcon className="size-5 shrink-0 text-emerald-700" aria-hidden="true" />
+              <h4 className="text-sm font-extrabold text-[#102027]">
                 {group.category}
               </h4>
-              <span className="text-[10px] text-[#829198] font-semibold">
-                {group.specs.length} specs
-              </span>
             </div>
 
             {/* Spec rows - compact two-column rows */}
             <div className="divide-y divide-[#F1F5F3]">
-              {group.specs.map((item, specIdx) => (
+              {group.specs.map((item, specIdx) => {
+                const RowIcon = specIcon(item.name, group.category);
+                return (
                 <div
                   key={specIdx}
-                  className="px-3.5 py-2 grid grid-cols-1 sm:grid-cols-12 gap-1 sm:gap-4 text-xs hover:bg-[#FBFDFB] transition-colors"
+                  className="px-3 py-2.5 grid grid-cols-[minmax(0,0.85fr)_minmax(0,1.3fr)] gap-3 text-xs sm:text-[13px] hover:bg-[#F8FAF9] transition-colors"
                 >
-                  <div className="sm:col-span-4 font-semibold text-[#60727A] flex items-center">
+                  <div className="min-w-0 font-semibold text-[#435962] flex items-start gap-2 leading-relaxed">
+                    <RowIcon className="size-4 mt-0.5 shrink-0" aria-hidden="true" />
                     {item.name}
                   </div>
-                  <div className="sm:col-span-8 text-[#102027] font-medium leading-relaxed break-words">
+                  <div className="min-w-0 text-[#20343C] font-medium leading-relaxed wrap-anywhere">
                     {item.value}
                   </div>
                 </div>
-              ))}
+              ); })}
             </div>
           </div>
-        ))}
+        ); })}
       </div>
 
       {/* Small Trust Note */}

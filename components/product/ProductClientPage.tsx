@@ -92,7 +92,7 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
         {/* Desktop 2-Column Experience: Left Canvas, Right Information */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 items-start">
           {/* Left Column: Multi-Image Canvas & Lightbox */}
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-5 min-w-0">
             <ProductGallery2
               primaryImageUrl={product.imageUrl}
               images={product.images}
@@ -106,7 +106,7 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
           </div>
 
           {/* Right Column: Title, Interactive Variants, Key Specs, Single Price Module */}
-          <div className="lg:col-span-7 space-y-3.5 sm:space-y-4">
+          <div className="lg:col-span-7 min-w-0 space-y-3.5 sm:space-y-4">
             <div>
               <div className="flex flex-wrap items-center gap-2 mb-1.5 text-[11px]">
                 <span className="font-extrabold uppercase tracking-wider text-[#08784B]">{product.brand}</span>
@@ -124,7 +124,7 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
               </h1>
 
               {product.description && (
-                <p className="mt-1.5 text-xs text-[#52636B] leading-relaxed max-w-2xl line-clamp-2">
+                <p className="mt-2 text-sm text-[#52636B] leading-relaxed max-w-2xl line-clamp-2">
                   {product.description}
                 </p>
               )}
@@ -145,14 +145,15 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
                         key={f.name}
                         type="button"
                         onClick={() => setGalleryIndex(f.index)}
-                        className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                        aria-pressed={isActive}
+                        className={`inline-flex min-h-11 items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-emerald-700 cursor-pointer ${
                           isActive
-                            ? 'bg-white border-[#08784B] ring-1 ring-[#08784B] text-[#102027] shadow-2xs'
+                            ? 'bg-white border border-[#08784B] ring-1 ring-[#08784B] text-[#102027] shadow-2xs'
                             : 'bg-white border border-[#DDE7E3] text-[#60727A] hover:text-[#102027]'
                         }`}
                       >
                         <span
-                          className="w-2.5 h-2.5 rounded-full border border-black/10 shrink-0"
+                          className="w-4 h-4 rounded-full border border-black/10 shrink-0"
                           style={{ backgroundColor: f.color }}
                         />
                         <span>{f.name}</span>
@@ -244,7 +245,7 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
               ) : (
                 /* When No Offers Exist Yet: Single Compact Module */
                 <div className="space-y-3">
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-2">
                       <div className="h-7 w-16 rounded-lg bg-white border border-[#DDE7E3] p-1 flex items-center justify-center shadow-2xs">
                         <img src="/images/merchants/amazon.svg" alt="Amazon UAE" className="h-4 object-contain" />
@@ -276,11 +277,11 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
                 </div>
               )}
 
-              {/* Single Concise Trust Note */}
-              <div className="pt-1 flex items-start gap-1.5 text-[10px] sm:text-[11px] text-[#73858D]">
+              {/* Offer terms are shown only when a real offer is available. */}
+              {hasValidOffers && <div className="pt-1 flex items-start gap-1.5 text-[10px] sm:text-[11px] text-[#73858D]">
                 <ShieldCheck className="w-3.5 h-3.5 text-[#08784B] shrink-0" />
                 <span>Purchases completed directly with official stores under manufacturer warranty.</span>
-              </div>
+              </div>}
             </div>
 
             {/* Mobile Jump Links */}
@@ -371,7 +372,7 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
       </div>
 
       {/* Mobile Sticky Bottom Action Bar */}
-      <div className="sm:hidden fixed bottom-0 left-0 right-0 z-[60] bg-[#071015] border-t border-[#1A2B35] px-3 pt-2 pb-[calc(env(safe-area-inset-bottom,8px)+8px)] shadow-[0_-10px_28px_rgba(0,0,0,.22)] grid grid-cols-[auto_1fr_auto] items-center gap-2">
+      <div className={`${isAlertModalOpen ? 'hidden' : 'grid'} sm:hidden fixed bottom-0 left-0 right-0 z-[60] bg-slate-950 border-t border-slate-700 px-3 pt-2 pb-[calc(env(safe-area-inset-bottom,8px)+8px)] shadow-[0_-10px_28px_rgba(0,0,0,.22)] grid-cols-[auto_1fr_auto] items-center gap-2`}>
         <div className="min-w-0 pr-1">
           <div className="text-[8px] uppercase tracking-wider font-bold text-[#7F968D]">
             {product.currentBestPrice > 0 ? 'Best Listed' : 'Monitoring'}
@@ -407,7 +408,7 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
         <button
           type="button"
           onClick={() => setIsAlertModalOpen(true)}
-          className="min-w-[44px] min-h-[44px] rounded-xl bg-[#0F1C24] border border-[#223743] text-[#67EFB8] flex items-center justify-center cursor-pointer"
+          className="min-w-[44px] min-h-[44px] rounded-xl bg-slate-800 border border-slate-600 text-emerald-300 flex items-center justify-center cursor-pointer"
           aria-label="Track price"
         >
           <Bell className="w-4 h-4" />

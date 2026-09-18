@@ -35,16 +35,16 @@ export function KeySpecsSummary({ specs = {}, brand = '', isIPhone16ProMax = fal
           return (
             <div
               key={idx}
-              className="px-2.5 py-1.5 rounded-xl bg-[#F8FAF9] border border-[#DDE7E3] flex items-center gap-2 text-xs font-bold text-[#102027] hover:border-[#BFD2CA] transition-colors"
+              className="px-3 py-3 rounded-xl bg-[#F8FAF9] border border-[#DDE7E3] flex items-center gap-2.5 text-xs font-bold text-[#102027] hover:border-[#BFD2CA] transition-colors"
             >
-              <div className="w-6 h-6 rounded-lg bg-[#E5F8EF] text-[#08784B] flex items-center justify-center shrink-0">
-                <Icon className="w-3.5 h-3.5 stroke-[2.4]" />
+              <div className="w-8 h-8 rounded-lg bg-[#E5F8EF] text-[#08784B] flex items-center justify-center shrink-0">
+                <Icon className="w-5 h-5 stroke-2" />
               </div>
-              <div className="min-w-0 truncate">
+              <div className="min-w-0">
                 <span className="text-[9px] uppercase tracking-wider font-extrabold text-[#73858D] block leading-none mb-0.5">
                   {item.label}
                 </span>
-                <span className="truncate block leading-tight text-[#102027]">
+                <span className="block leading-snug text-[#102027]">
                   {item.value}
                 </span>
               </div>

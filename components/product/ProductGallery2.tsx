@@ -4,6 +4,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { ProductImage } from '@/lib/types';
 import { Bookmark, TrendingDown, Maximize2, X, ChevronLeft, ChevronRight } from 'lucide-react';
 
+const galleryControl = 'size-11 rounded-full bg-white/95 text-slate-900 border border-slate-300 shadow-md flex items-center justify-center hover:bg-emerald-50 hover:border-emerald-500 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600 transition-colors shrink-0';
+
 interface ProductGallery2Props {
   primaryImageUrl: string;
   images?: ProductImage[];
@@ -52,6 +54,19 @@ export function ProductGallery2({
   const [imgErrorMap, setImgErrorMap] = useState<Record<number, boolean>>({});
 
   const touchStartX = useRef<number | null>(null);
+  const dialogRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isLightboxOpen) return;
+    const previousFocus = document.activeElement as HTMLElement | null;
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    dialogRef.current?.querySelector<HTMLButtonElement>('button')?.focus();
+    return () => {
+      document.body.style.overflow = overflow;
+      previousFocus?.focus();
+    };
+  }, [isLightboxOpen]);
 
   const activeImage = galleryList[activeIndex] || galleryList[0];
   const activeSrc = imgErrorMap[activeIndex] ? primaryImageUrl : activeImage.imageUrl;
@@ -89,7 +104,7 @@ export function ProductGallery2({
     <div className="space-y-3">
       {/* Main Image Canvas */}
       <div
-        className="relative aspect-square max-h-[320px] sm:max-h-[440px] mx-auto w-full rounded-[24px] bg-white border border-[#DDE7E3] p-4 sm:p-7 flex items-center justify-center overflow-hidden shadow-[0_10px_30px_rgba(25,55,45,0.06)] group"
+        className="relative aspect-square max-h-[360px] sm:max-h-[480px] mx-auto w-full rounded-[24px] bg-white border border-[#DDE7E3] p-2 sm:p-3 flex items-center justify-center overflow-hidden shadow-[0_10px_30px_rgba(25,55,45,0.06)] group"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >
@@ -106,7 +121,7 @@ export function ProductGallery2({
           <button
             type="button"
             onClick={() => setIsLightboxOpen(true)}
-            className="w-8 h-8 rounded-xl bg-white/90 hover:bg-white text-[#60727A] hover:text-[#08784B] border border-[#DDE7E3] flex items-center justify-center transition-all shadow-xs"
+            className={galleryControl}
             aria-label="Enlarge image"
             title="Inspect high-resolution view"
           >
@@ -135,7 +150,7 @@ export function ProductGallery2({
             <button
               type="button"
               onClick={() => setActiveIndex(activeIndex - 1)}
-              className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white border border-[#DDE7E3] text-[#31474F] hover:text-[#08784B] flex items-center justify-center shadow-sm z-10 transition-all opacity-80 group-hover:opacity-100"
+              className={`absolute left-2.5 top-1/2 -translate-y-1/2 z-10 ${galleryControl}`}
               aria-label="Previous image"
             >
               <ChevronLeft className="w-4 h-4" />
@@ -143,7 +158,7 @@ export function ProductGallery2({
             <button
               type="button"
               onClick={() => setActiveIndex(activeIndex + 1)}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white border border-[#DDE7E3] text-[#31474F] hover:text-[#08784B] flex items-center justify-center shadow-sm z-10 transition-all opacity-80 group-hover:opacity-100"
+              className={`absolute right-2.5 top-1/2 -translate-y-1/2 z-10 ${galleryControl}`}
               aria-label="Next image"
             >
               <ChevronRight className="w-4 h-4" />
@@ -156,7 +171,7 @@ export function ProductGallery2({
           src={activeSrc}
           alt={activeImage.altText || productTitle}
           onError={() => setImgErrorMap((prev) => ({ ...prev, [activeIndex]: true }))}
-          className="max-h-full max-w-full object-contain cursor-zoom-in transition-transform duration-300 group-hover:scale-[1.02]"
+          className="h-full w-full object-contain cursor-zoom-in transition-transform duration-300 group-hover:scale-[1.02]"
           onClick={() => setIsLightboxOpen(true)}
         />
 
@@ -170,7 +185,7 @@ export function ProductGallery2({
 
       {/* Thumbnail Gallery Strip */}
       {galleryList.length > 1 && (
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
           {galleryList.map((item, idx) => {
             const isSelected = activeIndex === idx;
             const thumbSrc = imgErrorMap[idx] ? primaryImageUrl : item.imageUrl;
@@ -190,12 +205,13 @@ export function ProductGallery2({
                 key={item.id || idx}
                 type="button"
                 onClick={() => setActiveIndex(idx)}
-                className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white border p-1 shrink-0 transition-all flex flex-col items-center justify-between ${
+                className={`relative w-12 h-14 sm:w-14 lg:w-12 rounded-xl bg-white border p-1 shrink-0 transition-all flex flex-col items-center justify-between ${
                   isSelected
                     ? 'border-[#0B8F58] ring-2 ring-[#00D27A]/20 shadow-xs'
                     : 'border-[#DDE7E3] hover:border-[#BFD2CA] opacity-75 hover:opacity-100'
                 }`}
                 aria-label={`View ${item.altText || `image ${idx + 1}`}`}
+                aria-pressed={isSelected}
               >
                 <img
                   src={thumbSrc}
@@ -216,20 +232,33 @@ export function ProductGallery2({
       {/* Fullscreen Lightbox Modal */}
       {isLightboxOpen && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-label={`${productTitle} image gallery`}
+          ref={dialogRef}
+          onKeyDown={(event) => {
+            if (event.key !== 'Tab') return;
+            const buttons = dialogRef.current?.querySelectorAll<HTMLButtonElement>('button');
+            if (!buttons?.length) return;
+            const first = buttons[0];
+            const last = buttons[buttons.length - 1];
+            if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+            if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+          }}
           className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200"
           onClick={() => setIsLightboxOpen(false)}
           onTouchStart={handleTouchStart}
           onTouchEnd={handleTouchEnd}
         >
           <div
-            className="relative max-w-4xl w-full max-h-[92vh] bg-[#071015] border border-[#162633] rounded-3xl p-3 sm:p-6 flex flex-col items-center justify-between shadow-2xl"
+            className="relative max-w-4xl min-w-0 w-full max-h-[94dvh] bg-slate-950 border border-slate-700 rounded-3xl p-3 sm:p-6 flex flex-col items-center justify-between shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Top Bar with Title & Close */}
             <div className="w-full flex items-center justify-between pb-2 border-b border-[#162633]">
               <div className="min-w-0 pr-4">
                 <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#00D27A] block">
-                  High-Resolution Inspection ({activeIndex + 1} of {galleryList.length})
+                  {activeIndex + 1} / {galleryList.length}
                 </span>
                 <h4 className="text-white font-bold text-xs sm:text-sm truncate">
                   {productTitle}
@@ -238,7 +267,7 @@ export function ProductGallery2({
               <button
                 type="button"
                 onClick={() => setIsLightboxOpen(false)}
-                className="w-9 h-9 rounded-xl bg-[#0F1C24] hover:bg-[#162633] border border-[#223743] text-white flex items-center justify-center transition-colors shrink-0"
+                className={galleryControl}
                 aria-label="Close fullscreen gallery"
               >
                 <X className="w-4 h-4" />
@@ -258,7 +287,7 @@ export function ProductGallery2({
                   <button
                     type="button"
                     onClick={() => setActiveIndex(activeIndex - 1)}
-                    className="absolute left-1 sm:left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-[#0F1C24]/80 hover:bg-[#0F1C24] border border-[#223743] text-white flex items-center justify-center transition-colors"
+                    className={`absolute left-1 sm:left-3 top-1/2 -translate-y-1/2 ${galleryControl}`}
                     aria-label="Previous image"
                   >
                     <ChevronLeft className="w-5 h-5" />
@@ -266,7 +295,7 @@ export function ProductGallery2({
                   <button
                     type="button"
                     onClick={() => setActiveIndex(activeIndex + 1)}
-                    className="absolute right-1 sm:right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-[#0F1C24]/80 hover:bg-[#0F1C24] border border-[#223743] text-white flex items-center justify-center transition-colors"
+                    className={`absolute right-1 sm:right-3 top-1/2 -translate-y-1/2 ${galleryControl}`}
                     aria-label="Next image"
                   >
                     <ChevronRight className="w-5 h-5" />
@@ -277,13 +306,15 @@ export function ProductGallery2({
 
             {/* Bottom Lightbox Thumbnail Strip */}
             {galleryList.length > 1 && (
-              <div className="w-full flex items-center justify-center gap-2 overflow-x-auto pt-2 border-t border-[#162633] scrollbar-none">
+              <div className="w-full flex items-center sm:justify-center gap-2 overflow-x-auto py-2 border-t border-slate-700">
                 {galleryList.map((item, idx) => (
                   <button
                     key={idx}
                     type="button"
                     onClick={() => setActiveIndex(idx)}
-                    className={`w-11 h-11 rounded-lg bg-[#0F1C24] border p-1 shrink-0 transition-all ${
+                    aria-label={`View image ${idx + 1}`}
+                    aria-pressed={activeIndex === idx}
+                    className={`w-11 h-11 rounded-lg bg-white border p-1 shrink-0 transition-all ${
                       activeIndex === idx
                         ? 'border-[#00D27A] ring-1 ring-[#00D27A]'
                         : 'border-[#223743] opacity-60 hover:opacity-100'

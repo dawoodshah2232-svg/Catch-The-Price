@@ -94,9 +94,9 @@ export function PriceHistorySection({
     : '';
 
   return (
-    <section className="rounded-[24px] bg-white border border-[#DDE7E3] p-4 sm:p-6 shadow-[0_8px_24px_rgba(25,55,45,0.04)] space-y-4">
+    <section className="rounded-[24px] bg-white border border-[#DDE7E3] p-3 shadow-[0_8px_24px_rgba(25,55,45,0.04)] space-y-1.5">
       {/* Header & Range Selector */}
-      <div className="flex items-center justify-between gap-3 pb-3 border-b border-[#EDF2F0]">
+      <div className="flex flex-wrap items-center justify-between gap-2 pb-1 border-b border-[#EDF2F0]">
         <div className="flex items-center gap-2">
           <History className="w-4 h-4 text-[#08784B]" />
           <h3 className="font-extrabold text-base sm:text-lg text-[#102027]">
@@ -111,7 +111,8 @@ export function PriceHistorySection({
               key={tab}
               type="button"
               onClick={() => setPeriod(tab)}
-              className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+              aria-pressed={period === tab}
+              className={`min-h-9 px-3 rounded-lg text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-emerald-700 cursor-pointer ${
                 period === tab
                   ? 'bg-white text-[#08784B] shadow-2xs'
                   : 'text-[#73858D] hover:text-[#102027]'
@@ -199,24 +200,24 @@ export function PriceHistorySection({
           </div>
         </div>
       ) : (
-        /* Compact Empty State (180–220px high, NO 4 giant cards) */
-        <div className="rounded-2xl border border-dashed border-[#CFE0DA] bg-[#F8FAF9] p-5 sm:p-6 text-center space-y-3">
-          <div className="w-10 h-10 rounded-xl bg-[#E5F8EF] border border-[#C7EEDC] text-[#08784B] flex items-center justify-center mx-auto">
+        /* One horizontal desktop row; wraps naturally on narrow screens. */
+        <div className="rounded-2xl border border-[#DDE7E3] bg-[#F8FAF9] p-3 flex flex-wrap sm:flex-nowrap items-center gap-3 sm:gap-4">
+          <div className="w-10 h-10 shrink-0 rounded-xl bg-[#E5F8EF] border border-[#C7EEDC] text-[#08784B] flex items-center justify-center">
             <Calendar className="w-5 h-5" />
           </div>
-          <div className="max-w-md mx-auto space-y-1">
+          <div className="min-w-0 flex-1 space-y-1">
             <h4 className="font-extrabold text-sm sm:text-base text-[#102027]">
               Price history is being collected
             </h4>
             <p className="text-xs text-[#60727A] leading-relaxed">
-              Tracking Amazon UAE and Noon UAE. Daily price checks will populate this chart as market data records.
+              We&apos;re tracking Amazon UAE and Noon UAE.
             </p>
           </div>
           {onOpenAlertModal && (
             <button
               type="button"
               onClick={onOpenAlertModal}
-              className="inline-flex items-center gap-1.5 min-h-[38px] px-4 rounded-xl bg-[#0B8F58] hover:bg-[#08784B] text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+              className="inline-flex w-full sm:w-auto shrink-0 justify-center items-center gap-2 min-h-11 px-4 rounded-xl bg-white hover:bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold transition-colors focus-visible:outline-2 focus-visible:outline-emerald-700 cursor-pointer"
             >
               <Bell className="w-3.5 h-3.5" />
               <span>Set Price Alert</span>
@@ -229,7 +230,7 @@ export function PriceHistorySection({
       <div className="pt-1 flex items-start gap-2 text-[11px] text-[#73858D]">
         <Info className="w-3.5 h-3.5 mt-0.5 text-[#08784B] shrink-0" />
         <span>
-          CatchThePrice records verified retail observations daily. Historical charts display recorded snapshots without artificial simulation.
+          Historical prices are based on verified store data. CatchThePrice never fabricates prices.
         </span>
       </div>
     </section>
