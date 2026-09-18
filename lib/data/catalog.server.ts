@@ -1,7 +1,9 @@
 import 'server-only';
 
 import { getServerSupabase } from '@/lib/supabase/server';
-import { CountryCode, Offer, PricePoint, Product } from '@/lib/types';
+import { CountryCode, Offer, PricePoint, Product, ProductImage, SpecGroup } from '@/lib/types';
+import { IPHONE_16_PRO_MAX_IMAGES } from '@/lib/data/gallery/apple-iphone-16-pro-max';
+import { IPHONE_16_PRO_MAX_SPEC_GROUPS } from '@/lib/data/specs/iphone-16-pro-max';
 
 const LIVE_MARKETS = new Set<CountryCode>(['ae', 'us']);
 
@@ -164,6 +166,15 @@ async function loadLiveCatalog(country: CountryCode): Promise<Product[]> {
     const currentPrice = best ? best.price : 0;
     const originalPrice = best ? Math.max(best.price, ...mappedOffers.map((offer) => offer.originalPrice || offer.price)) : 0;
 
+    const isIPhone16ProMax = row.slug.toLowerCase() === 'apple-iphone-16-pro-max-256gb';
+    const images: ProductImage[] = isIPhone16ProMax
+      ? IPHONE_16_PRO_MAX_IMAGES
+      : row.image_url
+      ? [{ id: `img-${row.id}`, imageUrl: row.image_url, sortOrder: 1, imageType: 'front', altText: row.name, isPrimary: true }]
+      : [];
+    const specGroups = isIPhone16ProMax ? IPHONE_16_PRO_MAX_SPEC_GROUPS : undefined;
+    const gallery = images.map((img) => img.imageUrl);
+
     return [{
       id: row.id,
       title: row.name,
@@ -174,8 +185,10 @@ async function loadLiveCatalog(country: CountryCode): Promise<Product[]> {
       categoryName: category?.name || 'Products',
       description: row.description || '',
       imageUrl: row.image_url,
-      gallery: [row.image_url],
+      gallery,
+      images,
       specs: stringSpecs(row.specs),
+      specGroups,
       currentBestPrice: currentPrice,
       originalPrice,
       currency: best ? best.currency : 'AED',

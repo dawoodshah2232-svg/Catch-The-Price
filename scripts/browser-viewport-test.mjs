@@ -36,6 +36,7 @@ const testRoutes = [
   { path: '/ae/login', label: 'login' },
   { path: '/ae/signup', label: 'signup' },
   { path: '/admin-access', label: 'admin-access' },
+  { path: '/ae/product/apple-iphone-16-pro-max-256gb', label: 'product-iphone-16-pro-max' },
 ];
 
 function sleep(ms) {
@@ -108,10 +109,11 @@ async function main() {
             throw new Error(`route returned HTTP ${response.status}`);
           }
           try {
-            await execFileAsync(chromePath, args, { timeout: 15000 });
+            await execFileAsync(chromePath, args, { timeout: 25000 });
           } catch {
             // Retry once if Chrome background network/GCM process glitches
-            await execFileAsync(chromePath, args, { timeout: 15000 });
+            await sleep(300);
+            await execFileAsync(chromePath, args, { timeout: 25000 });
           }
 
           if (fs.existsSync(outPath)) {

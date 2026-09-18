@@ -1,0 +1,68 @@
+import type { ProductImage } from '../../types';
+
+export const IPHONE_16_PRO_MAX_IMAGES: ProductImage[] = [
+  {
+    id: 'img-iph16pm-desert',
+    imageUrl: 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-16-pro-max-deserttitanium-select?wid=2560&hei=1440&fmt=jpeg&qlt=90',
+    sortOrder: 1,
+    imageType: 'front',
+    altText: 'Apple iPhone 16 Pro Max 256GB in Desert Titanium front and back view',
+    isPrimary: true,
+  },
+  {
+    id: 'img-iph16pm-angle',
+    imageUrl: 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-16-pro-model-unselect-gallery-1-202409?wid=2560&hei=1440&fmt=jpeg&qlt=90',
+    sortOrder: 2,
+    imageType: 'angle',
+    altText: 'Apple iPhone 16 Pro Max display and titanium edge overview',
+    isPrimary: false,
+  },
+  {
+    id: 'img-iph16pm-camera',
+    imageUrl: 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-16-pro-model-unselect-gallery-2-202409?wid=2560&hei=1440&fmt=jpeg&qlt=90',
+    sortOrder: 3,
+    imageType: 'detail',
+    altText: 'Apple iPhone 16 Pro Max 48MP triple camera array and Camera Control detail',
+    isPrimary: false,
+  },
+  {
+    id: 'img-iph16pm-natural',
+    imageUrl: 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-16-pro-max-naturaltitanium-select?wid=2560&hei=1440&fmt=jpeg&qlt=90',
+    sortOrder: 4,
+    imageType: 'side',
+    altText: 'Apple iPhone 16 Pro Max 256GB in Natural Titanium finish',
+    isPrimary: false,
+  },
+  {
+    id: 'img-iph16pm-black',
+    imageUrl: 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-16-pro-max-blacktitanium-select?wid=2560&hei=1440&fmt=jpeg&qlt=90',
+    sortOrder: 5,
+    imageType: 'back',
+    altText: 'Apple iPhone 16 Pro Max 256GB in Black Titanium finish',
+    isPrimary: false,
+  },
+  {
+    id: 'img-iph16pm-white',
+    imageUrl: 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-16-pro-max-whitetitanium-select?wid=2560&hei=1440&fmt=jpeg&qlt=90',
+    sortOrder: 6,
+    imageType: 'side',
+    altText: 'Apple iPhone 16 Pro Max 256GB in White Titanium finish',
+    isPrimary: false,
+  },
+  {
+    id: 'img-iph16pm-desert-profile',
+    imageUrl: 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-16-pro-finish-select-202409-6-9inch-deserttitanium?wid=2560&hei=1440&fmt=jpeg&qlt=90',
+    sortOrder: 7,
+    imageType: 'angle',
+    altText: 'Apple iPhone 16 Pro Max 6.9-inch Desert Titanium angle view',
+    isPrimary: false,
+  },
+  {
+    id: 'img-iph16pm-natural-profile',
+    imageUrl: 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-16-pro-finish-select-202409-6-9inch-naturaltitanium?wid=2560&hei=1440&fmt=jpeg&qlt=90',
+    sortOrder: 8,
+    imageType: 'angle',
+    altText: 'Apple iPhone 16 Pro Max 6.9-inch Natural Titanium angle view',
+    isPrimary: false,
+  },
+];

@@ -1,0 +1,237 @@
+'use client';
+
+import React, { useMemo, useState } from 'react';
+import { PricePoint, PriceStats } from '@/lib/types';
+import { useCountry } from '@/context/CountryContext';
+import { History, Bell, Calendar, Info } from 'lucide-react';
+
+interface PriceHistorySectionProps {
+  history?: PricePoint[];
+  stats?: PriceStats;
+  productTitle: string;
+  onOpenAlertModal?: () => void;
+}
+
+type Period = '30D' | '3M' | '6M' | '1Y';
+
+function pointDate(value: string): number {
+  const timestamp = new Date(value).getTime();
+  return Number.isFinite(timestamp) ? timestamp : 0;
+}
+
+function formatChartDate(value: string): string {
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(new Date(value));
+}
+
+export function PriceHistorySection({
+  history = [],
+  stats,
+  productTitle,
+  onOpenAlertModal,
+}: PriceHistorySectionProps) {
+  const { formatLocalPrice } = useCountry();
+  const [period, setPeriod] = useState<Period>('3M');
+  const [hoveredPoint, setHoveredPoint] = useState<PricePoint | null>(null);
+
+  const orderedHistory = useMemo(
+    () =>
+      [...(history || [])]
+        .filter((point) => Number.isFinite(point.price) && point.price > 0)
+        .sort((a, b) => pointDate(a.date) - pointDate(b.date)),
+    [history]
+  );
+
+  const filteredPoints = useMemo(() => {
+    if (orderedHistory.length < 2) return orderedHistory;
+    const days = period === '30D' ? 30 : period === '3M' ? 90 : period === '6M' ? 180 : 365;
+    const lastDate = pointDate(orderedHistory[orderedHistory.length - 1].date);
+    const cutoff = lastDate - days * 24 * 60 * 60 * 1000;
+    const filtered = orderedHistory.filter((point) => pointDate(point.date) >= cutoff);
+    return filtered.length >= 2 ? filtered : orderedHistory;
+  }, [orderedHistory, period]);
+
+  const hasGenuineHistory = filteredPoints.length >= 2;
+
+  // Compute metrics ONLY when genuine historical data exists
+  const prices = hasGenuineHistory ? filteredPoints.map((p) => p.price) : [];
+  const currentPrice = stats?.currentPrice || (prices.length ? prices[prices.length - 1] : 0);
+  const lowestPrice = stats?.lowestPrice || (prices.length ? Math.min(...prices) : 0);
+  const highestPrice = stats?.highestPrice || (prices.length ? Math.max(...prices) : 0);
+  const avgPrice = stats?.average90Days || (prices.length ? Math.round(prices.reduce((a, b) => a + b, 0) / prices.length) : 0);
+
+  // SVG dimensions
+  const width = 640;
+  const height = 180;
+  const padX = 40;
+  const padY = 20;
+
+  const minP = lowestPrice > 0 ? lowestPrice : 1;
+  const maxP = highestPrice > 0 ? highestPrice : 1;
+  const paddingY = (maxP - minP) * 0.2 || Math.max(minP * 0.05, 1);
+  const domainMin = Math.max(0, minP - paddingY);
+  const domainMax = maxP + paddingY;
+
+  const points = hasGenuineHistory
+    ? filteredPoints.map((point, index) => {
+        const x = padX + (index / (filteredPoints.length - 1 || 1)) * (width - padX * 2);
+        const y =
+          height - padY - ((point.price - domainMin) / (domainMax - domainMin || 1)) * (height - padY * 2);
+        return { x, y, point };
+      })
+    : [];
+
+  const pathD = points.reduce(
+    (acc, current, index) => (index === 0 ? `M ${current.x} ${current.y}` : `${acc} L ${current.x} ${current.y}`),
+    ''
+  );
+  const areaD = points.length
+    ? `${pathD} L ${points[points.length - 1].x} ${height - padY} L ${points[0].x} ${height - padY} Z`
+    : '';
+
+  return (
+    <section className="rounded-[24px] bg-white border border-[#DDE7E3] p-4 sm:p-6 shadow-[0_8px_24px_rgba(25,55,45,0.04)] space-y-4">
+      {/* Header & Range Selector */}
+      <div className="flex items-center justify-between gap-3 pb-3 border-b border-[#EDF2F0]">
+        <div className="flex items-center gap-2">
+          <History className="w-4 h-4 text-[#08784B]" />
+          <h3 className="font-extrabold text-base sm:text-lg text-[#102027]">
+            Price History & Trends
+          </h3>
+        </div>
+
+        {/* Range Selector Tabs */}
+        <div className="flex items-center gap-1 bg-[#F4F7F6] border border-[#DDE7E3] p-1 rounded-xl">
+          {(['30D', '3M', '6M', '1Y'] as Period[]).map((tab) => (
+            <button
+              key={tab}
+              type="button"
+              onClick={() => setPeriod(tab)}
+              className={`px-2.5 py-0.5 rounded-lg text-[11px] font-bold transition-all cursor-pointer ${
+                period === tab
+                  ? 'bg-white text-[#08784B] shadow-2xs'
+                  : 'text-[#73858D] hover:text-[#102027]'
+              }`}
+            >
+              {tab}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* When Genuine History Exists: Metrics Cards + Chart */}
+      {hasGenuineHistory ? (
+        <div className="space-y-4">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div className="p-2.5 rounded-xl bg-[#F8FAF9] border border-[#E1EDE8]">
+              <span className="text-[9px] font-bold uppercase tracking-wider text-[#73858D] block mb-0.5">
+                Current Best
+              </span>
+              <div className="text-sm sm:text-base font-extrabold text-[#08784B]">
+                {formatLocalPrice(currentPrice)}
+              </div>
+            </div>
+            <div className="p-2.5 rounded-xl bg-[#F8FAF9] border border-[#E1EDE8]">
+              <span className="text-[9px] font-bold uppercase tracking-wider text-[#73858D] block mb-0.5">
+                Lowest Recorded
+              </span>
+              <div className="text-sm sm:text-base font-extrabold text-[#102027]">
+                {formatLocalPrice(lowestPrice)}
+              </div>
+            </div>
+            <div className="p-2.5 rounded-xl bg-[#F8FAF9] border border-[#E1EDE8]">
+              <span className="text-[9px] font-bold uppercase tracking-wider text-[#73858D] block mb-0.5">
+                Highest Recorded
+              </span>
+              <div className="text-sm sm:text-base font-extrabold text-[#60727A]">
+                {formatLocalPrice(highestPrice)}
+              </div>
+            </div>
+            <div className="p-2.5 rounded-xl bg-[#F8FAF9] border border-[#E1EDE8]">
+              <span className="text-[9px] font-bold uppercase tracking-wider text-[#73858D] block mb-0.5">
+                Period Average
+              </span>
+              <div className="text-sm sm:text-base font-extrabold text-[#60727A]">
+                {formatLocalPrice(avgPrice)}
+              </div>
+            </div>
+          </div>
+
+          <div className="relative">
+            <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-36 sm:h-44 overflow-visible">
+              <defs>
+                <linearGradient id="priceGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#00D27A" stopOpacity="0.25" />
+                  <stop offset="100%" stopColor="#00D27A" stopOpacity="0.0" />
+                </linearGradient>
+              </defs>
+              <line x1={padX} y1={padY} x2={width - padX} y2={padY} stroke="#EDF2F0" strokeDasharray="3 3" />
+              <line x1={padX} y1={height / 2} x2={width - padX} y2={height / 2} stroke="#EDF2F0" strokeDasharray="3 3" />
+              <line x1={padX} y1={height - padY} x2={width - padX} y2={height - padY} stroke="#EDF2F0" />
+              <path d={areaD} fill="url(#priceGradient)" />
+              <path d={pathD} fill="none" stroke="#0B8F58" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+              {points.map(({ x, y, point }, i) => (
+                <circle
+                  key={i}
+                  cx={x}
+                  cy={y}
+                  r={hoveredPoint === point ? 5 : 3}
+                  fill={hoveredPoint === point ? '#00D27A' : '#0B8F58'}
+                  stroke="#FFFFFF"
+                  strokeWidth="1.5"
+                  className="cursor-pointer transition-all"
+                  onMouseEnter={() => setHoveredPoint(point)}
+                  onMouseLeave={() => setHoveredPoint(null)}
+                />
+              ))}
+            </svg>
+
+            {hoveredPoint && (
+              <div className="mt-1 text-center text-xs text-[#102027] font-bold">
+                <span>{formatChartDate(hoveredPoint.date)}: </span>
+                <span className="text-[#08784B] font-extrabold">{formatLocalPrice(hoveredPoint.price)}</span>
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        /* Compact Empty State (180–220px high, NO 4 giant cards) */
+        <div className="rounded-2xl border border-dashed border-[#CFE0DA] bg-[#F8FAF9] p-5 sm:p-6 text-center space-y-3">
+          <div className="w-10 h-10 rounded-xl bg-[#E5F8EF] border border-[#C7EEDC] text-[#08784B] flex items-center justify-center mx-auto">
+            <Calendar className="w-5 h-5" />
+          </div>
+          <div className="max-w-md mx-auto space-y-1">
+            <h4 className="font-extrabold text-sm sm:text-base text-[#102027]">
+              Price history is being collected
+            </h4>
+            <p className="text-xs text-[#60727A] leading-relaxed">
+              Tracking Amazon UAE and Noon UAE. Daily price checks will populate this chart as market data records.
+            </p>
+          </div>
+          {onOpenAlertModal && (
+            <button
+              type="button"
+              onClick={onOpenAlertModal}
+              className="inline-flex items-center gap-1.5 min-h-[38px] px-4 rounded-xl bg-[#0B8F58] hover:bg-[#08784B] text-white text-xs font-bold transition-all shadow-xs cursor-pointer"
+            >
+              <Bell className="w-3.5 h-3.5" />
+              <span>Set Price Alert</span>
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Small trust note */}
+      <div className="pt-1 flex items-start gap-2 text-[11px] text-[#73858D]">
+        <Info className="w-3.5 h-3.5 mt-0.5 text-[#08784B] shrink-0" />
+        <span>
+          CatchThePrice records verified retail observations daily. Historical charts display recorded snapshots without artificial simulation.
+        </span>
+      </div>
+    </section>
+  );
+}

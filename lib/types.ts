@@ -72,6 +72,26 @@ export interface PriceStats {
   allTimeLowestDate?: string;
 }
 
+export interface ProductImage {
+  id: string;
+  productId?: string;
+  imageUrl: string;
+  sortOrder: number;
+  imageType: 'front' | 'back' | 'side' | 'angle' | 'detail' | 'lifestyle';
+  altText: string;
+  isPrimary?: boolean;
+}
+
+export interface SpecItem {
+  name: string;
+  value: string;
+}
+
+export interface SpecGroup {
+  category: string;
+  specs: SpecItem[];
+}
+
 export interface Product {
   id: string;
   title: string;
@@ -83,7 +103,9 @@ export interface Product {
   description: string;
   imageUrl: string;
   gallery: string[];
+  images?: ProductImage[];
   specs: Record<string, string>;
+  specGroups?: SpecGroup[];
   currentBestPrice: number;
   originalPrice: number;
   currency: string;

@@ -26,16 +26,21 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
     };
   }
 
-  const hasReferencePrice = product.originalPrice > product.currentBestPrice;
+  const hasPrice = product.currentBestPrice > 0;
+  const hasReferencePrice = hasPrice && product.originalPrice > product.currentBestPrice;
   const dropPercent = hasReferencePrice
     ? Math.round(((product.originalPrice - product.currentBestPrice) / product.originalPrice) * 100)
     : 0;
   const historyCopy = product.priceHistory.length > 1 ? ' Price history is available.' : '';
   const savingsCopy = dropPercent > 0 ? ` The lowest listed price is ${dropPercent}% below the recorded reference price.` : '';
 
+  const metaDesc = hasPrice
+    ? `Compare ${product.title} across ${product.offersCount} current retailer offer${product.offersCount === 1 ? '' : 's'} in ${info.name}. Lowest listed price: ${info.currency} ${product.currentBestPrice}.${savingsCopy}${historyCopy}`
+    : `Compare prices for ${product.title} in ${info.name} on CatchThePrice. Automated price tracking active for official UAE retailers including Amazon UAE and Noon UAE.`;
+
   return {
     title: `${product.title} — Compare Prices in ${info.name}`,
-    description: `Compare ${product.title} across ${product.offersCount} current retailer offer${product.offersCount === 1 ? '' : 's'} in ${info.name}. Lowest listed price: ${info.currency} ${product.currentBestPrice}.${savingsCopy}${historyCopy}`,
+    description: metaDesc,
     robots: isPreview ? { index: false, follow: false } : undefined,
     alternates: {
       canonical: `https://catchtheprice.com/${country}/product/${product.slug}`,
@@ -65,15 +70,22 @@ export default async function ProductPage({ params }: ProductPageProps) {
   if (!product) notFound();
 
   const liveOfferPrices = product.offers.map((offer) => offer.price).filter((price) => Number.isFinite(price) && price > 0);
-  const lowPrice = liveOfferPrices.length ? Math.min(...liveOfferPrices) : product.currentBestPrice;
-  const highPrice = liveOfferPrices.length ? Math.max(...liveOfferPrices) : product.currentBestPrice;
+  const hasLiveOffers = liveOfferPrices.length > 0;
+  const lowPrice = hasLiveOffers ? Math.min(...liveOfferPrices) : 0;
+  const highPrice = hasLiveOffers ? Math.max(...liveOfferPrices) : 0;
 
-  const jsonLd = !isPreview && product.offers.length > 0
+  const productImages = product.images?.length
+    ? product.images.map((img) => img.imageUrl)
+    : product.imageUrl
+    ? [product.imageUrl]
+    : undefined;
+
+  const jsonLd = !isPreview
     ? {
         '@context': 'https://schema.org',
         '@type': 'Product',
         name: product.title,
-        image: product.imageUrl ? [product.imageUrl] : undefined,
+        image: productImages,
         description: product.description || undefined,
         brand: product.brand
           ? {
@@ -81,24 +93,30 @@ export default async function ProductPage({ params }: ProductPageProps) {
               name: product.brand,
             }
           : undefined,
-        offers: {
-          '@type': 'AggregateOffer',
-          priceCurrency: product.currency,
-          lowPrice,
-          highPrice,
-          offerCount: product.offers.length,
-          offers: product.offers.map((offer) => ({
-            '@type': 'Offer',
-            price: offer.price,
-            priceCurrency: offer.currency,
-            availability: offer.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
-            url: `https://catchtheprice.com/api/outbound?offerId=${encodeURIComponent(offer.id)}&country=${country}`,
-            seller: {
-              '@type': 'Organization',
-              name: offer.merchantName,
-            },
-          })),
-        },
+        ...(hasLiveOffers && lowPrice > 0
+          ? {
+              offers: {
+                '@type': 'AggregateOffer',
+                priceCurrency: product.currency,
+                lowPrice,
+                highPrice,
+                offerCount: liveOfferPrices.length,
+                offers: product.offers
+                  .filter((offer) => offer.price > 0)
+                  .map((offer) => ({
+                    '@type': 'Offer',
+                    price: offer.price,
+                    priceCurrency: offer.currency,
+                    availability: offer.inStock ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
+                    url: `https://catchtheprice.com/api/outbound?offerId=${encodeURIComponent(offer.id)}&country=${country}`,
+                    seller: {
+                      '@type': 'Organization',
+                      name: offer.merchantName,
+                    },
+                  })),
+              },
+            }
+          : {}),
       }
     : null;
 

@@ -1,0 +1,302 @@
+'use client';
+
+import React, { useState, useEffect, useRef } from 'react';
+import { ProductImage } from '@/lib/types';
+import { Bookmark, TrendingDown, Maximize2, X, ChevronLeft, ChevronRight } from 'lucide-react';
+
+interface ProductGallery2Props {
+  primaryImageUrl: string;
+  images?: ProductImage[];
+  productTitle: string;
+  discountPercent?: number;
+  isSaved?: boolean;
+  onToggleSave?: () => void;
+  selectedIndex?: number;
+  onSelectImage?: (index: number) => void;
+}
+
+export function ProductGallery2({
+  primaryImageUrl,
+  images = [],
+  productTitle,
+  discountPercent = 0,
+  isSaved = false,
+  onToggleSave,
+  selectedIndex,
+  onSelectImage,
+}: ProductGallery2Props) {
+  // Build effective gallery list
+  const galleryList: ProductImage[] = images.length > 0
+    ? images
+    : [
+        {
+          id: 'primary',
+          imageUrl: primaryImageUrl,
+          sortOrder: 1,
+          imageType: 'front',
+          altText: productTitle,
+          isPrimary: true,
+        },
+      ];
+
+  const [internalIndex, setInternalIndex] = useState(0);
+  const activeIndex = typeof selectedIndex === 'number' ? selectedIndex : internalIndex;
+
+  const setActiveIndex = (index: number) => {
+    const nextIdx = (index + galleryList.length) % galleryList.length;
+    setInternalIndex(nextIdx);
+    if (onSelectImage) onSelectImage(nextIdx);
+  };
+
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [imgErrorMap, setImgErrorMap] = useState<Record<number, boolean>>({});
+
+  const touchStartX = useRef<number | null>(null);
+
+  const activeImage = galleryList[activeIndex] || galleryList[0];
+  const activeSrc = imgErrorMap[activeIndex] ? primaryImageUrl : activeImage.imageUrl;
+
+  // Handle Keyboard Navigation for Lightbox and Gallery
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!isLightboxOpen) return;
+      if (e.key === 'Escape') setIsLightboxOpen(false);
+      if (e.key === 'ArrowRight') setActiveIndex(activeIndex + 1);
+      if (e.key === 'ArrowLeft') setActiveIndex(activeIndex - 1);
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isLightboxOpen, activeIndex, galleryList.length]);
+
+  // Handle Mobile Touch Swipe
+  const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (touchStartX.current === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX.current - touchEndX;
+    if (diff > 40) {
+      setActiveIndex(activeIndex + 1); // Swipe left -> next
+    } else if (diff < -40) {
+      setActiveIndex(activeIndex - 1); // Swipe right -> prev
+    }
+    touchStartX.current = null;
+  };
+
+  return (
+    <div className="space-y-3">
+      {/* Main Image Canvas */}
+      <div
+        className="relative aspect-square max-h-[320px] sm:max-h-[440px] mx-auto w-full rounded-[24px] bg-white border border-[#DDE7E3] p-4 sm:p-7 flex items-center justify-center overflow-hidden shadow-[0_10px_30px_rgba(25,55,45,0.06)] group"
+        onTouchStart={handleTouchStart}
+        onTouchEnd={handleTouchEnd}
+      >
+        {/* Discount Badge */}
+        {discountPercent > 0 && (
+          <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-0.5 rounded-lg text-[10px] font-extrabold bg-[#E5F8EF] text-[#08784B] border border-[#C7EEDC] z-10 shadow-xs">
+            <TrendingDown className="w-3 h-3 stroke-[2.5]" />
+            <span>{discountPercent}% OFF</span>
+          </div>
+        )}
+
+        {/* Action Controls: Zoom & Save */}
+        <div className="absolute top-3 right-3 z-10 flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => setIsLightboxOpen(true)}
+            className="w-8 h-8 rounded-xl bg-white/90 hover:bg-white text-[#60727A] hover:text-[#08784B] border border-[#DDE7E3] flex items-center justify-center transition-all shadow-xs"
+            aria-label="Enlarge image"
+            title="Inspect high-resolution view"
+          >
+            <Maximize2 className="w-3.5 h-3.5" />
+          </button>
+
+          {onToggleSave && (
+            <button
+              type="button"
+              onClick={onToggleSave}
+              className={`w-8 h-8 rounded-xl border flex items-center justify-center transition-all shadow-xs ${
+                isSaved
+                  ? 'bg-[#0B8F58] text-white border-[#0B8F58]'
+                  : 'bg-white/90 hover:bg-white text-[#60727A] hover:text-[#08784B] border-[#DDE7E3]'
+              }`}
+              aria-label={isSaved ? 'Saved to watchlist' : 'Save product'}
+            >
+              <Bookmark className={`w-3.5 h-3.5 ${isSaved ? 'fill-white' : ''}`} />
+            </button>
+          )}
+        </div>
+
+        {/* Navigation Arrows on Canvas (Clickable & Active) */}
+        {galleryList.length > 1 && (
+          <>
+            <button
+              type="button"
+              onClick={() => setActiveIndex(activeIndex - 1)}
+              className="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white border border-[#DDE7E3] text-[#31474F] hover:text-[#08784B] flex items-center justify-center shadow-sm z-10 transition-all opacity-80 group-hover:opacity-100"
+              aria-label="Previous image"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveIndex(activeIndex + 1)}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white border border-[#DDE7E3] text-[#31474F] hover:text-[#08784B] flex items-center justify-center shadow-sm z-10 transition-all opacity-80 group-hover:opacity-100"
+              aria-label="Next image"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </>
+        )}
+
+        {/* Active Product Image */}
+        <img
+          src={activeSrc}
+          alt={activeImage.altText || productTitle}
+          onError={() => setImgErrorMap((prev) => ({ ...prev, [activeIndex]: true }))}
+          className="max-h-full max-w-full object-contain cursor-zoom-in transition-transform duration-300 group-hover:scale-[1.02]"
+          onClick={() => setIsLightboxOpen(true)}
+        />
+
+        {/* Bottom Image Counter */}
+        {galleryList.length > 1 && (
+          <div className="absolute bottom-2.5 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full bg-[#102027]/75 backdrop-blur-xs text-[10px] font-bold text-white pointer-events-none">
+            {activeIndex + 1} / {galleryList.length}
+          </div>
+        )}
+      </div>
+
+      {/* Thumbnail Gallery Strip */}
+      {galleryList.length > 1 && (
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+          {galleryList.map((item, idx) => {
+            const isSelected = activeIndex === idx;
+            const thumbSrc = imgErrorMap[idx] ? primaryImageUrl : item.imageUrl;
+
+            let typeLabel = '';
+            if (item.imageType === 'front') typeLabel = 'Desert';
+            else if (item.imageType === 'angle' && item.altText?.includes('overview')) typeLabel = 'Display';
+            else if (item.imageType === 'detail') typeLabel = 'Camera';
+            else if (item.imageType === 'side' && item.altText?.includes('Natural')) typeLabel = 'Natural';
+            else if (item.imageType === 'side' && item.altText?.includes('White')) typeLabel = 'White';
+            else if (item.imageType === 'back') typeLabel = 'Black';
+            else if (item.imageType === 'angle') typeLabel = 'Angle';
+            else typeLabel = item.imageType;
+
+            return (
+              <button
+                key={item.id || idx}
+                type="button"
+                onClick={() => setActiveIndex(idx)}
+                className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-xl bg-white border p-1 shrink-0 transition-all flex flex-col items-center justify-between ${
+                  isSelected
+                    ? 'border-[#0B8F58] ring-2 ring-[#00D27A]/20 shadow-xs'
+                    : 'border-[#DDE7E3] hover:border-[#BFD2CA] opacity-75 hover:opacity-100'
+                }`}
+                aria-label={`View ${item.altText || `image ${idx + 1}`}`}
+              >
+                <img
+                  src={thumbSrc}
+                  alt=""
+                  className="w-full h-8 sm:h-10 object-contain"
+                />
+                <span className={`text-[8px] font-extrabold uppercase tracking-tight block truncate max-w-full ${
+                  isSelected ? 'text-[#08784B]' : 'text-[#73858D]'
+                }`}>
+                  {typeLabel}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Fullscreen Lightbox Modal */}
+      {isLightboxOpen && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200"
+          onClick={() => setIsLightboxOpen(false)}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+        >
+          <div
+            className="relative max-w-4xl w-full max-h-[92vh] bg-[#071015] border border-[#162633] rounded-3xl p-3 sm:p-6 flex flex-col items-center justify-between shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Top Bar with Title & Close */}
+            <div className="w-full flex items-center justify-between pb-2 border-b border-[#162633]">
+              <div className="min-w-0 pr-4">
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[#00D27A] block">
+                  High-Resolution Inspection ({activeIndex + 1} of {galleryList.length})
+                </span>
+                <h4 className="text-white font-bold text-xs sm:text-sm truncate">
+                  {productTitle}
+                </h4>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsLightboxOpen(false)}
+                className="w-9 h-9 rounded-xl bg-[#0F1C24] hover:bg-[#162633] border border-[#223743] text-white flex items-center justify-center transition-colors shrink-0"
+                aria-label="Close fullscreen gallery"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Main Lightbox Image View with Arrows */}
+            <div className="relative w-full h-[56vh] sm:h-[65vh] flex items-center justify-center my-2">
+              <img
+                src={activeSrc}
+                alt={activeImage.altText || productTitle}
+                className="max-h-full max-w-full object-contain rounded-xl"
+              />
+
+              {galleryList.length > 1 && (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => setActiveIndex(activeIndex - 1)}
+                    className="absolute left-1 sm:left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-[#0F1C24]/80 hover:bg-[#0F1C24] border border-[#223743] text-white flex items-center justify-center transition-colors"
+                    aria-label="Previous image"
+                  >
+                    <ChevronLeft className="w-5 h-5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveIndex(activeIndex + 1)}
+                    className="absolute right-1 sm:right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-xl bg-[#0F1C24]/80 hover:bg-[#0F1C24] border border-[#223743] text-white flex items-center justify-center transition-colors"
+                    aria-label="Next image"
+                  >
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </>
+              )}
+            </div>
+
+            {/* Bottom Lightbox Thumbnail Strip */}
+            {galleryList.length > 1 && (
+              <div className="w-full flex items-center justify-center gap-2 overflow-x-auto pt-2 border-t border-[#162633] scrollbar-none">
+                {galleryList.map((item, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setActiveIndex(idx)}
+                    className={`w-11 h-11 rounded-lg bg-[#0F1C24] border p-1 shrink-0 transition-all ${
+                      activeIndex === idx
+                        ? 'border-[#00D27A] ring-1 ring-[#00D27A]'
+                        : 'border-[#223743] opacity-60 hover:opacity-100'
+                    }`}
+                  >
+                    <img src={item.imageUrl} alt="" className="w-full h-full object-contain" />
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
