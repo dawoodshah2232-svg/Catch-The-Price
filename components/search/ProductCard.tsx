@@ -16,12 +16,23 @@ export function ProductCard({ product, priority = false }: ProductCardProps) {
   const { country, formatLocalPrice, toggleSaveProduct, isProductSaved } = useCountry();
   const saved = isProductSaved(product.id);
   const previous = previousObservedPrice(product);
-  const status = previous === null ? 'stable' : product.currentBestPrice < previous ? 'dropped' : product.currentBestPrice > previous ? 'increased' : 'stable';
-  const statusMeta = status === 'dropped'
-    ? { label: 'Price dropped', Icon: TrendingDown, classes: 'bg-[#0b9a58] text-white' }
-    : status === 'increased'
-      ? { label: 'Price increased', Icon: TrendingUp, classes: 'bg-[#e24747] text-white' }
-      : { label: 'Price stable', Icon: Minus, classes: 'bg-[#2688bd] text-white' };
+  const isPending = product.currentBestPrice <= 0;
+  const status = isPending
+    ? 'pending'
+    : previous === null
+      ? 'stable'
+      : product.currentBestPrice < previous
+        ? 'dropped'
+        : product.currentBestPrice > previous
+          ? 'increased'
+          : 'stable';
+  const statusMeta = status === 'pending'
+    ? { label: 'Tracking', Icon: Store, classes: 'bg-[#14533e] text-white' }
+    : status === 'dropped'
+      ? { label: 'Price dropped', Icon: TrendingDown, classes: 'bg-[#0b9a58] text-white' }
+      : status === 'increased'
+        ? { label: 'Price increased', Icon: TrendingUp, classes: 'bg-[#e24747] text-white' }
+        : { label: 'Price stable', Icon: Minus, classes: 'bg-[#2688bd] text-white' };
   const liveOffers = [...product.offers].filter(offer => offer.inStock).sort((a, b) => a.price - b.price).slice(0, 3);
   const offers = liveOffers;
 

@@ -218,22 +218,44 @@ export async function getCatalogProductBySlug(
 
 export async function getHomepageCatalog(country: CountryCode) {
   const { products, isPreview } = await getCatalogProducts(country);
-  const byDiscount = [...products].sort((a, b) => {
-    const discountA = a.originalPrice > 0 ? (a.originalPrice - a.currentBestPrice) / a.originalPrice : 0;
-    const discountB = b.originalPrice > 0 ? (b.originalPrice - b.currentBestPrice) / b.originalPrice : 0;
-    return discountB - discountA;
-  });
-  const topDeals = byDiscount.slice(0, 12);
-  const topDealIds = new Set(topDeals.map((item) => item.id));
-  const biggestDrops = [...products]
-    .filter((item) => latestObservedDropPercent(item) > 0 && !topDealIds.has(item.id))
-    .sort((a, b) => latestObservedDropPercent(b) - latestObservedDropPercent(a))
-    .slice(0, 8);
+  const byDiscount = [...products]
+    .filter((p) => p.originalPrice > p.currentBestPrice && p.currentBestPrice > 0)
+    .sort((a, b) => {
+      const discountA = (a.originalPrice - a.currentBestPrice) / a.originalPrice;
+      const discountB = (b.originalPrice - b.currentBestPrice) / b.originalPrice;
+      return discountB - discountA;
+    });
+
+  const hasRealDeals = byDiscount.length > 0;
+  // If real deals exist, feature them. Otherwise, feature the first distinct batch of flagships.
+  const topDeals = hasRealDeals ? byDiscount.slice(0, 8) : products.slice(0, 8);
+  const usedIds = new Set(topDeals.map((item) => item.id));
+
+  // Trending section: popular products distinct from top deals
+  const trending = products.filter((item) => !usedIds.has(item.id)).slice(0, 8);
+  trending.forEach((item) => usedIds.add(item.id));
+
+  // Drops section: verified drops if they exist, or distinct price watch candidates
+  const realDrops = [...products]
+    .filter((item) => latestObservedDropPercent(item) > 0 && !usedIds.has(item.id))
+    .sort((a, b) => latestObservedDropPercent(b) - latestObservedDropPercent(a));
+  const hasRealDrops = realDrops.length > 0;
+  const biggestDrops = hasRealDrops
+    ? realDrops.slice(0, 8)
+    : products.filter((item) => !usedIds.has(item.id)).slice(0, 8);
+  biggestDrops.forEach((item) => usedIds.add(item.id));
+
+  // More deals / popular collections: remaining distinct products
+  const moreDeals = products.filter((item) => !usedIds.has(item.id)).slice(0, 12);
+
   return {
     isPreview,
     products,
     topDeals,
+    hasRealDeals,
+    trending,
     biggestDrops,
-    trending: products.filter((item) => item.isTrending).slice(0, 12),
+    hasRealDrops,
+    moreDeals,
   };
 }

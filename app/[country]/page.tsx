@@ -34,9 +34,6 @@ export default async function HomePage({ params }: HomePageProps) {
   const country = (rawCountry?.toLowerCase() in COUNTRIES ? rawCountry.toLowerCase() : DEFAULT_COUNTRY) as CountryCode;
   const live = await getHomepageCatalog(country);
   const products = live.products;
-  const topDeals = live.topDeals.length ? live.topDeals : products.slice(0, 6);
-  const trending = products.filter(product => product.isTrending).slice(0, 6);
-  const recentlyDropped = live.biggestDrops.length ? live.biggestDrops : products.slice(6, 12);
   const isPreview = live.isPreview;
 
   return <div className="min-h-screen bg-[#f7f8f8]">
@@ -44,9 +41,14 @@ export default async function HomePage({ params }: HomePageProps) {
     <Hero />
     <CategoryGrid />
     <PromoBannerRow />
-    <BestDealsSection products={topDeals} />
+    <BestDealsSection products={live.topDeals} hasRealDeals={live.hasRealDeals} />
     <PopularBrandsSection products={products} />
-    <StorefrontExtensions products={products.slice(12, 18)} trending={trending.length ? trending : products.slice(6, 12)} dropped={recentlyDropped} />
+    <StorefrontExtensions
+      products={live.moreDeals}
+      trending={live.trending}
+      dropped={live.biggestDrops}
+      hasRealDrops={live.hasRealDrops}
+    />
     <NewsletterSignup />
   </div>;
 }
