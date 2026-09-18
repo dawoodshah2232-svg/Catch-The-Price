@@ -128,6 +128,33 @@ html:not([data-theme='dark']) .public-shell [class*="shadow-2xl"] {
   box-shadow: 0 14px 36px rgba(25,55,45,.09) !important;
 }
 
+/* Intentional dark product panels must not be converted to a light canvas by
+   the legacy rescue layer. These semantic roles keep their content readable
+   regardless of the page appearance. */
+html:not([data-theme='dark']) .public-shell .ctp-dark-panel[class*="bg-[#091217]"] {
+  background-color: #091217 !important;
+  border-color: #162633 !important;
+  color: #CBD5E1 !important;
+}
+html:not([data-theme='dark']) .public-shell .ctp-dark-panel [class*="bg-[#071015]"] {
+  background-color: #071015 !important;
+}
+html:not([data-theme='dark']) .public-shell .ctp-dark-panel [class*="border-[#162633]"] {
+  border-color: #162633 !important;
+}
+.dark-panel-primary { color: #F8FAFC; }
+.dark-panel-secondary { color: #CBD5E1; }
+.dark-panel-muted { color: #94A3B8; }
+.dark-panel-elevated { background-color: #071015; }
+.dark-panel-buy { border: 1px solid transparent; }
+.dark-panel-buy--primary { background: #00D27A; color: #071015; }
+.dark-panel-buy--primary:hover { background: #00E6A2; color: #071015; }
+.dark-panel-buy--secondary { background: rgba(0, 210, 122, 0.10); border-color: rgba(0, 210, 122, 0.30); color: #67EFB8; }
+.dark-panel-buy--secondary:hover { background: #00D27A; border-color: #00D27A; color: #071015; }
+.dark-panel-buy:focus-visible { outline: 2px solid #67EFB8; outline-offset: 3px; }
+.offer-stock--available { color: #00D27A; }
+.offer-stock--unavailable { color: #FCA5A5; }
+
 /* Branded chrome always remains dark, including while the shopping canvas is light. */
 .ctp-header-dark { background: #071015 !important; border-color: #162633 !important; color: #F8FAFC !important; }
 .ctp-footer-dark { background: #091217 !important; border-color: #162633 !important; color: #CBD5E1 !important; }
@@ -182,14 +209,23 @@ html[data-theme='dark'] [class~="border-[#E5ECE9]"],
 html[data-theme='dark'] [class~="border-[#CFE0DA]"] { border-color: var(--ui-border) !important; }
 html[data-theme='dark'] [class~="text-[#102027]"],
 html[data-theme='dark'] [class~="text-[#173028]"],
-html[data-theme='dark'] [class~="text-[#20343C]"] { color: var(--ui-text) !important; }
+html[data-theme='dark'] [class~="text-[#20343C]"],
+html[data-theme='dark'] [class~="text-[#243B33]"],
+html[data-theme='dark'] [class~="text-[#31474F]"] { color: var(--ui-text) !important; }
 html[data-theme='dark'] [class~="text-[#52636B]"],
 html[data-theme='dark'] [class~="text-[#65777F]"],
 html[data-theme='dark'] [class~="text-[#334B43]"],
+html[data-theme='dark'] [class~="text-[#40534B]"],
+html[data-theme='dark'] [class~="text-[#60727A]"],
+html[data-theme='dark'] [class~="text-[#625C4D]"],
 html[data-theme='dark'] [class~="text-[#455B53]"] { color: var(--ui-text-secondary) !important; }
 html[data-theme='dark'] [class~="text-[#73858D]"],
 html[data-theme='dark'] [class~="text-[#6D7E78]"],
-html[data-theme='dark'] [class~="text-[#829198]"] { color: var(--ui-muted) !important; }
+html[data-theme='dark'] [class~="text-[#73837D]"],
+html[data-theme='dark'] [class~="text-[#7A8983]"],
+html[data-theme='dark'] [class~="text-[#7F929D]"],
+html[data-theme='dark'] [class~="text-[#829198]"],
+html[data-theme='dark'] [class~="text-[#8FA1AC]"] { color: var(--ui-muted) !important; }
 
 /* CatchThePrice brand utility classes */
 .bg-ctp-base { background-color: #071015; }

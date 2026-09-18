@@ -21,7 +21,7 @@ export function QuickCompareSection({ current, alternatives }: QuickCompareSecti
   ).slice(0, 4);
 
   return (
-    <section className="rounded-3xl border border-[#162633] bg-[#091217] overflow-hidden">
+    <section className="ctp-dark-panel rounded-3xl border border-[#162633] bg-[#091217] overflow-hidden">
       <div className="p-4 sm:p-5 border-b border-[#162633] flex items-start sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-[#62efb7] text-[11px] font-bold uppercase tracking-wider">
