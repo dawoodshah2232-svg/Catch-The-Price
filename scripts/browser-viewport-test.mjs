@@ -94,6 +94,8 @@ async function main() {
           '--headless=new',
           '--disable-gpu',
           '--no-sandbox',
+          '--disable-sync',
+          '--disable-background-networking',
           `--window-size=${vp.width},${vp.height}`,
           `--screenshot=${outPath}`,
           '--hide-scrollbars',
@@ -105,7 +107,12 @@ async function main() {
           if (response.status < 200 || response.status >= 400) {
             throw new Error(`route returned HTTP ${response.status}`);
           }
-          await execFileAsync(chromePath, args, { timeout: 15000 });
+          try {
+            await execFileAsync(chromePath, args, { timeout: 15000 });
+          } catch {
+            // Retry once if Chrome background network/GCM process glitches
+            await execFileAsync(chromePath, args, { timeout: 15000 });
+          }
 
           if (fs.existsSync(outPath)) {
             const stats = fs.statSync(outPath);

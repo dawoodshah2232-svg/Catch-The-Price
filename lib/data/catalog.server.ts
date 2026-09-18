@@ -2,7 +2,6 @@ import 'server-only';
 
 import { getServerSupabase } from '@/lib/supabase/server';
 import { CountryCode, Offer, PricePoint, Product } from '@/lib/types';
-import { getLaunchCatalog } from '@/lib/data/launchCatalog';
 
 const LIVE_MARKETS = new Set<CountryCode>(['ae', 'us']);
 
@@ -202,8 +201,7 @@ export function isPreviewCatalogEnabled(): boolean {
 
 export async function getCatalogProducts(country: CountryCode): Promise<{ products: Product[]; isPreview: boolean }> {
   const live = await loadLiveCatalog(country);
-  if (live.length >= 12 && !isPreviewCatalogEnabled()) return { products: live, isPreview: false };
-  return { products: getLaunchCatalog(country), isPreview: true };
+  return { products: live, isPreview: false };
 }
 
 export async function getCatalogProductBySlug(
@@ -211,13 +209,11 @@ export async function getCatalogProductBySlug(
   country: CountryCode
 ): Promise<{ product: Product | undefined; related: Product[]; isPreview: boolean }> {
   const live = await loadLiveCatalog(country);
-  const source = live.length >= 12 ? live : getLaunchCatalog(country);
-  const isPreview = live.length < 12;
-  const product = source.find((item) => item.slug.toLowerCase() === slug.toLowerCase());
+  const product = live.find((item) => item.slug.toLowerCase() === slug.toLowerCase());
   const related = product
-    ? source.filter((item) => item.categorySlug === product.categorySlug && item.id !== product.id).slice(0, 8)
+    ? live.filter((item) => item.categorySlug === product.categorySlug && item.id !== product.id).slice(0, 8)
     : [];
-  return { product, related, isPreview };
+  return { product, related, isPreview: false };
 }
 
 export async function getHomepageCatalog(country: CountryCode) {
