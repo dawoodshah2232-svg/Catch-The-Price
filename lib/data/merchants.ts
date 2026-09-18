@@ -11,7 +11,7 @@ export const MERCHANTS: Merchant[] = [
     rating: 4.8,
     reviewCount: 142000,
     country: 'ae',
-    affiliateTemplate: 'https://www.amazon.ae/dp/{asin}?tag=catchtheprice-ae-20',
+    affiliateTemplate: 'https://www.amazon.ae/dp/{asin}?tag=catchtheprice-21',
     trustedBadge: true,
   },
   {

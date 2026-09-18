@@ -214,22 +214,23 @@ export function getRetailerIntegrationStatuses() {
   const amazon = new AmazonAdapter().getStatus();
   const admitad = new AdmitadAdapter().getStatus();
   const noon = new NoonAdapter().getStatus();
+  const amazonManualAffiliate = Boolean(process.env.AMAZON_ASSOCIATES_PARTNER_TAG?.trim());
 
   return [
     {
       provider: 'Amazon Associates UAE',
-      status: amazon.status === 'READY' ? 'Credentials configured — rights review required' : 'Awaiting API credentials/access',
-      ok: false,
+      status: amazon.status === 'READY' ? 'Creators API configured' : amazonManualAffiliate ? 'Manual Affiliate / API Pending' : 'Manual Affiliate / tracking ID pending',
+      ok: amazonManualAffiliate,
+    },
+    {
+      provider: 'Noon Affiliate',
+      status: noon.status === 'READY' ? 'Affiliate Active / Product Feed Pending' : 'Affiliate Active / tracking configuration pending',
+      ok: noon.status === 'READY',
     },
     {
       provider: 'Admitad',
       status: admitad.status === 'READY' ? 'Official API credentials configured' : 'Awaiting API credentials',
       ok: admitad.status === 'READY',
-    },
-    {
-      provider: 'Noon Affiliate',
-      status: noon.status === 'READY' ? 'Affiliate tracking configured / product data integration pending' : 'Affiliate active / tracking configuration pending',
-      ok: noon.status === 'READY',
     },
     { provider: 'Impact', status: 'Disabled', ok: false },
   ];

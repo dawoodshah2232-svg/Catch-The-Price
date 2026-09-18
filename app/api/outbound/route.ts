@@ -17,6 +17,20 @@ function isApprovedNoonAffiliateHost(host: string): boolean {
   return host === 's.noon.com';
 }
 
+function isApprovedAmazonAffiliateHost(host: string): boolean {
+  return host === 'amzn.to' || host === 'a.co';
+}
+
+function isAmazonMerchant(merchant: { affiliate_network?: string | null; website_url?: string | null; name?: string | null } | null): boolean {
+  let host = '';
+  try {
+    host = merchant?.website_url ? normalizeHost(new URL(merchant.website_url).hostname) : '';
+  } catch {
+    host = '';
+  }
+  return merchant?.affiliate_network === 'AMAZON_ASSOCIATES' || host === 'amazon.ae' || host.endsWith('.amazon.ae') || /^amazon\b/i.test(merchant?.name || '');
+}
+
 function getNoonAffiliateFallback(merchant: { affiliate_network?: string | null; website_url?: string | null; name?: string | null } | null): string | null {
   let host = '';
   try {
@@ -151,7 +165,11 @@ export async function GET(request: NextRequest) {
 
     const destinationHost = normalizeHost(destination.hostname);
     const merchantDestination = merchantHost.length > 0 && (destinationHost === merchantHost || destinationHost.endsWith(`.${merchantHost}`));
-    const affiliateDestination = Boolean(affiliateUrl) && (isApprovedAdmitadHost(destinationHost) || isApprovedNoonAffiliateHost(destinationHost));
+    const affiliateDestination = Boolean(affiliateUrl) && (
+      isApprovedAdmitadHost(destinationHost) ||
+      isApprovedNoonAffiliateHost(destinationHost) ||
+      (isAmazonMerchant(merchant) && isApprovedAmazonAffiliateHost(destinationHost))
+    );
     const hostAllowed = merchantDestination || affiliateDestination;
 
     if (!hostAllowed) {
