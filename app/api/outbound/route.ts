@@ -13,6 +13,22 @@ function isApprovedAdmitadHost(host: string): boolean {
   return host === 'ad.admitad.com' || host === 'ad.admitad.ru';
 }
 
+function isApprovedNoonAffiliateHost(host: string): boolean {
+  return host === 's.noon.com';
+}
+
+function getNoonAffiliateFallback(merchant: { affiliate_network?: string | null; website_url?: string | null; name?: string | null } | null): string | null {
+  let host = '';
+  try {
+    host = merchant?.website_url ? normalizeHost(new URL(merchant.website_url).hostname) : '';
+  } catch {
+    host = '';
+  }
+  const isNoon = merchant?.affiliate_network === 'NOON_AFFILIATE' || host === 'noon.com' || host.endsWith('.noon.com') || /^noon\b/i.test(merchant?.name || '');
+  if (!isNoon) return null;
+  return process.env.NOON_AFFILIATE_TRACKING_URL?.trim() || null;
+}
+
 function getDeviceType(userAgent: string): 'mobile' | 'tablet' | 'desktop' | 'unknown' {
   const ua = userAgent.toLowerCase();
   if (!ua) return 'unknown';
@@ -107,9 +123,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const affiliateUrl = offer.affiliate_url?.trim() || getNoonAffiliateFallback(merchant);
+
     let destination: URL;
     try {
-      destination = new URL(offer.product_url);
+      destination = new URL(affiliateUrl || offer.product_url);
     } catch {
       return NextResponse.json(
         { error: 'Retailer destination is invalid.' },
@@ -133,7 +151,7 @@ export async function GET(request: NextRequest) {
 
     const destinationHost = normalizeHost(destination.hostname);
     const merchantDestination = merchantHost.length > 0 && (destinationHost === merchantHost || destinationHost.endsWith(`.${merchantHost}`));
-    const affiliateDestination = Boolean(offer.affiliate_url?.trim()) && isApprovedAdmitadHost(destinationHost);
+    const affiliateDestination = Boolean(affiliateUrl) && (isApprovedAdmitadHost(destinationHost) || isApprovedNoonAffiliateHost(destinationHost));
     const hostAllowed = merchantDestination || affiliateDestination;
 
     if (!hostAllowed) {
@@ -150,11 +168,11 @@ export async function GET(request: NextRequest) {
 
     const { destinationUrl } = buildAffiliateUrl({
       productUrl: offer.product_url,
-      affiliateUrl: offer.affiliate_url,
+      affiliateUrl,
       clickId,
     });
 
-    const destinationType = offer.affiliate_url?.trim() ? 'affiliate' : 'retailer';
+    const destinationType = affiliateUrl ? 'affiliate' : 'retailer';
     try {
       if (new URL(destinationUrl).protocol !== 'https:') {
         return NextResponse.json(

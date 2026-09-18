@@ -207,7 +207,7 @@ export class AdmitadAdapter extends CredentialsGatedAdapter {
 /** Noon affiliate product feed/API only; campaign links remain provider-supplied. */
 export class NoonAdapter extends CredentialsGatedAdapter {
   readonly provider = 'noon_affiliate' as const;
-  protected readonly requiredEnvironment = ['NOON_AFFILIATE_FEED_URL'] as const;
+  protected readonly requiredEnvironment = ['NOON_AFFILIATE_TRACKING_URL'] as const;
 }
 
 export function getRetailerIntegrationStatuses() {
@@ -228,8 +228,8 @@ export function getRetailerIntegrationStatuses() {
     },
     {
       provider: 'Noon Affiliate',
-      status: noon.status === 'READY' ? 'Feed configured — rights review required' : 'Affiliate active / product data integration pending',
-      ok: false,
+      status: noon.status === 'READY' ? 'Affiliate tracking configured / product data integration pending' : 'Affiliate active / tracking configuration pending',
+      ok: noon.status === 'READY',
     },
     { provider: 'Impact', status: 'Disabled', ok: false },
   ];
