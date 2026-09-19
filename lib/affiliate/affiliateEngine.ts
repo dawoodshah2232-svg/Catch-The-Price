@@ -111,3 +111,26 @@ export function buildAffiliateUrl({
     }
   }
 }
+
+/**
+ * Constructs a precise, direct Amazon UAE search affiliate deep link using the product's title.
+ * e.g., https://www.amazon.ae/s?k=Samsung+Galaxy+S24+Ultra+256GB&tag=catchtheprice-21
+ */
+export function buildAmazonUaeDeepLink(productTitle: string, partnerTag: string = 'catchtheprice-21'): string {
+  const encodedTitle = encodeURIComponent(productTitle.trim()).replace(/%20/g, '+');
+  return `https://www.amazon.ae/s?k=${encodedTitle}&tag=${partnerTag}`;
+}
+
+export const buildAmazonDeepLink = buildAmazonUaeDeepLink;
+
+/**
+ * Constructs a precise, direct Noon UAE search affiliate deep link using the product's title.
+ * e.g., https://www.noon.com/uae-en/s?q=Samsung+Galaxy+S24+Ultra+256GB&utm_source=catchtheprice
+ */
+export function buildNoonUaeDeepLink(productTitle: string, utmSource: string = 'catchtheprice'): string {
+  const encodedTitle = encodeURIComponent(productTitle.trim()).replace(/%20/g, '+');
+  return `https://www.noon.com/uae-en/s?q=${encodedTitle}&utm_source=${utmSource}`;
+}
+
+export const buildNoonDeepLink = buildNoonUaeDeepLink;
+
