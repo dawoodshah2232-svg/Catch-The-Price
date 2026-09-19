@@ -10,7 +10,7 @@ import {
   resolveMerchantSourceRights,
   SourceRightsRecord,
 } from '../config/sourceRights';
-import { searchProducts } from '../search/searchEngine';
+import { getProductPopularityRank, searchProducts } from '../search/searchEngine';
 
 const LIVE_MARKETS = new Set<CountryCode>(['ae', 'us']);
 
@@ -299,7 +299,8 @@ async function loadLiveCatalog(country: CountryCode): Promise<Product[]> {
 
   return (productData as unknown as JoinedProductRow[])
     .filter((row) => Boolean(row.image_url))
-    .map((row) => mapJoinedProduct(row, country, rightsList, sourcesList));
+    .map((row) => mapJoinedProduct(row, country, rightsList, sourcesList))
+    .sort((a, b) => getProductPopularityRank(b) - getProductPopularityRank(a));
 }
 
 export function isPreviewCatalogEnabled(): boolean {
@@ -414,22 +415,31 @@ export async function getHomepageCatalog(country: CountryCode) {
     .sort((a, b) => {
       const discountA = (a.originalPrice - a.currentBestPrice) / a.originalPrice;
       const discountB = (b.originalPrice - b.currentBestPrice) / b.originalPrice;
-      return discountB - discountA;
+      const rankA = getProductPopularityRank(a);
+      const rankB = getProductPopularityRank(b);
+      // Prioritize flagship models with verified discounts
+      return (rankB + discountB * 600) - (rankA + discountA * 600);
     });
 
   const hasRealDeals = byDiscount.length > 0;
-  // If real deals exist, feature them. Otherwise, feature the first distinct batch of flagships.
+  // If real deals exist, feature top flagship deals. Otherwise, feature the first distinct batch of flagships.
   const topDeals = hasRealDeals ? byDiscount.slice(0, 8) : products.slice(0, 8);
   const usedIds = new Set(topDeals.map((item) => item.id));
 
-  // Trending section: popular products distinct from top deals
+  // Trending section: premier flagships distinct from top deals
   const trending = products.filter((item) => !usedIds.has(item.id)).slice(0, 8);
   trending.forEach((item) => usedIds.add(item.id));
 
   // Drops section: verified drops if they exist, or distinct price watch candidates
   const realDrops = [...products]
     .filter((item) => latestObservedDropPercent(item) > 0 && !usedIds.has(item.id))
-    .sort((a, b) => latestObservedDropPercent(b) - latestObservedDropPercent(a));
+    .sort((a, b) => {
+      const dropA = latestObservedDropPercent(a);
+      const dropB = latestObservedDropPercent(b);
+      const rankA = getProductPopularityRank(a);
+      const rankB = getProductPopularityRank(b);
+      return (rankB + dropB * 600) - (rankA + dropA * 600);
+    });
   const hasRealDrops = realDrops.length > 0;
   const biggestDrops = hasRealDrops
     ? realDrops.slice(0, 8)

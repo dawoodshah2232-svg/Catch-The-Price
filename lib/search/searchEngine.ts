@@ -118,6 +118,95 @@ export function scoreProductRelevance(product: Product, query: string): number {
 }
 
 /**
+ * Computes a smart popularity and flagship tier score for catalog ranking.
+ * Flagships, top sellers, and current-generation premium products score highest.
+ */
+export function getProductPopularityRank(product: {
+  title?: string;
+  name?: string;
+  slug?: string;
+  brand?: string;
+  categorySlug?: string;
+  currentBestPrice?: number;
+}): number {
+  const slug = (product.slug || '').toLowerCase();
+  const category = (product.categorySlug || '').toLowerCase();
+
+  let rank = 100;
+
+  // Supreme Flagship Flag (iPhone 16 Pro Max, S24 Ultra, MacBook Pro M3 Max, PS5 Pro, iPad Pro M4)
+  if (slug.includes('iphone-16-pro-max')) rank += 1200;
+  else if (slug.includes('iphone-16-pro')) rank += 1150;
+  else if (slug.includes('galaxy-s24-ultra')) rank += 1140;
+  else if (slug.includes('macbook-pro-16') || slug.includes('m3-max')) rank += 1130;
+  else if (slug.includes('playstation-5-pro') || slug.includes('ps5-pro')) rank += 1120;
+  else if (slug.includes('ipad-pro-13') || (slug.includes('ipad-pro') && slug.includes('m4'))) rank += 1110;
+  else if (slug.includes('galaxy-z-fold6')) rank += 1100;
+  else if (slug.includes('apple-watch-ultra-2')) rank += 1090;
+  else if (slug.includes('macbook-pro-14') || slug.includes('m3-pro')) rank += 1080;
+  else if (slug.includes('sony-wh-1000xm5')) rank += 1070;
+  else if (slug.includes('airpods-max')) rank += 1060;
+  else if (slug.includes('playstation-5')) rank += 1050;
+  else if (slug.includes('xbox-series-x')) rank += 1040;
+
+  // Tier 2: Current-Gen Core Flagships & High-End
+  else if (slug.includes('iphone-16-plus')) rank += 980;
+  else if (slug.includes('iphone-16')) rank += 970;
+  else if (slug.includes('galaxy-s24-plus') || slug.includes('galaxy-s24+')) rank += 960;
+  else if (slug.includes('galaxy-s24')) rank += 950;
+  else if (slug.includes('galaxy-z-flip6')) rank += 940;
+  else if (slug.includes('macbook-air-15')) rank += 930;
+  else if (slug.includes('macbook-air-13')) rank += 920;
+  else if (slug.includes('ipad-air')) rank += 910;
+  else if (slug.includes('ipad-mini') && slug.includes('a17')) rank += 900;
+  else if (slug.includes('nintendo-switch-oled')) rank += 890;
+  else if (slug.includes('airpods-pro-2') || slug.includes('airpods-pro')) rank += 880;
+  else if (slug.includes('galaxy-watch-ultra')) rank += 870;
+  else if (slug.includes('apple-watch-series-10') || slug.includes('watch-s10')) rank += 860;
+  else if (slug.includes('oneplus-12')) rank += 850;
+  else if (slug.includes('xiaomi-14-ultra')) rank += 840;
+  else if (slug.includes('lg-oled') || slug.includes('bravia-8')) rank += 830;
+  else if (slug.includes('asus-rog-zephyrus') || slug.includes('dell-xps')) rank += 820;
+
+  // Tier 3: Previous-Gen Flagships & High-Value Consumer Electronics
+  else if (slug.includes('iphone-15-pro')) rank += 780;
+  else if (slug.includes('iphone-15')) rank += 750;
+  else if (slug.includes('galaxy-s23')) rank += 740;
+  else if (slug.includes('airpods-4')) rank += 730;
+  else if (slug.includes('galaxy-tab-s9')) rank += 720;
+  else if (slug.includes('bose-quietcomfort')) rank += 710;
+  else if (slug.includes('sennheiser-momentum-4')) rank += 700;
+  else if (slug.includes('steam-deck-oled')) rank += 690;
+  else if (slug.includes('rog-ally')) rank += 685;
+  else if (slug.includes('surface-laptop-7')) rank += 680;
+  else if (slug.includes('dji-mini-4') || slug.includes('dji-osmo')) rank += 670;
+  else if (slug.includes('xbox-series-s')) rank += 660;
+  else if (slug.includes('playstation-portal')) rank += 650;
+
+  // Tier 4: Mainstream & Budget Models
+  else if (slug.includes('galaxy-a55')) rank += 550;
+  else if (slug.includes('ipad-10th-gen')) rank += 540;
+  else if (slug.includes('iphone-13')) rank += 530;
+  else if (slug.includes('galaxy-watch7')) rank += 520;
+  else if (slug.includes('apple-watch-se')) rank += 510;
+  else if (slug.includes('dualsense')) rank += 505;
+  else if (slug.includes('990-pro') || slug.includes('t7-shield') || slug.includes('sandisk-extreme')) rank += 500;
+  else if (slug.includes('mx-master') || slug.includes('mx-keys') || slug.includes('superlight')) rank += 490;
+  else if (slug.includes('anker-prime')) rank += 480;
+
+  // Tier 5: Accessories & Adapters (Lowest priority)
+  else if (category === 'chargers-power-banks') rank += 150;
+  else if (category === 'computer-accessories') rank += 140;
+  else if (category === 'storage') rank += 160;
+  else if (category === 'networking') rank += 200;
+  else {
+    rank += Math.min(Math.round((product.currentBestPrice || 0) / 20), 400);
+  }
+
+  return rank;
+}
+
+/**
  * Filter and sort products using relevance and multi-criteria matching
  */
 export function searchProducts(
@@ -156,11 +245,16 @@ export function searchProducts(
 
     if (q) {
       const diff = scoreProductRelevance(b, q) - scoreProductRelevance(a, q);
-      if (diff !== 0) return diff;
+      // If one product has significantly higher textual relevance, respect text match
+      if (Math.abs(diff) >= 10) return diff;
     }
 
+    // Flagship popularity rank prioritization
+    const rankDiff = getProductPopularityRank(b) - getProductPopularityRank(a);
+    if (rankDiff !== 0) return rankDiff;
+
     if (a.offersCount !== b.offersCount) return b.offersCount - a.offersCount;
-    return a.currentBestPrice - b.currentBestPrice;
+    return b.currentBestPrice - a.currentBestPrice;
   });
 }
 
