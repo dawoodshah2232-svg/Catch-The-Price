@@ -27,7 +27,7 @@ export function BestDealsSection({ products, hasRealDeals = false }: BestDealsSe
         </div>
       </div>
     ) : (
-      <ProductCarousel>{products.slice(0, 8).map(p => <div key={p.id} className="w-[184px] shrink-0 snap-start sm:w-[202px]"><ProductCard product={p} priority/></div>)}</ProductCarousel>
+      <ProductCarousel>{products.slice(0, 8).map(p => <div key={p.id} className="w-[230px] shrink-0 snap-start sm:w-[260px]"><ProductCard product={p} priority/></div>)}</ProductCarousel>
     )}
   </section>;
 }

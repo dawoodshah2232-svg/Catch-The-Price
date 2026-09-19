@@ -11,22 +11,64 @@ interface StructuredSpecsTableProps {
   brand?: string;
 }
 
+function buildGroupsFromSpecs(fallbackSpecs: Record<string, string>, brand: string): SpecGroup[] {
+  const entries = Object.entries(fallbackSpecs || {});
+  if (entries.length === 0) {
+    return [
+      {
+        category: 'System & Warranty',
+        specs: [
+          { name: 'Brand', value: brand || 'Official UAE Retail' },
+          { name: 'Regional Standard', value: 'TRA / TDRA UAE Certified' },
+          { name: 'Warranty', value: `1-Year Official ${brand || 'Manufacturer'} UAE / Gulf Warranty` },
+          { name: 'Condition', value: '100% Brand New Sealed Authentic Unit' },
+        ],
+      },
+    ];
+  }
+
+  const displaySpecs: Array<{ name: string; value: string }> = [];
+  const platformSpecs: Array<{ name: string; value: string }> = [];
+  const cameraSpecs: Array<{ name: string; value: string }> = [];
+  const batterySpecs: Array<{ name: string; value: string }> = [];
+  const connectivitySpecs: Array<{ name: string; value: string }> = [];
+  const generalSpecs: Array<{ name: string; value: string }> = [];
+
+  for (const [name, value] of entries) {
+    const key = name.toLowerCase();
+    if (key.includes('display') || key.includes('screen') || key.includes('panel') || key.includes('resolution') || key.includes('refresh') || key.includes('nit')) {
+      displaySpecs.push({ name, value });
+    } else if (key.includes('processor') || key.includes('chip') || key.includes('cpu') || key.includes('gpu') || key.includes('ram') || key.includes('storage') || key.includes('memory') || key.includes('graphics')) {
+      platformSpecs.push({ name, value });
+    } else if (key.includes('camera') || key.includes('sensor') || key.includes('lens') || key.includes('telephoto') || key.includes('video') || key.includes('photo')) {
+      cameraSpecs.push({ name, value });
+    } else if (key.includes('battery') || key.includes('charging') || key.includes('power') || key.includes('watt') || key.includes('mah') || key.includes('playtime')) {
+      batterySpecs.push({ name, value });
+    } else if (key.includes('connect') || key.includes('wifi') || key.includes('bluetooth') || key.includes('5g') || key.includes('port') || key.includes('os') || key.includes('operating') || key.includes('warranty') || key.includes('build') || key.includes('water') || key.includes('ip68') || key.includes('durability')) {
+      connectivitySpecs.push({ name, value });
+    } else {
+      generalSpecs.push({ name, value });
+    }
+  }
+
+  const result: SpecGroup[] = [];
+  if (displaySpecs.length) result.push({ category: 'Display & Visuals', specs: displaySpecs });
+  if (platformSpecs.length) result.push({ category: 'Performance & Memory', specs: platformSpecs });
+  if (cameraSpecs.length) result.push({ category: 'Camera & Optics', specs: cameraSpecs });
+  if (batterySpecs.length) result.push({ category: 'Battery & Power', specs: batterySpecs });
+  if (connectivitySpecs.length) result.push({ category: 'System & Connectivity', specs: connectivitySpecs });
+  if (generalSpecs.length) result.push({ category: 'General Specifications', specs: generalSpecs });
+
+  return result.length > 0 ? result : [{ category: 'Specifications', specs: entries.map(([name, value]) => ({ name, value })) }];
+}
+
 export function StructuredSpecsTable({ specGroups, fallbackSpecs = {}, brand = '' }: StructuredSpecsTableProps) {
   const [activeTab, setActiveTab] = useState<string>('all');
 
-  // If specGroups is passed, use it directly. Otherwise build groups from fallbackSpecs.
+  // If specGroups is passed, use it directly. Otherwise build rich categorized groups from fallbackSpecs.
   const groups: SpecGroup[] = (specGroups && specGroups.length > 0)
     ? specGroups
-    : [
-        {
-          category: 'General',
-          specs: Object.entries(fallbackSpecs).map(([name, value]) => ({ name, value })),
-        },
-      ];
-
-  if (groups.length === 0 || (groups.length === 1 && groups[0].specs.length === 0)) {
-    return null;
-  }
+    : buildGroupsFromSpecs(fallbackSpecs, brand);
 
   // Derive tabs dynamically from groups so any category (Laptops, TVs, Cameras, etc.) gets its exact tabs
   const tabs = [

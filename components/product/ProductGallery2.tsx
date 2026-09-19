@@ -104,7 +104,7 @@ export function ProductGallery2({
     <div className="space-y-3">
       {/* Main Image Canvas */}
       <div
-        className="relative aspect-square max-h-[360px] sm:max-h-[480px] mx-auto w-full rounded-[24px] bg-white border border-[#DDE7E3] p-2 sm:p-3 flex items-center justify-center overflow-hidden shadow-[0_10px_30px_rgba(25,55,45,0.06)] group"
+        className="relative aspect-square max-h-[480px] sm:max-h-[580px] mx-auto w-full rounded-3xl bg-white border border-[#DDE7E3] p-5 sm:p-8 flex items-center justify-center overflow-hidden shadow-[0_12px_36px_rgba(25,55,45,0.06)] group"
         onTouchStart={handleTouchStart}
         onTouchEnd={handleTouchEnd}
       >

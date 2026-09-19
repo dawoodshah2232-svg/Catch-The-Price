@@ -27,6 +27,7 @@ const supabase = createClient(
 // Specific curated verified HD CDN images (with S24 Ultra explicitly mapped)
 const VERIFIED_HD_IMAGES = {
   'samsung-galaxy-s24-ultra-256gb': 'https://m.media-amazon.com/images/I/71657TiFeHL._AC_SL1500_.jpg',
+  'samsung-galaxy-z-flip6-256gb': 'https://f.nooncdn.com/p/pzsku/ZF9105F7201742B07C2C7Z/45/_/1772091436/30c190e6-bb81-4b5c-9adf-5c31e052f001.jpg',
   'apple-iphone-16-pro-max-256gb': 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-16-pro-model-unselect-gallery-2-202409?wid=2560&hei=1440&fmt=jpeg&qlt=90',
   'apple-iphone-16-pro-128gb': 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-16-pro-model-unselect-gallery-1-202409?wid=2560&hei=1440&fmt=jpeg&qlt=90',
   'apple-iphone-16-128gb': 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/iphone-16-model-unselect-gallery-1-202409?wid=2560&hei=1440&fmt=jpeg&qlt=90',
@@ -35,11 +36,21 @@ const VERIFIED_HD_IMAGES = {
   'apple-airpods-pro-2nd-gen-with-magsafe-usb-c': 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/MTJV3?wid=1144&hei=1144&fmt=jpeg&qlt=90',
   'apple-airpods-4-with-active-noise-cancellation': 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/airpods-4-anc-select-202409?wid=940&hei=1112&fmt=jpeg&qlt=90',
   'apple-20w-usb-c-power-adapter': 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/MU7V2?wid=1144&hei=1144&fmt=jpeg&qlt=90',
+  'apple-ipad-pro-11-inch-m4': 'https://m.media-amazon.com/images/I/71VbHaAqbML._AC_SL1500_.jpg',
+  'apple-ipad-pro-13-inch-m4': 'https://m.media-amazon.com/images/I/81hAx31maUL._AC_SL1500_.jpg',
+  'apple-ipad-air-11-inch-m2': 'https://m.media-amazon.com/images/I/71T5NVOgbpL._AC_SL1500_.jpg',
+  'apple-ipad-10th-gen-64gb': 'https://m.media-amazon.com/images/I/61uA2UVnYWL._AC_SL1500_.jpg',
   'apple-ipad-mini-a17-pro': 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/ipad-mini-finish-unselect-gallery-1-202410?wid=2560&hei=1440&fmt=jpeg&qlt=90',
   'apple-macbook-pro-16-inch-m3-max-1tb': 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/mbp16-spaceblack-select-202310?wid=904&hei=840&fmt=jpeg&qlt=90',
   'apple-macbook-pro-14-inch-m3-pro-512gb': 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/mbp14-spaceblack-select-202310?wid=904&hei=840&fmt=jpeg&qlt=90',
   'apple-macbook-air-13-inch-m3-256gb': 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/mba13-midnight-select-202402?wid=904&hei=840&fmt=jpeg&qlt=90',
   'apple-macbook-air-15-inch-m3-256gb': 'https://store.storeimages.cdn-apple.com/1/as-images.apple.com/is/mba15-midnight-select-202402?wid=904&hei=840&fmt=jpeg&qlt=90',
+  'xiaomi-14-ultra-512gb': 'https://m.media-amazon.com/images/I/71y8MUXmWrL._AC_SL1500_.jpg',
+  'sony-playstation-5-pro-2tb': 'https://m.media-amazon.com/images/I/619BkvKW35L._SL1500_.jpg',
+  'sony-playstation-5-slim-digital-edition': 'https://f.nooncdn.com/p/pzsku/ZBD978A7CA7F6ADCFD83DZ/45/_/1784203569/cc82c090-636a-4d34-a7b7-b21352110432.jpg',
+  'sony-wf-1000xm5-true-wireless-earbuds': 'https://f.nooncdn.com/p/pzsku/Z9F66B671F0B7DE3C9F4FZ/45/_/1780466817/c7e7c209-b5c5-45bb-a334-8a8cd0e8f74d.jpg',
+  'sony-alpha-6700-premium-aps-c-mirrorless-camera': 'https://f.nooncdn.com/p/pzsku/Z4202D51FCCDAEE2C0EEFZ/45/_/1780467084/2f83f6bd-0017-45ad-a9b0-1469bf347fb4.jpg',
+  'logitech-g502-x-plus-lightspeed-wireless-gaming-mouse': 'https://f.nooncdn.com/p/pzsku/Z39566D21200C428AAAA2Z/45/_/1779705400/02793079-73d8-4286-9e6a-8903f8df7c95.jpg',
 };
 
 // Generates comprehensive category-specific technical specifications

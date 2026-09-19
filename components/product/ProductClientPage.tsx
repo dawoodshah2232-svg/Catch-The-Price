@@ -91,10 +91,10 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
           <span className="text-[#31474F] font-semibold truncate max-w-xs">{product.brand}</span>
         </nav>
 
-        {/* Desktop 2-Column Experience: Left Canvas, Right Information */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8 items-start">
-          {/* Left Column: Multi-Image Canvas & Lightbox */}
-          <div className="lg:col-span-5 min-w-0">
+        {/* Desktop 2-Column Split View: Large Gallery Left, Rich Buy Box Right */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-start">
+          {/* Left Column: Large Pristine Multi-Image Canvas & Lightbox */}
+          <div className="lg:col-span-6 min-w-0">
             <ProductGallery2
               primaryImageUrl={product.imageUrl}
               images={product.images}
@@ -107,8 +107,8 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
             />
           </div>
 
-          {/* Right Column: Title, Interactive Variants, Key Specs, Single Price Module */}
-          <div className="lg:col-span-7 min-w-0 space-y-3.5 sm:space-y-4">
+          {/* Right Column: Title, Badges, Key Specs, & Multi-Merchant Comparison Box */}
+          <div className="lg:col-span-6 min-w-0 space-y-4">
             <div>
               <div className="flex flex-wrap items-center gap-2 mb-1.5 text-[11px]">
                 <span className="font-extrabold uppercase tracking-wider text-[#08784B]">{product.brand}</span>
@@ -116,9 +116,11 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
                 <span className="text-[#65777F] flex items-center gap-1">
                   <Store className="w-3 h-3 text-[#0B8F58]" />
                   {hasValidOffers
-                    ? `${validOffers.length} verified offer${validOffers.length === 1 ? '' : 's'}`
+                    ? `${validOffers.length} verified store offer${validOffers.length === 1 ? '' : 's'}`
                     : 'Tracking Amazon UAE & Noon UAE'}
                 </span>
+                <span className="text-[#A0AEA9]">•</span>
+                <span className="text-[#08784B] font-bold">Official UAE Stock</span>
               </div>
 
               <h1 className="text-xl sm:text-2xl lg:text-3xl font-extrabold text-[#102027] leading-tight">
@@ -126,7 +128,7 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
               </h1>
 
               {product.description && (
-                <p className="mt-2 text-sm text-[#52636B] leading-relaxed max-w-2xl line-clamp-2">
+                <p className="mt-2 text-xs sm:text-sm text-[#52636B] leading-relaxed max-w-2xl line-clamp-2">
                   {product.description}
                 </p>
               )}
@@ -135,7 +137,7 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
             {/* Storage & Color Variants (Clickable & Active) */}
             {hasVariants && (
               <div className="space-y-2 pt-0.5">
-                {/* Finish Selector: Clicking immediately switches gallery image */}
+                {/* Finish Selector */}
                 {finishes && finishes.length > 0 && (
                   <div className="flex flex-wrap items-center gap-1.5">
                     <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#73858D] mr-1">
@@ -149,14 +151,14 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
                           type="button"
                           onClick={() => setGalleryIndex(f.index)}
                           aria-pressed={isActive}
-                          className={`inline-flex min-h-11 items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-emerald-700 cursor-pointer ${
+                          className={`inline-flex min-h-10 items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-emerald-700 cursor-pointer ${
                             isActive
                               ? 'bg-white border border-[#08784B] ring-1 ring-[#08784B] text-[#102027] shadow-2xs'
                               : 'bg-white border border-[#DDE7E3] text-[#60727A] hover:text-[#102027]'
                           }`}
                         >
                           <span
-                            className="w-4 h-4 rounded-full border border-black/10 shrink-0"
+                            className="w-3.5 h-3.5 rounded-full border border-black/10 shrink-0"
                             style={{ backgroundColor: f.color }}
                           />
                           <span>{f.name}</span>
@@ -189,7 +191,7 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
               </div>
             )}
 
-            {/* Compact Glanceable Key Specs Presentation */}
+            {/* Glanceable Key Specs Presentation */}
             <KeySpecsSummary
               keySpecs={product.keySpecs}
               specs={product.specs}
@@ -198,15 +200,14 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
               isIPhone16ProMax={isIPhone16ProMax}
             />
 
-            {/* ONE Strong Compact Retailer & Pricing Module */}
-            <div className="p-3.5 sm:p-5 rounded-[20px] bg-white border border-[#DDE7E3] space-y-3 shadow-[0_8px_24px_rgba(25,55,45,0.05)]">
+            {/* HIGH-END MULTI-MERCHANT PRICE COMPARISON BOX (Directly on Hero Split View) */}
+            <div id="offers" className="p-4 sm:p-5 rounded-3xl bg-white border border-[#DDE7E3] space-y-4 shadow-[0_8px_24px_rgba(25,55,45,0.05)]">
               {hasValidOffers ? (
-                /* When Real Verified Offers Exist */
                 <>
-                  <div className="flex flex-wrap items-baseline justify-between gap-2">
+                  <div className="flex flex-wrap items-baseline justify-between gap-2 pb-3 border-b border-[#EDF2F0]">
                     <div>
-                      <span className="text-[9px] font-extrabold uppercase tracking-wider text-[#73858D] block mb-0.5">
-                        Lowest Verified Price
+                      <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#73858D] block mb-0.5">
+                        Lowest Live Verified Price
                       </span>
                       <div className="flex items-baseline gap-2">
                         <span className="text-2xl sm:text-3xl font-extrabold text-[#08784B]">
@@ -220,41 +221,109 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
                       </div>
                     </div>
 
-                    {discountPercent > 0 && (
-                      <span className="px-2.5 py-0.5 rounded-lg text-[11px] font-extrabold bg-[#E5F8EF] text-[#08784B] border border-[#C7EEDC]">
-                        ↓ {discountPercent}% vs reference
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {discountPercent > 0 && (
+                        <span className="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-[#E5F8EF] text-[#08784B] border border-[#C7EEDC]">
+                          ↓ {discountPercent}% OFF
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setIsAlertModalOpen(true)}
+                        className="py-1.5 px-3 rounded-xl bg-[#F4F7F6] hover:bg-[#EAF4F0] text-[#20343C] border border-[#CFE0DA] font-bold text-xs transition-all flex items-center gap-1.5 cursor-pointer"
+                        title="Set a price drop alert"
+                      >
+                        <Bell className="w-3.5 h-3.5 text-[#08784B]" />
+                        <span>Track</span>
+                      </button>
+                    </div>
                   </div>
 
-                  {product.dealScore > 0 && (
-                    <div className="pt-1.5 border-t border-[#EDF2F0]">
-                      <DealScoreBadge score={product.dealScore} size="sm" />
+                  {/* Clean Multi-Merchant Comparison Rows: Amazon UAE & Noon UAE */}
+                  <div className="space-y-2">
+                    <div className="text-[11px] font-extrabold uppercase tracking-wider text-[#73858D]">
+                      Verified Retailer Offers ({validOffers.length})
                     </div>
-                  )}
 
-                  <div className="grid grid-cols-2 gap-2.5 pt-1">
-                    <a
-                      href={outboundBestDealHref}
-                      target="_blank"
-                      rel="sponsored noopener"
-                      className="py-2.5 px-4 rounded-xl bg-[#0B8F58] hover:bg-[#08784B] text-white text-xs sm:text-sm font-extrabold flex items-center justify-center gap-2 transition-colors shadow-2xs"
-                    >
-                      <span>Visit {product.bestMerchantName}</span>
-                      <ExternalLink className="w-3.5 h-3.5" />
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => setIsAlertModalOpen(true)}
-                      className="py-2.5 px-4 rounded-xl bg-[#F4F7F6] hover:bg-[#EAF4F0] text-[#20343C] border border-[#CFE0DA] font-extrabold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 cursor-pointer"
-                    >
-                      <Bell className="w-3.5 h-3.5 text-[#08784B]" />
-                      <span>Track Price</span>
-                    </button>
+                    <div className="divide-y divide-[#EDF2F0] rounded-2xl border border-[#EDF2F0] bg-[#FAFBFB] overflow-hidden">
+                      {validOffers.map((offer, idx) => {
+                        const isBest = idx === 0;
+                        const outboundHref = `/api/outbound?offerId=${encodeURIComponent(offer.id)}&country=${country}`;
+                        return (
+                          <div
+                            key={offer.id}
+                            className={`p-3 sm:p-3.5 flex items-center justify-between gap-3 transition-colors ${
+                              isBest ? 'bg-[#F4FBF7]' : 'hover:bg-white'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3 min-w-0">
+                              <div className="w-9 h-9 rounded-xl bg-white border border-[#DDE7E3] p-1.5 flex items-center justify-center shrink-0 shadow-2xs">
+                                {offer.merchantLogo ? (
+                                  <img
+                                    src={offer.merchantLogo}
+                                    alt={offer.merchantName}
+                                    className="max-h-full max-w-full object-contain"
+                                  />
+                                ) : (
+                                  <Store className="w-4 h-4 text-[#08784B]" />
+                                )}
+                              </div>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className="font-extrabold text-xs sm:text-sm text-[#102027] truncate">
+                                    {offer.merchantName}
+                                  </span>
+                                  {isBest && (
+                                    <span className="px-1.5 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-[#0B8F58] text-white">
+                                      Lowest
+                                    </span>
+                                  )}
+                                </div>
+                                <div className="text-[11px] text-[#60727A] truncate">
+                                  {offer.shippingInfo || 'Official UAE Warranty'}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div className="flex items-center gap-2.5 sm:gap-3 shrink-0">
+                              <div className="text-right">
+                                <div className="text-sm sm:text-base font-extrabold text-[#08784B]">
+                                  {formatLocalPrice(offer.price)}
+                                </div>
+                                {offer.originalPrice > offer.price && (
+                                  <div className="text-[10px] text-[#829198] line-through font-medium">
+                                    {formatLocalPrice(offer.originalPrice)}
+                                  </div>
+                                )}
+                              </div>
+
+                              <a
+                                href={outboundHref}
+                                target="_blank"
+                                rel="sponsored noopener"
+                                className={`px-3 sm:px-4 py-2 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all shadow-xs ${
+                                  isBest
+                                    ? 'bg-[#0B8F58] hover:bg-[#08784B] text-white'
+                                    : 'bg-white hover:bg-[#EAF4F0] text-[#102027] border border-[#DDE7E3]'
+                                }`}
+                              >
+                                <span>View Deal</span>
+                                <ExternalLink className="w-3 h-3" />
+                              </a>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="pt-1 flex items-start gap-1.5 text-[10px] sm:text-[11px] text-[#73858D]">
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#08784B] shrink-0" />
+                    <span>Purchases completed directly on retailer website under official store terms and warranty.</span>
                   </div>
                 </>
               ) : (
-                /* When No Offers Exist Yet: Single Compact Module */
+                /* When No Offers Exist Yet */
                 <div className="space-y-3">
                   <div className="flex flex-wrap items-center gap-3">
                     <div className="flex items-center gap-2">
@@ -287,12 +356,6 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
                   </button>
                 </div>
               )}
-
-              {/* Offer terms are shown only when a real offer is available. */}
-              {hasValidOffers && <div className="pt-1 flex items-start gap-1.5 text-[10px] sm:text-[11px] text-[#73858D]">
-                <ShieldCheck className="w-3.5 h-3.5 text-[#08784B] shrink-0" />
-                <span>Purchases completed directly with official stores under manufacturer warranty.</span>
-              </div>}
             </div>
 
             {/* Mobile Jump Links */}
