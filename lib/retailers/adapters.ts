@@ -1,6 +1,7 @@
 import 'server-only';
 
 import type { RawMerchantItem } from '@/lib/ingestion/types';
+import { NoonPartnerClient } from './noonPartner';
 
 export type RetailerProvider = 'amazon_associates' | 'admitad' | 'noon_affiliate';
 export type RetailerAdapterStatus = 'READY' | 'NOT_CONFIGURED';
@@ -207,7 +208,24 @@ export class AdmitadAdapter extends CredentialsGatedAdapter {
 /** Noon affiliate product feed/API only; campaign links remain provider-supplied. */
 export class NoonAdapter extends CredentialsGatedAdapter {
   readonly provider = 'noon_affiliate' as const;
-  protected readonly requiredEnvironment = ['NOON_AFFILIATE_TRACKING_URL'] as const;
+  protected readonly requiredEnvironment = [
+    'NOON_AFFILIATE_TRACKING_URL',
+    'NOON_API_KEY_ID',
+    'NOON_API_PRIVATE_KEY_BASE64',
+    'NOON_API_PROJECT_CODE',
+  ] as const;
+
+  async fetchItems(): Promise<RetailerAdapterResult> {
+    const status = this.getStatus();
+    if (status.status !== 'READY') return status;
+
+    await new NoonPartnerClient().whoami();
+    return {
+      status: 'READY',
+      items: [],
+      reason: 'Noon Partner API authentication is active; product ingestion remains disabled until an approved catalog/feed endpoint and publication rights are recorded.',
+    };
+  }
 }
 
 export function getRetailerIntegrationStatuses() {
@@ -224,7 +242,7 @@ export function getRetailerIntegrationStatuses() {
     },
     {
       provider: 'Noon Affiliate',
-      status: noon.status === 'READY' ? 'Affiliate Active / Product Feed Pending' : 'Affiliate Active / tracking configuration pending',
+      status: noon.status === 'READY' ? 'Affiliate Active / Partner API configured / Product Feed Pending' : 'Affiliate Active / server configuration pending',
       ok: noon.status === 'READY',
     },
     {
