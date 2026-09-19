@@ -25,27 +25,23 @@ const supabase = createClient(supabaseUrl, serviceRoleKey);
 async function testLive() {
   const { data: productData, error: productError } = await supabase
     .from('products')
-    .select('id,category_id,brand,name,slug,image_url,description,specs,status')
+    .select(`
+      id, category_id, brand, name, slug, image_url, description, specs, status,
+      categories ( id, name, slug ),
+      offers (
+        id, product_id, merchant_id, country_code, currency, price, original_price, availability, product_url, affiliate_url, last_checked_at, is_active,
+        merchants ( id, name, slug, logo_url, is_active ),
+        price_history ( id, price, original_price, captured_at )
+      )
+    `)
     .eq('status', 'active')
-    .limit(250);
+    .limit(1);
 
   if (productError) {
-    console.error('Product error:', productError.message);
-    return;
+    console.error('Join error:', productError);
+  } else {
+    console.log('Join with price_history inside offers success!', productData[0]);
   }
-
-  const categoryIds = [...new Set(productData.map((row) => row.category_id).filter(Boolean))];
-  const { data: categoryData } = await supabase.from('categories').select('id,name,slug').in('id', categoryIds);
-  const categoryMap = new Map((categoryData || []).map((c) => [c.id, c]));
-
-  console.log(`Verified ${productData.length} active canonical products in Supabase.`);
-  console.log(`Categories mapped: ${categoryMap.size}`);
-  console.log('Sample item:', {
-    name: productData[0].name,
-    slug: productData[0].slug,
-    category: categoryMap.get(productData[0].category_id)?.name,
-    hasImage: Boolean(productData[0].image_url),
-  });
 }
 
 testLive();

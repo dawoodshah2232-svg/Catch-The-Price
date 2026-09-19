@@ -53,13 +53,15 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
     ? `/api/outbound?offerId=${encodeURIComponent(bestOffer.id)}&country=${country}`
     : '#offers';
 
-  // Finishes for iPhone 16 Pro Max mapping to gallery indices
-  const finishes = [
+  // Finishes mapping to gallery indices
+  const finishes = product.variants?.finishes || (isIPhone16ProMax ? [
     { name: 'Desert Titanium', color: '#C29B7F', index: 0 },
     { name: 'Natural Titanium', color: '#9E9B93', index: 3 },
     { name: 'Black Titanium', color: '#3B3A3E', index: 4 },
     { name: 'White Titanium', color: '#E3E4E5', index: 5 },
-  ];
+  ] : undefined);
+  const storageVariants = product.variants?.storage || (isIPhone16ProMax ? ['256GB', '512GB', '1TB'] : undefined);
+  const hasVariants = Boolean((finishes && finishes.length > 0) || (storageVariants && storageVariants.length > 0));
 
   const mobileJumpLinks = [
     ...(hasValidOffers ? [{ label: 'Store Offers', href: '#offers', Icon: Store }] : []),
@@ -131,59 +133,68 @@ export function ProductClientPage({ product, relatedProducts, isPreview = false 
             </div>
 
             {/* Storage & Color Variants (Clickable & Active) */}
-            {isIPhone16ProMax && (
+            {hasVariants && (
               <div className="space-y-2 pt-0.5">
                 {/* Finish Selector: Clicking immediately switches gallery image */}
-                <div className="flex flex-wrap items-center gap-1.5">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#73858D] mr-1">
-                    Finish:
-                  </span>
-                  {finishes.map((f) => {
-                    const isActive = galleryIndex === f.index;
-                    return (
-                      <button
-                        key={f.name}
-                        type="button"
-                        onClick={() => setGalleryIndex(f.index)}
-                        aria-pressed={isActive}
-                        className={`inline-flex min-h-11 items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-emerald-700 cursor-pointer ${
-                          isActive
-                            ? 'bg-white border border-[#08784B] ring-1 ring-[#08784B] text-[#102027] shadow-2xs'
-                            : 'bg-white border border-[#DDE7E3] text-[#60727A] hover:text-[#102027]'
-                        }`}
-                      >
-                        <span
-                          className="w-4 h-4 rounded-full border border-black/10 shrink-0"
-                          style={{ backgroundColor: f.color }}
-                        />
-                        <span>{f.name}</span>
-                      </button>
-                    );
-                  })}
-                </div>
+                {finishes && finishes.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1.5">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#73858D] mr-1">
+                      Finish:
+                    </span>
+                    {finishes.map((f) => {
+                      const isActive = galleryIndex === f.index;
+                      return (
+                        <button
+                          key={f.name}
+                          type="button"
+                          onClick={() => setGalleryIndex(f.index)}
+                          aria-pressed={isActive}
+                          className={`inline-flex min-h-11 items-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-emerald-700 cursor-pointer ${
+                            isActive
+                              ? 'bg-white border border-[#08784B] ring-1 ring-[#08784B] text-[#102027] shadow-2xs'
+                              : 'bg-white border border-[#DDE7E3] text-[#60727A] hover:text-[#102027]'
+                          }`}
+                        >
+                          <span
+                            className="w-4 h-4 rounded-full border border-black/10 shrink-0"
+                            style={{ backgroundColor: f.color }}
+                          />
+                          <span>{f.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
 
                 {/* Storage Selector */}
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#73858D] mr-1">
-                    Storage:
-                  </span>
-                  <span className="px-2.5 py-1 rounded-lg text-xs font-extrabold bg-[#E5F8EF] text-[#08784B] border border-[#C7EEDC] flex items-center gap-1">
-                    <Check className="w-3 h-3 stroke-[3]" /> 256GB
-                  </span>
-                  <span className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-[#60727A] border border-[#DDE7E3] opacity-60">
-                    512GB
-                  </span>
-                  <span className="px-2.5 py-1 rounded-lg text-xs font-semibold bg-white text-[#60727A] border border-[#DDE7E3] opacity-60">
-                    1TB
-                  </span>
-                </div>
+                {storageVariants && storageVariants.length > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#73858D] mr-1">
+                      Storage:
+                    </span>
+                    {storageVariants.map((storage, idx) => (
+                      <span
+                        key={storage}
+                        className={`px-2.5 py-1 rounded-lg text-xs ${
+                          idx === 0
+                            ? 'font-extrabold bg-[#E5F8EF] text-[#08784B] border border-[#C7EEDC] flex items-center gap-1'
+                            : 'font-semibold bg-white text-[#60727A] border border-[#DDE7E3] opacity-60'
+                        }`}
+                      >
+                        {idx === 0 && <Check className="w-3 h-3 stroke-[3]" />} {storage}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
             {/* Compact Glanceable Key Specs Presentation */}
             <KeySpecsSummary
+              keySpecs={product.keySpecs}
               specs={product.specs}
               brand={product.brand}
+              category={product.categorySlug}
               isIPhone16ProMax={isIPhone16ProMax}
             />
 

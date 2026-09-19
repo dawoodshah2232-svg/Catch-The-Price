@@ -173,6 +173,8 @@ export function ProductGallery2({
           onError={() => setImgErrorMap((prev) => ({ ...prev, [activeIndex]: true }))}
           className="h-full w-full object-contain cursor-zoom-in transition-transform duration-300 group-hover:scale-[1.02]"
           onClick={() => setIsLightboxOpen(true)}
+          fetchPriority={activeIndex === 0 ? 'high' : 'auto'}
+          loading={activeIndex === 0 ? 'eager' : 'lazy'}
         />
 
         {/* Bottom Image Counter */}
@@ -190,15 +192,20 @@ export function ProductGallery2({
             const isSelected = activeIndex === idx;
             const thumbSrc = imgErrorMap[idx] ? primaryImageUrl : item.imageUrl;
 
-            let typeLabel = '';
-            if (item.imageType === 'front') typeLabel = 'Desert';
-            else if (item.imageType === 'angle' && item.altText?.includes('overview')) typeLabel = 'Display';
-            else if (item.imageType === 'detail') typeLabel = 'Camera';
-            else if (item.imageType === 'side' && item.altText?.includes('Natural')) typeLabel = 'Natural';
-            else if (item.imageType === 'side' && item.altText?.includes('White')) typeLabel = 'White';
-            else if (item.imageType === 'back') typeLabel = 'Black';
-            else if (item.imageType === 'angle') typeLabel = 'Angle';
-            else typeLabel = item.imageType;
+            let typeLabel: string = item.imageType || `View ${idx + 1}`;
+            if (item.altText) {
+              if (/desert/i.test(item.altText)) typeLabel = 'Desert';
+              else if (/natural/i.test(item.altText)) typeLabel = 'Natural';
+              else if (/black/i.test(item.altText)) typeLabel = 'Black';
+              else if (/white/i.test(item.altText)) typeLabel = 'White';
+              else if (/titanium/i.test(item.altText)) typeLabel = 'Titanium';
+              else if (/camera/i.test(item.altText)) typeLabel = 'Camera';
+              else if (/display|screen/i.test(item.altText)) typeLabel = 'Display';
+              else if (/back/i.test(item.altText)) typeLabel = 'Back';
+              else if (/side/i.test(item.altText)) typeLabel = 'Side';
+              else if (/angle/i.test(item.altText)) typeLabel = 'Angle';
+              else if (/front/i.test(item.altText)) typeLabel = 'Front';
+            }
 
             return (
               <button
@@ -216,6 +223,7 @@ export function ProductGallery2({
                 <img
                   src={thumbSrc}
                   alt=""
+                  loading="lazy"
                   className="w-full h-8 sm:h-10 object-contain"
                 />
                 <span className={`text-[8px] font-extrabold uppercase tracking-tight block truncate max-w-full ${

@@ -28,28 +28,22 @@ export function StructuredSpecsTable({ specGroups, fallbackSpecs = {}, brand = '
     return null;
   }
 
+  // Derive tabs dynamically from groups so any category (Laptops, TVs, Cameras, etc.) gets its exact tabs
   const tabs = [
     { id: 'all', name: 'All Specifications', icon: Sliders },
-    { id: 'display', name: 'Display', icon: Monitor },
-    { id: 'platform', name: 'Platform & Chip', icon: Cpu },
-    { id: 'camera', name: 'Camera', icon: Camera },
-    { id: 'battery', name: 'Battery & Power', icon: Battery },
-    { id: 'body', name: 'Body & Build', icon: Smartphone },
-    { id: 'connectivity', name: 'Connectivity', icon: Wifi },
+    ...groups.map((group) => ({
+      id: group.category.toLowerCase().replace(/[^a-z0-9]/g, '-'),
+      name: group.category,
+      icon: specIcon(group.category),
+    })),
   ];
 
   // Filter groups based on activeTab
   const filteredGroups = activeTab === 'all'
     ? groups
     : groups.filter((group) => {
-        const cat = group.category.toLowerCase();
-        if (activeTab === 'display') return cat.includes('display') || cat.includes('screen');
-        if (activeTab === 'platform') return cat.includes('platform') || cat.includes('chip') || cat.includes('memory');
-        if (activeTab === 'camera') return cat.includes('camera');
-        if (activeTab === 'battery') return cat.includes('battery') || cat.includes('power') || cat.includes('charging');
-        if (activeTab === 'body') return cat.includes('body') || cat.includes('build') || cat.includes('color');
-        if (activeTab === 'connectivity') return cat.includes('connect') || cat.includes('audio') || cat.includes('sensor');
-        return true;
+        const tabId = group.category.toLowerCase().replace(/[^a-z0-9]/g, '-');
+        return tabId === activeTab;
       });
 
   const displayGroups = filteredGroups.length > 0 ? filteredGroups : groups;

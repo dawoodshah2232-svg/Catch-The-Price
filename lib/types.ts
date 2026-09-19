@@ -92,6 +92,24 @@ export interface SpecGroup {
   specs: SpecItem[];
 }
 
+export interface KeySpecItem {
+  label: string;
+  value: string;
+  icon?: string;
+}
+
+export interface ProductFinishVariant {
+  name: string;
+  color: string;
+  index: number;
+}
+
+export interface ProductVariants {
+  finishes?: ProductFinishVariant[];
+  storage?: string[];
+  sizes?: string[];
+}
+
 export interface Product {
   id: string;
   title: string;
@@ -106,6 +124,8 @@ export interface Product {
   images?: ProductImage[];
   specs: Record<string, string>;
   specGroups?: SpecGroup[];
+  keySpecs?: KeySpecItem[];
+  variants?: ProductVariants;
   currentBestPrice: number;
   originalPrice: number;
   currency: string;

@@ -1,25 +1,82 @@
 import 'server-only';
 
-import { getServerSupabase } from '@/lib/supabase/server';
-import { CountryCode, Offer, PricePoint, Product, ProductImage, SpecGroup } from '@/lib/types';
-import { IPHONE_16_PRO_MAX_IMAGES } from '@/lib/data/gallery/apple-iphone-16-pro-max';
-import { IPHONE_16_PRO_MAX_SPEC_GROUPS } from '@/lib/data/specs/iphone-16-pro-max';
+import { getServerSupabase } from '../supabase/server';
+import { CountryCode, Offer, PricePoint, Product, ProductImage } from '../types';
+import { IPHONE_16_PRO_MAX_IMAGES } from './gallery/apple-iphone-16-pro-max';
+import { IPHONE_16_PRO_MAX_SPEC_GROUPS } from './specs/iphone-16-pro-max';
+import {
+  canPublishSource,
+  listSourceRights,
+  resolveMerchantSourceRights,
+  SourceRightsRecord,
+} from '../config/sourceRights';
+import { searchProducts } from '../search/searchEngine';
 
 const LIVE_MARKETS = new Set<CountryCode>(['ae', 'us']);
 
-type ProductRow = {
+const JOINED_CATALOG_SELECT = `
+  id,
+  category_id,
+  brand,
+  name,
+  slug,
+  image_url,
+  description,
+  specs,
+  status,
+  categories ( id, name, slug ),
+  offers (
+    id,
+    product_id,
+    merchant_id,
+    country_code,
+    currency,
+    price,
+    original_price,
+    availability,
+    product_url,
+    affiliate_url,
+    last_checked_at,
+    is_active,
+    metadata,
+    merchants (
+      id,
+      name,
+      slug,
+      logo_url,
+      is_active,
+      affiliate_network,
+      affiliate_status
+    ),
+    price_history (
+      id,
+      price,
+      original_price,
+      availability,
+      captured_at
+    )
+  )
+`;
+
+export type JoinedMerchantRow = {
   id: string;
-  category_id: string | null;
-  brand: string | null;
   name: string;
   slug: string;
-  image_url: string | null;
-  description: string | null;
-  specs: Record<string, unknown> | null;
-  status: string;
+  logo_url: string | null;
+  is_active: boolean;
+  affiliate_network?: string | null;
+  affiliate_status?: string | null;
 };
 
-type OfferRow = {
+export type JoinedHistoryRow = {
+  id: string | number;
+  price: number | string;
+  original_price?: number | string | null;
+  availability?: string | null;
+  captured_at: string;
+};
+
+export type JoinedOfferRow = {
   id: string;
   product_id: string;
   merchant_id: string;
@@ -32,19 +89,32 @@ type OfferRow = {
   affiliate_url: string | null;
   last_checked_at: string;
   is_active: boolean;
+  metadata?: Record<string, unknown> | null;
+  merchants: JoinedMerchantRow | null;
+  price_history?: JoinedHistoryRow[] | null;
 };
 
-type MerchantRow = {
+export type JoinedCategoryRow = {
   id: string;
   name: string;
-  logo_url: string | null;
-  is_active: boolean;
+  slug: string;
 };
 
-type CategoryRow = { id: string; name: string; slug: string };
-type HistoryRow = { offer_id: string; price: number | string; captured_at: string };
+export type JoinedProductRow = {
+  id: string;
+  category_id: string | null;
+  brand: string | null;
+  name: string;
+  slug: string;
+  image_url: string | null;
+  description: string | null;
+  specs: Record<string, unknown> | null;
+  status: string;
+  categories: JoinedCategoryRow | null;
+  offers?: JoinedOfferRow[] | null;
+};
 
-function numeric(value: number | string | null | undefined) {
+function numeric(value: number | string | null | undefined): number {
   const parsed = Number(value);
   return Number.isFinite(parsed) ? parsed : 0;
 }
@@ -64,7 +134,9 @@ function priceStats(currentPrice: number, history: PricePoint[]) {
     currentPrice,
     lowestPrice: Math.min(...prices, currentPrice),
     highestPrice: Math.max(...prices, currentPrice),
-    average30Days: Math.round(prices.slice(-3).reduce((sum, value) => sum + value, 0) / Math.max(prices.slice(-3).length, 1)),
+    average30Days: Math.round(
+      prices.slice(-3).reduce((sum, value) => sum + value, 0) / Math.max(prices.slice(-3).length, 1)
+    ),
     average90Days: Math.round(prices.reduce((sum, value) => sum + value, 0) / Math.max(prices.length, 1)),
   };
 }
@@ -79,131 +151,155 @@ function latestObservedDropPercent(product: Product): number {
   return previous > latest ? (previous - latest) / previous : 0;
 }
 
+/**
+ * Maps a joined database product row into a typed Product, filtering out
+ * offers with unapproved or expired source rights.
+ */
+export function mapJoinedProduct(
+  row: JoinedProductRow,
+  country: CountryCode,
+  rightsList: SourceRightsRecord[],
+  sourcesList?: Array<{ config?: Record<string, unknown> }>
+): Product {
+  const category = row.categories || undefined;
+
+  // Filter offers: must match country, active, in_stock, price > 0, merchant active, AND have approved source rights
+  const rawOffers = Array.isArray(row.offers) ? row.offers : [];
+  const validOfferRows = rawOffers.filter((offer) => {
+    if (offer.country_code.toLowerCase() !== country.toLowerCase()) return false;
+    if (!offer.is_active || offer.availability !== 'in_stock') return false;
+    if (numeric(offer.price) <= 0) return false;
+
+    const merchant = offer.merchants;
+    if (!merchant || !merchant.is_active) return false;
+
+    // Check source rights: must be ACTIVE, unexpired, with dated approval evidence
+    const metadataRightsId = typeof offer.metadata?.rightsId === 'string' ? offer.metadata.rightsId : undefined;
+    const rightsRecord = metadataRightsId
+      ? rightsList.find((r) => r.id.toLowerCase() === metadataRightsId.toLowerCase())
+      : resolveMerchantSourceRights(merchant, rightsList, sourcesList);
+
+    if (!canPublishSource(rightsRecord)) {
+      return false; // Filter out unapproved or expired source rights
+    }
+
+    return true;
+  });
+
+  // Sort valid offers by price ascending (cheapest first)
+  validOfferRows.sort((a, b) => numeric(a.price) - numeric(b.price));
+
+  const mappedOffers: Offer[] = validOfferRows.map((offer, index) => {
+    const merchant = offer.merchants!;
+    return {
+      id: offer.id,
+      productId: row.id,
+      merchantId: offer.merchant_id,
+      merchantName: merchant.name,
+      merchantLogo: merchant.logo_url || '',
+      merchantRating: 0,
+      price: numeric(offer.price),
+      originalPrice: numeric(offer.original_price) || numeric(offer.price),
+      currency: offer.currency,
+      inStock: true,
+      shippingInfo: 'See retailer for delivery details',
+      condition: 'See retailer listing',
+      url: offer.product_url,
+      affiliateUrl: offer.affiliate_url || undefined,
+      lastCheckedAt: offer.last_checked_at,
+      isBestPrice: index === 0,
+    };
+  });
+
+  const hasOffers = mappedOffers.length > 0;
+  const best = hasOffers ? mappedOffers[0] : null;
+
+  // Gather historical price observation points from approved offers
+  const history: PricePoint[] = validOfferRows
+    .flatMap((o) =>
+      (o.price_history || []).map((h) => ({
+        date: h.captured_at,
+        price: numeric(h.price),
+        merchantName: o.merchants?.name,
+      }))
+    )
+    .filter((point) => point.price > 0)
+    .sort((a, b) => a.date.localeCompare(b.date));
+
+  const currentPrice = best ? best.price : 0;
+  const originalPrice = best
+    ? Math.max(best.price, ...mappedOffers.map((o) => o.originalPrice || o.price))
+    : 0;
+
+  const isIPhone16ProMax = row.slug.toLowerCase() === 'apple-iphone-16-pro-max-256gb';
+  const images: ProductImage[] = isIPhone16ProMax
+    ? IPHONE_16_PRO_MAX_IMAGES
+    : row.image_url
+    ? [{ id: `img-${row.id}`, imageUrl: row.image_url, sortOrder: 1, imageType: 'front', altText: row.name, isPrimary: true }]
+    : [];
+  const specGroups = isIPhone16ProMax ? IPHONE_16_PRO_MAX_SPEC_GROUPS : undefined;
+  const gallery = images.map((img) => img.imageUrl);
+
+  return {
+    id: row.id,
+    title: row.name,
+    slug: row.slug,
+    brand: row.brand || 'Unknown brand',
+    categoryId: row.category_id || '',
+    categorySlug: category?.slug || 'products',
+    categoryName: category?.name || 'Products',
+    description: row.description || '',
+    imageUrl: row.image_url || '',
+    gallery,
+    images,
+    specs: stringSpecs(row.specs),
+    specGroups,
+    currentBestPrice: currentPrice,
+    originalPrice,
+    currency: best ? best.currency : country === 'us' ? 'USD' : 'AED',
+    country,
+    dealScore: originalPrice > currentPrice && currentPrice > 0 ? 88 : 75,
+    isTrending: true,
+    isTopDeal: originalPrice > currentPrice && currentPrice > 0,
+    offersCount: mappedOffers.length,
+    bestMerchantName: best ? best.merchantName : 'Retailers pending',
+    priceLastChecked: best ? best.lastCheckedAt : new Date().toISOString(),
+    priceStats: priceStats(currentPrice, history),
+    priceHistory: history,
+    offers: mappedOffers,
+  };
+}
+
+/**
+ * Loads the live catalog from Supabase with relational join to offers, merchants,
+ * categories and price history, strictly filtering out unapproved or expired source rights.
+ */
 async function loadLiveCatalog(country: CountryCode): Promise<Product[]> {
   if (!LIVE_MARKETS.has(country)) return [];
   const supabase = getServerSupabase();
   if (!supabase) return [];
 
-  const { data: productData, error: productError } = await supabase
-    .from('products')
-    .select('id,category_id,brand,name,slug,image_url,description,specs,status')
-    .eq('status', 'active')
-    .limit(250);
+  const [
+    { data: productData, error: productError },
+    rightsList,
+    { data: ingestionSources },
+  ] = await Promise.all([
+    supabase
+      .from('products')
+      .select(JOINED_CATALOG_SELECT)
+      .eq('status', 'active')
+      .limit(250),
+    listSourceRights(),
+    supabase.from('ingestion_sources').select('config'),
+  ]);
 
   if (productError || !productData?.length) return [];
-  const productRows = productData as ProductRow[];
-  const productIds = productRows.map((row) => row.id);
-  const categoryIds = [...new Set(productRows.map((row) => row.category_id).filter(Boolean))] as string[];
 
-  const [{ data: offerData, error: offerError }, { data: categoryData }] = await Promise.all([
-    supabase
-      .from('offers')
-      .select('id,product_id,merchant_id,country_code,currency,price,original_price,availability,product_url,affiliate_url,last_checked_at,is_active')
-      .in('product_id', productIds)
-      .eq('country_code', country)
-      .eq('is_active', true),
-    categoryIds.length
-      ? supabase.from('categories').select('id,name,slug').in('id', categoryIds)
-      : Promise.resolve({ data: [] }),
-  ]);
+  const sourcesList = (ingestionSources || []) as Array<{ config?: Record<string, unknown> }>;
 
-  const offers = (!offerError && offerData?.length)
-    ? (offerData as OfferRow[]).filter((offer) => offer.availability === 'in_stock' && numeric(offer.price) > 0)
-    : [];
-
-  const merchantIds = [...new Set(offers.map((offer) => offer.merchant_id))];
-  const offerIds = offers.map((offer) => offer.id);
-  const [{ data: merchantData }, { data: historyData }] = await Promise.all([
-    merchantIds.length
-      ? supabase.from('merchants').select('id,name,logo_url,is_active').in('id', merchantIds).eq('is_active', true)
-      : Promise.resolve({ data: [] }),
-    offerIds.length
-      ? supabase.from('price_history').select('offer_id,price,captured_at').in('offer_id', offerIds).order('captured_at', { ascending: true })
-      : Promise.resolve({ data: [] }),
-  ]);
-
-  const merchants = (merchantData || []) as MerchantRow[];
-  const categories = (categoryData || []) as CategoryRow[];
-  const historyRows = (historyData || []) as HistoryRow[];
-  const merchantMap = new Map(merchants.map((merchant) => [merchant.id, merchant]));
-  const categoryMap = new Map(categories.map((category) => [category.id, category]));
-  const offerProductMap = new Map(offers.map((offer) => [offer.id, offer.product_id]));
-
-  return productRows.flatMap((row): Product[] => {
-    if (!row.image_url) return [];
-    const category = row.category_id ? categoryMap.get(row.category_id) : undefined;
-    const productOffers = offers
-      .filter((offer) => offer.product_id === row.id && merchantMap.has(offer.merchant_id))
-      .sort((a, b) => numeric(a.price) - numeric(b.price));
-
-    const mappedOffers: Offer[] = productOffers.map((offer, index) => {
-      const merchant = merchantMap.get(offer.merchant_id)!;
-      return {
-        id: offer.id,
-        productId: row.id,
-        merchantId: offer.merchant_id,
-        merchantName: merchant.name,
-        merchantLogo: merchant.logo_url || '',
-        merchantRating: 0,
-        price: numeric(offer.price),
-        originalPrice: numeric(offer.original_price) || numeric(offer.price),
-        currency: offer.currency,
-        inStock: true,
-        shippingInfo: 'See retailer for delivery details',
-        condition: 'See retailer listing',
-        url: offer.product_url,
-        affiliateUrl: offer.affiliate_url || undefined,
-        lastCheckedAt: offer.last_checked_at,
-        isBestPrice: index === 0,
-      };
-    });
-
-    const hasOffers = mappedOffers.length > 0;
-    const best = hasOffers ? mappedOffers[0] : null;
-    const history: PricePoint[] = historyRows
-      .filter((item) => offerProductMap.get(item.offer_id) === row.id && numeric(item.price) > 0)
-      .map((item) => ({ date: item.captured_at, price: numeric(item.price) }));
-    const currentPrice = best ? best.price : 0;
-    const originalPrice = best ? Math.max(best.price, ...mappedOffers.map((offer) => offer.originalPrice || offer.price)) : 0;
-
-    const isIPhone16ProMax = row.slug.toLowerCase() === 'apple-iphone-16-pro-max-256gb';
-    const images: ProductImage[] = isIPhone16ProMax
-      ? IPHONE_16_PRO_MAX_IMAGES
-      : row.image_url
-      ? [{ id: `img-${row.id}`, imageUrl: row.image_url, sortOrder: 1, imageType: 'front', altText: row.name, isPrimary: true }]
-      : [];
-    const specGroups = isIPhone16ProMax ? IPHONE_16_PRO_MAX_SPEC_GROUPS : undefined;
-    const gallery = images.map((img) => img.imageUrl);
-
-    return [{
-      id: row.id,
-      title: row.name,
-      slug: row.slug,
-      brand: row.brand || 'Unknown brand',
-      categoryId: row.category_id || '',
-      categorySlug: category?.slug || 'products',
-      categoryName: category?.name || 'Products',
-      description: row.description || '',
-      imageUrl: row.image_url,
-      gallery,
-      images,
-      specs: stringSpecs(row.specs),
-      specGroups,
-      currentBestPrice: currentPrice,
-      originalPrice,
-      currency: best ? best.currency : 'AED',
-      country,
-      dealScore: originalPrice > currentPrice && currentPrice > 0 ? 88 : 75,
-      isTrending: true,
-      isTopDeal: originalPrice > currentPrice && currentPrice > 0,
-      offersCount: mappedOffers.length,
-      bestMerchantName: best ? best.merchantName : 'Retailers pending',
-      priceLastChecked: best ? best.lastCheckedAt : new Date().toISOString(),
-      priceStats: priceStats(currentPrice, history),
-      priceHistory: history,
-      offers: mappedOffers,
-    }];
-  });
+  return (productData as unknown as JoinedProductRow[])
+    .filter((row) => Boolean(row.image_url))
+    .map((row) => mapJoinedProduct(row, country, rightsList, sourcesList));
 }
 
 export function isPreviewCatalogEnabled(): boolean {
@@ -212,21 +308,103 @@ export function isPreviewCatalogEnabled(): boolean {
   return Boolean(process.env.VERCEL_URL && process.env.VERCEL_URL.includes('vercel.app'));
 }
 
-export async function getCatalogProducts(country: CountryCode): Promise<{ products: Product[]; isPreview: boolean }> {
+export async function getCatalogProducts(
+  country: CountryCode
+): Promise<{ products: Product[]; isPreview: boolean }> {
   const live = await loadLiveCatalog(country);
   return { products: live, isPreview: false };
 }
 
+/**
+ * Dedicated Product Detail query: queries the product by slug directly from Supabase,
+ * joins the offers table, verifies approved source rights, and loads related products.
+ */
 export async function getCatalogProductBySlug(
   slug: string,
   country: CountryCode
 ): Promise<{ product: Product | undefined; related: Product[]; isPreview: boolean }> {
-  const live = await loadLiveCatalog(country);
-  const product = live.find((item) => item.slug.toLowerCase() === slug.toLowerCase());
-  const related = product
-    ? live.filter((item) => item.categorySlug === product.categorySlug && item.id !== product.id).slice(0, 8)
-    : [];
+  if (!LIVE_MARKETS.has(country)) {
+    return { product: undefined, related: [], isPreview: false };
+  }
+
+  const supabase = getServerSupabase();
+  if (!supabase) {
+    return { product: undefined, related: [], isPreview: false };
+  }
+
+  const cleanSlug = slug.toLowerCase().trim();
+
+  const [
+    { data: productRow, error: productError },
+    rightsList,
+    { data: ingestionSources },
+  ] = await Promise.all([
+    supabase
+      .from('products')
+      .select(JOINED_CATALOG_SELECT)
+      .eq('slug', cleanSlug)
+      .eq('status', 'active')
+      .maybeSingle(),
+    listSourceRights(),
+    supabase.from('ingestion_sources').select('config'),
+  ]);
+
+  if (productError || !productRow) {
+    return { product: undefined, related: [], isPreview: false };
+  }
+
+  const sourcesList = (ingestionSources || []) as Array<{ config?: Record<string, unknown> }>;
+  const product = mapJoinedProduct(
+    productRow as unknown as JoinedProductRow,
+    country,
+    rightsList,
+    sourcesList
+  );
+
+  // Fetch related products in the same category with joined offers
+  let related: Product[] = [];
+  if (product.categoryId) {
+    const { data: relatedRows } = await supabase
+      .from('products')
+      .select(JOINED_CATALOG_SELECT)
+      .eq('category_id', product.categoryId)
+      .neq('id', product.id)
+      .eq('status', 'active')
+      .limit(8);
+
+    if (relatedRows && relatedRows.length > 0) {
+      related = (relatedRows as unknown as JoinedProductRow[])
+        .filter((r) => Boolean(r.image_url))
+        .map((r) => mapJoinedProduct(r, country, rightsList, sourcesList));
+    }
+  }
+
   return { product, related, isPreview: false };
+}
+
+/**
+ * Search query helper: search products by query string and filters,
+ * with joined offers and active source rights verification.
+ */
+export async function searchCatalogProducts(
+  country: CountryCode,
+  query?: string,
+  filters?: {
+    category?: string;
+    brand?: string;
+    merchant?: string;
+    sortBy?: 'relevance' | 'price_asc' | 'price_desc' | 'biggest_drop';
+  }
+): Promise<{ products: Product[]; total: number; isPreview: boolean }> {
+  const { products, isPreview } = await getCatalogProducts(country);
+  const q = (query || '').trim();
+
+  if (!q && !filters?.category && !filters?.brand && !filters?.merchant) {
+    return { products, total: products.length, isPreview };
+  }
+
+  const results = searchProducts(products, q, filters);
+  return { products: results, total: results.length, isPreview };
 }
 
 export async function getHomepageCatalog(country: CountryCode) {

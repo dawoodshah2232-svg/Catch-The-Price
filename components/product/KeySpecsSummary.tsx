@@ -1,30 +1,74 @@
 'use client';
 
 import React from 'react';
-import { Monitor, Cpu, Camera, BatteryCharging, HardDrive, ShieldCheck } from 'lucide-react';
+import { KeySpecItem } from '@/lib/types';
+import { specIcon } from './specIcons';
 
 interface KeySpecsSummaryProps {
+  keySpecs?: KeySpecItem[];
   specs?: Record<string, string>;
   brand?: string;
+  category?: string;
   isIPhone16ProMax?: boolean;
 }
 
-export function KeySpecsSummary({ specs = {}, brand = '', isIPhone16ProMax = false }: KeySpecsSummaryProps) {
-  const items = isIPhone16ProMax
-    ? [
-        { label: 'Display', value: '6.9" 120Hz OLED', icon: Monitor },
-        { label: 'Chip', value: 'A18 Pro (3nm)', icon: Cpu },
-        { label: 'Camera', value: '48MP Triple + 5x', icon: Camera },
-        { label: 'Battery', value: '4685 mAh', icon: BatteryCharging },
-        { label: 'Storage', value: '256GB / 8GB RAM', icon: HardDrive },
-        { label: 'Build', value: 'Titanium IP68', icon: ShieldCheck },
-      ]
-    : [
-        { label: 'Brand', value: brand || specs['Brand'] || 'Authentic', icon: ShieldCheck },
-        { label: 'Display', value: specs['Display'] || specs['Screen'] || 'Standard Display', icon: Monitor },
-        { label: 'Hardware', value: specs['Processor'] || specs['Chip'] || specs['LaunchStatus'] || 'In-Market UAE', icon: Cpu },
-        { label: 'Storage', value: specs['Storage'] || specs['Memory'] || 'UAE Retail Spec', icon: HardDrive },
+export function KeySpecsSummary({
+  keySpecs,
+  specs = {},
+  brand = '',
+  category = '',
+  isIPhone16ProMax = false,
+}: KeySpecsSummaryProps) {
+  let items: { label: string; value: string; icon: ReturnType<typeof specIcon> }[] = [];
+
+  if (keySpecs && keySpecs.length > 0) {
+    items = keySpecs.map((item) => ({
+      label: item.label,
+      value: item.value,
+      icon: specIcon(item.label, category),
+    }));
+  } else if (isIPhone16ProMax) {
+    items = [
+      { label: 'Display', value: '6.9" 120Hz OLED', icon: specIcon('Display') },
+      { label: 'Chip', value: 'A18 Pro (3nm)', icon: specIcon('Chip') },
+      { label: 'Camera', value: '48MP Triple + 5x', icon: specIcon('Camera') },
+      { label: 'Battery', value: '4685 mAh', icon: specIcon('Battery') },
+      { label: 'Storage', value: '256GB / 8GB RAM', icon: specIcon('Storage') },
+      { label: 'Build', value: 'Titanium IP68', icon: specIcon('Build') },
+    ];
+  } else {
+    // Dynamic extraction from specs
+    const candidates = [
+      { label: 'Display', keys: ['Display', 'Screen', 'Panel'] },
+      { label: 'Processor', keys: ['Processor', 'Chip', 'CPU', 'Platform'] },
+      { label: 'Memory', keys: ['RAM', 'Memory'] },
+      { label: 'Storage', keys: ['Storage', 'Capacity', 'Drive'] },
+      { label: 'Camera', keys: ['Camera', 'Sensor', 'Main Camera'] },
+      { label: 'Battery', keys: ['Battery', 'Runtime', 'Battery Life'] },
+      { label: 'Graphics', keys: ['Graphics', 'GPU'] },
+      { label: 'Connectivity', keys: ['Wireless', 'Wi-Fi', 'Bluetooth', 'Connectivity'] },
+      { label: 'Audio', keys: ['Audio', 'Sound', 'ANC', 'Driver'] },
+    ];
+
+    for (const c of candidates) {
+      if (items.length >= 6) break;
+      for (const k of c.keys) {
+        if (specs[k]) {
+          items.push({ label: c.label, value: specs[k], icon: specIcon(c.label, category) });
+          break;
+        }
+      }
+    }
+
+    if (items.length === 0) {
+      items = [
+        { label: 'Brand', value: brand || specs['Brand'] || 'Authentic', icon: specIcon('Brand') },
+        { label: 'Display', value: specs['Display'] || specs['Screen'] || 'Standard Display', icon: specIcon('Display') },
+        { label: 'Hardware', value: specs['Processor'] || specs['Chip'] || specs['LaunchStatus'] || 'In-Market UAE', icon: specIcon('Processor') },
+        { label: 'Storage', value: specs['Storage'] || specs['Memory'] || 'UAE Retail Spec', icon: specIcon('Storage') },
       ];
+    }
+  }
 
   return (
     <div className="pt-1">
